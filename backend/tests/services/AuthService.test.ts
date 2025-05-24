@@ -1,19 +1,15 @@
-import { Request, Response } from "express";
+import { Request } from "express";
 import { describe, expect, it, vi } from "vitest";
 import { ILecturer, IStudent } from "../../src/database/schema";
 import { AuthService } from "../../src/services";
 import { UserRole } from "../../src/types";
 import { encrypt } from "../../src/utils";
+import { createMockResponse } from "../utils/expressMockFactory";
 
 describe("AuthService (unit)", () => {
     const authService = new AuthService();
 
-    const mockResponse = {
-        cookie: vi.fn(),
-        clearCookie: vi.fn(),
-        status: vi.fn().mockReturnThis(),
-        json: vi.fn(),
-    } as unknown as Response;
+    const mockResponse = createMockResponse();
 
     it("Should create a session cookie", () => {
         authService.createSession(mockResponse, { test: "test" });

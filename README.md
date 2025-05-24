@@ -78,15 +78,16 @@ For all endpoints, unless otherwise specified, non-2xx responses will return the
 }
 ```
 
-| Name                                                | Description                     |
-| --------------------------------------------------- | ------------------------------- |
-| [POST `/student/login`](#post-studentlogin)         | Logins a student to the server  |
-| [POST `/student/logout`](#post-studentlogout)       | Logs a student out              |
-| [GET `/student/timetable`](#get-studenttimetable)   | Obtains a student's timetable   |
-| [GET `/student/search`](#get-studentsearch)         | Searches for students           |
-| [POST `/lecturer/login`](#post-lecturerlogin)       | Logins a lecturer to the server |
-| [POST `/lecturer/logout`](#post-lecturerlogout)     | Logs a lecturer out             |
-| [GET `/lecturer/timetable`](#get-lecturertimetable) | Obtains a lecturer's timetable  |
+| Name                                                                  | Description                                                   |
+| --------------------------------------------------------------------- | ------------------------------------------------------------- |
+| [POST `/student/login`](#post-studentlogin)                           | Logins a student to the server                                |
+| [POST `/student/logout`](#post-studentlogout)                         | Logs a student out                                            |
+| [GET `/student/timetable`](#get-studenttimetable)                     | Obtains a student's timetable                                 |
+| [GET `/student/search`](#get-studentsearch)                           | Searches for students                                         |
+| [POST `/lecturer/login`](#post-lecturerlogin)                         | Logins a lecturer to the server                               |
+| [POST `/lecturer/logout`](#post-lecturerlogout)                       | Logs a lecturer out                                           |
+| [GET `/lecturer/timetable`](#get-lecturertimetable)                   | Obtains a lecturer's timetable                                |
+| [GET `/lecturer/clashing-timetable`](#get-lecturerclashing-timetable) | Obtains the timetables that clash with a lecturer's timetable |
 
 ## POST `/student/login`
 
@@ -94,10 +95,10 @@ Logins a student to the server.
 
 ### Body Parameters
 
-| Name       | Required | Description                                      |
-| ---------- | -------- | ------------------------------------------------ |
-| `login`    | ✅       | The matric number of the student                 |
-| `password` | ✅       | The password to authenticate (typically K.P. no) |
+| Name       | Required | Default | Description                                      |
+| ---------- | -------- | ------- | ------------------------------------------------ |
+| `login`    | ✅       | N/A     | The matric number of the student                 |
+| `password` | ✅       | N/A     | The password to authenticate (typically K.P. no) |
 
 ### Response
 
@@ -119,11 +120,11 @@ This endpoint is restricted to a student or lecturer, in which they must authent
 
 ### Query Parameters
 
-| Name        | Required | Description                                                         | Example    |
-| ----------- | -------- | ------------------------------------------------------------------- | ---------- |
-| `session`   | ✅       | The academic session to retrieve the timetable for                  | 2024/2025  |
-| `semester`  | ✅       | The academic semester to retrieve the timetable for                 | 1, 2, or 3 |
-| `matric_no` | ✅       | The matric number of the student whose timetable is to be retrieved | N/A        |
+| Name        | Required | Default | Description                                                         | Example    |
+| ----------- | -------- | ------- | ------------------------------------------------------------------- | ---------- |
+| `session`   | ✅       | N/A     | The academic session to retrieve the timetable for                  | 2024/2025  |
+| `semester`  | ✅       | N/A     | The academic semester to retrieve the timetable for                 | 1, 2, or 3 |
+| `matric_no` | ✅       | N/A     | The matric number of the student whose timetable is to be retrieved | N/A        |
 
 ### Response
 
@@ -137,9 +138,11 @@ This endpoint is restricted to a student or lecturer, in which they must authent
 
 ### Query Parameters
 
-| Name    | Required | Description                                                       | Example |
-| ------- | -------- | ----------------------------------------------------------------- | ------- |
-| `query` | ✅       | The query to search for. Can be a student's name or matric number | N/A     |
+| Name     | Required | Default | Description                                                                             | Example |
+| -------- | -------- | ------- | --------------------------------------------------------------------------------------- | ------- |
+| `query`  | ✅       | N/A     | The query to search for. Can be a student's name or matric number                       | N/A     |
+| `limit`  | ❌       | 10      | The maximum number of students to return. Defaults to 10                                | 5       |
+| `offset` | ❌       | 0       | The number of students to skip before starting to collect the result set. Defaults to 0 | 5       |
 
 ### Response
 
@@ -151,10 +154,10 @@ Logins a lecturer to the server.
 
 ### Body Parameters
 
-| Name       | Required | Description                       |
-| ---------- | -------- | --------------------------------- |
-| `login`    | ✅       | The worker number of the lecturer |
-| `password` | ✅       | The password to authenticate      |
+| Name       | Required | Default | Description                       |
+| ---------- | -------- | ------- | --------------------------------- |
+| `login`    | ✅       | N/A     | The worker number of the lecturer |
+| `password` | ✅       | N/A     | The password to authenticate      |
 
 ### Response
 
@@ -176,15 +179,33 @@ This endpoint is restricted to a student or lecturer, in which they must authent
 
 ### Query Parameters
 
-| Name        | Required | Description                                                          | Example    |
-| ----------- | -------- | -------------------------------------------------------------------- | ---------- |
-| `session`   | ✅       | The academic session to retrieve the timetable for                   | 2024/2025  |
-| `semester`  | ✅       | The academic semester to retrieve the timetable for                  | 1, 2, or 3 |
-| `worker_no` | ✅       | The worker number of the lecturer whose timetable is to be retrieved | N/A        |
+| Name        | Required | Default | Description                                                          | Example    |
+| ----------- | -------- | ------- | -------------------------------------------------------------------- | ---------- |
+| `session`   | ✅       | N/A     | The academic session to retrieve the timetable for                   | 2024/2025  |
+| `semester`  | ✅       | N/A     | The academic semester to retrieve the timetable for                  | 1, 2, or 3 |
+| `worker_no` | ✅       | N/A     | The worker number of the lecturer whose timetable is to be retrieved | N/A        |
 
 ### Response
 
 A list of [`Timetable`](#timetable) objects.
+
+## GET `/lecturer/clashing-timetable`
+
+Obtains the timetables that clash with a lecturer's timetable.
+
+This endpoint is restricted to a lecturer, in which they must authenticate through their respective login endpoints first.
+
+### Query Parameters
+
+| Name        | Required | Default | Description                                                          | Example    |
+| ----------- | -------- | ------- | -------------------------------------------------------------------- | ---------- |
+| `session`   | ✅       | N/A     | The academic session to retrieve the timetable for                   | 2024/2025  |
+| `semester`  | ✅       | N/A     | The academic semester to retrieve the timetable for                  | 1, 2, or 3 |
+| `worker_no` | ✅       | N/A     | The worker number of the lecturer whose timetable is to be retrieved | N/A        |
+
+### Response
+
+A list of [`ClashTimetable`](#clash-timetable) objects.
 
 # Data Types
 
@@ -251,48 +272,113 @@ type ITimetable = {
 
     /**
      * Information about the venue. Can be `null`, which means there is no assigned venue.
+     *
+     * See Timetable venue data type section.
      */
-    venue: {
-        /**
-         * The short name of the venue.
-         */
-        shortName: string;
-    } | null;
+    venue: TimetableVenue | null;
 
     /**
      * Information about the course section.
+     *
+     * See Timetable course section data type section.
      */
-    courseSection: {
-        /**
-         * The section that this timetable represents.
-         */
-        section: string;
+    courseSection: TimetableCourseSection;
 
-        /**
-         * Information about the course.
-         */
-        course: {
-            /**
-             * The code of the course.
-             */
-            code: string;
+    /**
+     * Information about the lecturer. Can be `null`, which means there is no assigned lecturer.
+     *
+     * See Timetable lecturer data type section.
+     */
+    lecturer: TimetableLecturer | null;
+};
+```
 
-            /**
-             * The name of the course.
-             */
-            name: string;
-        };
-    };
+### Clash Timetable
+
+```ts
+type ClashTimetable = {
+    /**
+     * The day of the timetable. See Day data type section.
+     */
+    day: CourseSectionScheduleDay;
+
+    /**
+     * The time of the timetable. See Time data type section.
+     */
+    time: CourseSectionScheduleTime;
+
+    /**
+     * Information about the venue. Can be `null`, which means there is no assigned venue.
+     */
+    venue: TimetableVenue | null;
+
+    /**
+     * Course sections that clash with the lecturer's timetable at the day and time.
+     *
+     * See Timetable course section data type section.
+     */
+    courseSections: TimetableCourseSection[];
 
     /**
      * Information about the lecturer. Can be `null`, which means there is no assigned lecturer.
      */
-    lecturer: {
-        /**
-         * The name of the lecturer.
-         */
-        name: string;
-    } | null;
+    lecturer: TimetableLecturer | null;
+};
+```
+
+### Timetable course section
+
+```ts
+type TimetableCourseSection = {
+    /**
+     * The section that this timetable represents.
+     */
+    section: string;
+
+    /**
+     * Information about the course.
+     *
+     * See Timetable course data type section.
+     */
+    course: TimetableCourse;
+};
+```
+
+### Timetable course
+
+```ts
+type TimetableCourse = {
+    /**
+     * The code of the course.
+     */
+    code: string;
+
+    /**
+     * The name of the course.
+     */
+    name: string;
+};
+```
+
+### Timetable venue
+
+```ts
+type TimetableVenue = {
+    /**
+     * The short name of the venue.
+     */
+    shortName: string;
+};
+```
+
+### Timetable lecturer
+
+```ts
+type TimetableLecturer = {
+    /**
+     * The name of the lecturer.
+     */
+    name: string;
 };
 ```
 

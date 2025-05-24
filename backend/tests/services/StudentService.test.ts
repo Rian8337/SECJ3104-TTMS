@@ -200,7 +200,7 @@ describe("StudentService (unit)", () => {
 
             expect(
                 mockStudentRepository.searchByMatricNo
-            ).not.toHaveBeenCalledWith();
+            ).not.toHaveBeenCalled();
 
             expect(mockStudentRepository.searchByName).not.toHaveBeenCalled();
         });

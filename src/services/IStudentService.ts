@@ -33,7 +33,13 @@ export interface IStudentService extends IService {
      * Searches students by their matric number or name.
      *
      * @param query The query to search.
+     * @param limit The maximum number of students to return. Defaults to 10.
+     * @param offset The number of students to skip before starting to collect the result set. Defaults to 0.
      * @returns The students whose matric numbers or names match the given query.
      */
-    search(query: string): Promise<OperationResult<IStudent[]>>;
+    search(
+        query: string,
+        limit?: number,
+        offset?: number
+    ): Promise<OperationResult<IStudent[]>>;
 }

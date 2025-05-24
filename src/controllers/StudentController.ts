@@ -141,11 +141,11 @@ export class StudentController implements IStudentController {
             "/search",
             IStudentSearchEntry[] | { error: string },
             unknown,
-            Partial<{ query: string }>
+            Partial<{ query: string; limit: string; offset: string }>
         >,
         res: Response<IStudentSearchEntry[] | { error: string }>
     ) {
-        const { query } = req.query;
+        const { query, limit, offset } = req.query;
 
         if (!query) {
             res.status(400).json({ error: "Query is required" });
@@ -153,8 +153,27 @@ export class StudentController implements IStudentController {
             return;
         }
 
+        const parsedLimit = parseInt(limit ?? "10");
+        const parsedOffset = parseInt(offset ?? "0");
+
+        if (Number.isNaN(parsedLimit) || parsedLimit < 0) {
+            res.status(400).json({ error: "Invalid limit" });
+
+            return;
+        }
+
+        if (Number.isNaN(parsedOffset) || parsedOffset < 0) {
+            res.status(400).json({ error: "Invalid offset" });
+
+            return;
+        }
+
         try {
-            const result = await this.studentService.search(query);
+            const result = await this.studentService.search(
+                query,
+                parsedLimit,
+                parsedOffset
+            );
 
             if (result.failed()) {
                 res.status(result.status).json({ error: result.error });

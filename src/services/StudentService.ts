@@ -44,7 +44,11 @@ export class StudentService extends BaseService implements IStudentService {
         return this.createSuccessfulResponse(res);
     }
 
-    async search(query: string): Promise<OperationResult<IStudent[]>> {
+    async search(
+        query: string,
+        limit = 10,
+        offset = 0
+    ): Promise<OperationResult<IStudent[]>> {
         if (query.length < 3) {
             return this.createFailedResponse(
                 "Query must be at least 3 characters long"
@@ -59,9 +63,17 @@ export class StudentService extends BaseService implements IStudentService {
                 return this.createSuccessfulResponse([]);
             }
 
-            res = await this.studentRepository.searchByMatricNo(query);
+            res = await this.studentRepository.searchByMatricNo(
+                query,
+                limit,
+                offset
+            );
         } else {
-            res = await this.studentRepository.searchByName(query);
+            res = await this.studentRepository.searchByName(
+                query,
+                limit,
+                offset
+            );
         }
 
         return this.createSuccessfulResponse(res);

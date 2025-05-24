@@ -8,7 +8,7 @@ import {
 import { Repository } from "@/decorators/repository";
 import { dependencyTokens } from "@/dependencies/tokens";
 import { ITimetable, TTMSSemester, TTMSSession } from "@/types";
-import { and, eq, isNotNull, or, sql } from "drizzle-orm";
+import { and, eq, isNotNull, ne, or, sql } from "drizzle-orm";
 import { ILecturerRepository } from "./ILecturerRepository";
 
 /**
@@ -99,10 +99,12 @@ export class LecturerRepository implements ILecturerRepository {
             return [];
         }
 
-        const timetable = await db
+        const lecturerTimetable = await db
             .select({
                 day: courseSectionSchedules.day,
                 time: courseSectionSchedules.time,
+                courseCode: courseSectionSchedules.courseCode,
+                section: courseSectionSchedules.section,
                 venueCode: courseSectionSchedules.venueCode,
             })
             .from(courseSectionSchedules)
@@ -125,7 +127,7 @@ export class LecturerRepository implements ILecturerRepository {
                 )
             );
 
-        if (timetable.length === 0) {
+        if (lecturerTimetable.length === 0) {
             return [];
         }
 
@@ -149,10 +151,13 @@ export class LecturerRepository implements ILecturerRepository {
                 eq(courseSectionSchedules.semester, semester),
                 isNotNull(courseSectionSchedules.venueCode),
                 or(
-                    ...timetable.map((t) =>
+                    ...lecturerTimetable.map((t) =>
                         and(
                             eq(courseSectionSchedules.day, t.day),
                             eq(courseSectionSchedules.time, t.time),
+                            // Don't include the lecturer's course sections
+                            ne(courseSectionSchedules.courseCode, t.courseCode),
+                            ne(courseSectionSchedules.section, t.section),
                             eq(courseSectionSchedules.venueCode, t.venueCode!)
                         )
                     )

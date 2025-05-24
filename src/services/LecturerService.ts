@@ -89,9 +89,6 @@ export class LecturerService extends BaseService implements ILecturerService {
             }
         }
 
-        return this.createSuccessfulResponse(
-            // Clash only happens if there are multiple course sections in the same day and time
-            clashes.filter((c) => c.courseSections.length > 1)
-        );
+        return this.createSuccessfulResponse(clashes);
     }
 }

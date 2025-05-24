@@ -95,57 +95,19 @@ export class LecturerController implements ILecturerController {
         >,
         res: Response<ITimetable[] | { error: string }>
     ) {
-        const { session, semester, worker_no: workerNo } = req.query;
+        const validatedData = this.validateRequest(req, res);
 
-        if (!session) {
-            res.status(400).json({ error: "Academic session is required." });
-
+        if (!validatedData) {
             return;
         }
 
-        if (!semester) {
-            res.status(400).json({ error: "Semester is required." });
-
-            return;
-        }
-
-        if (!workerNo) {
-            res.status(400).json({ error: "Worker number is required." });
-
-            return;
-        }
-
-        const parsedWorkerNo = parseInt(workerNo);
-
-        if (Number.isNaN(parsedWorkerNo)) {
-            res.status(400).json({ error: "Invalid worker number format." });
-
-            return;
-        }
-
-        if (!validateAcademicSession(session)) {
-            res.status(400).json({
-                error: "Invalid session format. Expected format: YYYY/YYYY.",
-            });
-
-            return;
-        }
-
-        const parsedSemester = parseInt(semester);
-
-        if (!validateSemester(parsedSemester)) {
-            res.status(400).json({
-                error: "Invalid semester format. Expected format: 1, 2, or 3.",
-            });
-
-            return;
-        }
+        const { session, semester, workerNo } = validatedData;
 
         try {
             const result = await this.lecturerService.getTimetable(
-                parsedWorkerNo,
+                workerNo,
                 session,
-                parsedSemester
+                semester
             );
 
             if (result.isSuccessful()) {
@@ -165,7 +127,7 @@ export class LecturerController implements ILecturerController {
     async getClashingTimetable(
         req: Request<
             "/clashing-timetable",
-            unknown,
+            ITimetableClash[] | { error: string },
             unknown,
             Partial<{ session: string; semester: string; worker_no: string }>
         >,
@@ -201,7 +163,7 @@ export class LecturerController implements ILecturerController {
     private validateRequest(
         req: Request<
             unknown,
-            unknown,
+            { error: string },
             unknown,
             Partial<{ session: string; semester: string; worker_no: string }>
         >,

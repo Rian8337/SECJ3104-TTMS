@@ -4,7 +4,13 @@ import { Roles } from "@/decorators/roles";
 import { Get, Post } from "@/decorators/routes";
 import { dependencyTokens } from "@/dependencies/tokens";
 import { IAuthService, ILecturerService } from "@/services";
-import { ITimetable, UserRole } from "@/types";
+import {
+    ITimetable,
+    ITimetableClash,
+    TTMSSemester,
+    TTMSSession,
+    UserRole,
+} from "@/types";
 import { validateAcademicSession, validateSemester } from "@/utils";
 import { Request, Response } from "express";
 import { inject } from "tsyringe";
@@ -152,5 +158,109 @@ export class LecturerController implements ILecturerController {
 
             res.status(500).json({ error: "Internal server error" });
         }
+    }
+
+    @Get("/clashing-timetable")
+    @Roles(UserRole.lecturer)
+    async getClashingTimetable(
+        req: Request<
+            "/clashing-timetable",
+            unknown,
+            unknown,
+            Partial<{ session: string; semester: string; worker_no: string }>
+        >,
+        res: Response<ITimetableClash[] | { error: string }>
+    ): Promise<void> {
+        const validatedData = this.validateRequest(req, res);
+
+        if (!validatedData) {
+            return;
+        }
+
+        const { session, semester, workerNo } = validatedData;
+
+        try {
+            const result = await this.lecturerService.getClashingTimetable(
+                workerNo,
+                session,
+                semester
+            );
+
+            if (result.isSuccessful()) {
+                res.json(result.data);
+            } else if (result.failed()) {
+                res.status(result.status).json({ error: result.error });
+            }
+        } catch (e) {
+            console.error(e);
+
+            res.status(500).json({ error: "Internal server error" });
+        }
+    }
+
+    private validateRequest(
+        req: Request<
+            unknown,
+            unknown,
+            unknown,
+            Partial<{ session: string; semester: string; worker_no: string }>
+        >,
+        res: Response<{ error: string }>
+    ): {
+        session: TTMSSession;
+        semester: TTMSSemester;
+        workerNo: number;
+    } | null {
+        const { session, semester, worker_no: workerNo } = req.query;
+
+        if (!session) {
+            res.status(400).json({ error: "Academic session is required." });
+
+            return null;
+        }
+
+        if (!semester) {
+            res.status(400).json({ error: "Semester is required." });
+
+            return null;
+        }
+
+        if (!workerNo) {
+            res.status(400).json({ error: "Worker number is required." });
+
+            return null;
+        }
+
+        const parsedWorkerNo = parseInt(workerNo);
+
+        if (Number.isNaN(parsedWorkerNo)) {
+            res.status(400).json({ error: "Invalid worker number format." });
+
+            return null;
+        }
+
+        if (!validateAcademicSession(session)) {
+            res.status(400).json({
+                error: "Invalid session format. Expected format: YYYY/YYYY.",
+            });
+
+            return null;
+        }
+
+        const parsedSemester = parseInt(semester);
+
+        if (!validateSemester(parsedSemester)) {
+            res.status(400).json({
+                error: "Invalid semester format. Expected format: 1, 2, or 3.",
+            });
+
+            return null;
+        }
+
+        return {
+            session,
+            semester: parsedSemester,
+            workerNo: parsedWorkerNo,
+        };
     }
 }

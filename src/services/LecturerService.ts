@@ -2,7 +2,12 @@ import { ILecturer } from "@/database/schema";
 import { Service } from "@/decorators/service";
 import { dependencyTokens } from "@/dependencies/tokens";
 import { ILecturerRepository } from "@/repositories";
-import { ITimetable, TTMSSemester, TTMSSession } from "@/types";
+import {
+    ITimetable,
+    ITimetableClash,
+    TTMSSemester,
+    TTMSSession,
+} from "@/types";
 import { inject } from "tsyringe";
 import { BaseService } from "./BaseService";
 import { ILecturerService } from "./ILecturerService";
@@ -42,5 +47,51 @@ export class LecturerService extends BaseService implements ILecturerService {
         );
 
         return this.createSuccessfulResponse(res);
+    }
+
+    async getClashingTimetable(
+        workerNo: number,
+        session: TTMSSession,
+        semester: TTMSSemester
+    ): Promise<OperationResult<ITimetableClash[]>> {
+        const lecturer = await this.lecturerRepository.getByWorkerNo(workerNo);
+
+        if (!lecturer) {
+            return this.createFailedResponse("Lecturer not found", 404);
+        }
+
+        const timetables = await this.lecturerRepository.getClashingTimetable(
+            workerNo,
+            session,
+            semester
+        );
+
+        if (timetables.length === 0) {
+            return this.createSuccessfulResponse([]);
+        }
+
+        const clashes: ITimetableClash[] = [];
+
+        for (const timetable of timetables) {
+            const clash = clashes.find(
+                (c) => c.day === timetable.day && c.time === timetable.time
+            );
+
+            if (clash) {
+                clash.courseSections.push(timetable.courseSection);
+            } else {
+                clashes.push({
+                    day: timetable.day,
+                    time: timetable.time,
+                    venue: timetable.venue,
+                    courseSections: [timetable.courseSection],
+                });
+            }
+        }
+
+        return this.createSuccessfulResponse(
+            // Clash only happens if there are multiple course sections in the same day and time
+            clashes.filter((c) => c.courseSections.length > 1)
+        );
     }
 }

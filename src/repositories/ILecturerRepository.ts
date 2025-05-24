@@ -28,6 +28,20 @@ export interface ILecturerRepository {
     ): Promise<ITimetable[]>;
 
     /**
+     * Obtains the timetables that clash with a lecturer's timetable.
+     *
+     * @param workerNo The worker number of the lecturer.
+     * @param session The academic session to obtain the timetable for.
+     * @param semester The academic semester to obtain the timetable for.
+     * @returns The list of clashing timetables.
+     */
+    getClashingTimetable(
+        workerNo: number,
+        session: TTMSSession,
+        semester: TTMSSemester
+    ): Promise<ITimetable[]>;
+
+    /**
      * Searches lecturers by their name.
      *
      * This uses a full-text search to find lecturers whose names match the given name.

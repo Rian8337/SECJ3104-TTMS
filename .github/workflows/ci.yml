@@ -11,6 +11,9 @@ jobs:
   backend-build-and-test:
     name: (Backend) Build and Test
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -18,12 +21,11 @@ jobs:
       - name: Install Node.js v18
         uses: actions/setup-node@v4
         with:
-          cache-dependency-path: backend/package-lock.json
           node-version: '18'
           cache: 'npm'
 
       - name: Install dependencies
-        run: cd backend && npm install
+        run: npm install
 
       - name: Type Check
         run: tsc --noEmit

@@ -402,6 +402,45 @@ describe("StudentController", () => {
 
             expect(mockResponse.json).toHaveBeenCalledWith(mockTimetable);
         });
+
+        it("Should return 500 if timetable retrieval throws an error", async () => {
+            mockStudentService.getTimetable.mockRejectedValueOnce(
+                new Error("Unexpected error")
+            );
+
+            const mockRequest = createMockRequest<
+                "/timetable",
+                Res,
+                Record<string, unknown>,
+                Req
+            >({
+                query: {
+                    session: "2023/2024",
+                    semester: "1",
+                    matric_no: "C0000000",
+                },
+            });
+
+            const mockResponse = createMockResponse<Res>();
+
+            const controller = new StudentController(
+                mockStudentService,
+                mockAuthService
+            );
+
+            await controller.getTimetable(mockRequest, mockResponse);
+
+            expect(mockStudentService.getTimetable).toHaveBeenCalledWith(
+                "C0000000",
+                "2023/2024",
+                1
+            );
+
+            expect(mockResponse.status).toHaveBeenCalledWith(500);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                error: "Internal server error",
+            });
+        });
     });
 
     describe("search", () => {

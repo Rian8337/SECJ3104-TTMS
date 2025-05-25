@@ -1,10 +1,12 @@
-import { Request } from "express";
 import { describe, expect, it, vi } from "vitest";
 import { ILecturer, IStudent } from "../../src/database/schema";
 import { AuthService } from "../../src/services";
 import { UserRole } from "../../src/types";
 import { encrypt } from "../../src/utils";
-import { createMockResponse } from "../utils/expressMockFactory";
+import {
+    createMockRequest,
+    createMockResponse,
+} from "../utils/expressMockFactory";
 
 describe("AuthService (unit)", () => {
     const authService = new AuthService();
@@ -37,9 +39,7 @@ describe("AuthService (unit)", () => {
         const next = vi.fn();
 
         it("Should return 401 if no session cookie is present", async () => {
-            const mockRequest = {
-                signedCookies: {},
-            } as unknown as Request;
+            const mockRequest = createMockRequest();
 
             await authService.verifySession()(mockRequest, mockResponse, next);
 
@@ -51,9 +51,9 @@ describe("AuthService (unit)", () => {
         });
 
         it("Should return 401 and clear session if session cookie is invalid", async () => {
-            const mockRequest = {
+            const mockRequest = createMockRequest({
                 signedCookies: { session: "invalid" },
-            } as unknown as Request;
+            });
 
             await authService.verifySession()(mockRequest, mockResponse, next);
 
@@ -66,7 +66,7 @@ describe("AuthService (unit)", () => {
         });
 
         it("Should return 403 if user role is not allowed", async () => {
-            const mockRequest = {
+            const mockRequest = createMockRequest({
                 signedCookies: {
                     session: encrypt(
                         JSON.stringify({
@@ -78,7 +78,7 @@ describe("AuthService (unit)", () => {
                         } satisfies IStudent)
                     ),
                 },
-            } as unknown as Request;
+            });
 
             await authService.verifySession(UserRole.lecturer)(
                 mockRequest,
@@ -94,7 +94,7 @@ describe("AuthService (unit)", () => {
         });
 
         it("Should call next if user is authenticated and no role is specified", async () => {
-            const mockRequest = {
+            const mockRequest = createMockRequest({
                 signedCookies: {
                     session: encrypt(
                         JSON.stringify({
@@ -106,7 +106,7 @@ describe("AuthService (unit)", () => {
                         } satisfies IStudent)
                     ),
                 },
-            } as unknown as Request;
+            });
 
             await authService.verifySession()(mockRequest, mockResponse, next);
 
@@ -114,7 +114,7 @@ describe("AuthService (unit)", () => {
         });
 
         it("Should call next if user role is allowed", async () => {
-            const mockRequest = {
+            const mockRequest = createMockRequest({
                 signedCookies: {
                     session: encrypt(
                         JSON.stringify({
@@ -123,7 +123,7 @@ describe("AuthService (unit)", () => {
                         } satisfies ILecturer)
                     ),
                 },
-            } as unknown as Request;
+            });
 
             await authService.verifySession(UserRole.lecturer)(
                 mockRequest,

@@ -161,6 +161,34 @@ describe("StudentController", () => {
 
             expect(mockResponse.json).toHaveBeenCalledWith(mockStudent);
         });
+
+        it("Should return 500 if an error occurs during login", async () => {
+            mockStudentService.getByMatricNo.mockRejectedValueOnce(
+                new Error("Unexpected error")
+            );
+
+            const mockRequest = createMockRequest<"/login", Res, Req>({
+                body: { login: "C0000000", password: "password123" },
+            });
+
+            const mockResponse = createMockResponse<Res>();
+
+            const controller = new StudentController(
+                mockStudentService,
+                mockAuthService
+            );
+
+            await controller.login(mockRequest, mockResponse);
+
+            expect(mockStudentService.getByMatricNo).toHaveBeenCalledWith(
+                "C0000000"
+            );
+
+            expect(mockResponse.status).toHaveBeenCalledWith(500);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                error: "Internal server error",
+            });
+        });
     });
 
     it("[logout] should clear session and return 200", () => {

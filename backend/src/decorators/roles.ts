@@ -24,8 +24,6 @@ export function Roles(...roles: UserRole[]): MethodDecorator {
             );
 
             await authService.verifySession(...roles)(req, res, next);
-
-            next();
         };
 
         UseMiddleware(middleware)(target, propertyKey, descriptor);

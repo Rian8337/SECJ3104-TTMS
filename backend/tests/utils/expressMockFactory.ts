@@ -9,7 +9,7 @@ import { vi } from "vitest";
  */
 export function createMockRequest<
     TPath = string,
-    TResponse extends Record<string, unknown> = Record<string, unknown>,
+    TResponse = unknown,
     TBody extends Record<string, unknown> = Record<string, unknown>,
     TQuery extends Record<string, string> = Record<string, string>,
 >(overrides: Partial<Request<TPath, TResponse, TBody, TQuery>> = {}) {

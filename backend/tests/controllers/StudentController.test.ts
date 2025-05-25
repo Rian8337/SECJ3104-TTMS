@@ -157,4 +157,19 @@ describe("StudentController", () => {
             expect(mockResponse.json).toHaveBeenCalledWith(mockStudent);
         });
     });
+
+    it("[logout] should clear session and return 200", () => {
+        const mockRequest = createMockRequest<"/logout">();
+        const mockResponse = createMockResponse();
+
+        const controller = new StudentController(
+            mockStudentService,
+            mockAuthService
+        );
+
+        controller.logout(mockRequest, mockResponse);
+
+        expect(mockAuthService.clearSession).toHaveBeenCalledWith(mockResponse);
+        expect(mockResponse.sendStatus).toHaveBeenCalledWith(200);
+    });
 });

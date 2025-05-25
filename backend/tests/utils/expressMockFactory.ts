@@ -9,27 +9,32 @@ import { vi } from "vitest";
  */
 export function createMockRequest<
     TPath = string,
-    TResponse = Record<string, unknown>,
-    TBody = Record<string, unknown>,
-    TQuery = Record<string, string>,
+    TResponse extends Record<string, unknown> = Record<string, unknown>,
+    TBody extends Record<string, unknown> = Record<string, unknown>,
+    TQuery extends Record<string, string> = Record<string, string>,
 >(overrides: Partial<Request<TPath, TResponse, TBody, TQuery>> = {}) {
+    type Req = Request<TPath, TResponse, TBody, TQuery>;
+
     return {
-        params: {},
-        query: {},
-        body: {},
+        params: {} as TPath,
+        query: {} as TQuery,
+        body: {} as TBody,
         signedCookies: {},
         ...overrides,
-    } as unknown as Request<TPath, TResponse, TBody, TQuery>;
+    } satisfies Partial<Req> as unknown as Req;
 }
 
 /**
  * Creates a mock response object for testing with Express.js.
  */
 export function createMockResponse<TResponse = unknown>() {
+    type Res = Response<TResponse>;
+
     return {
         cookie: vi.fn().mockReturnThis(),
         clearCookie: vi.fn().mockReturnThis(),
         status: vi.fn().mockReturnThis(),
+        sendStatus: vi.fn().mockReturnThis(),
         json: vi.fn().mockReturnThis(),
-    } as unknown as Response<TResponse>;
+    } satisfies Partial<Res> as unknown as Res;
 }

@@ -1,10 +1,11 @@
 import { UserRole } from "@/types";
 import { RequestHandler, Response } from "express";
+import { IService } from "./IService";
 
 /**
  * A service that is responsible for handling authentication-related operations.
  */
-export interface IAuthService {
+export interface IAuthService extends IService {
     /**
      * Creates a session for a user.
      *

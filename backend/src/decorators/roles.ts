@@ -3,6 +3,7 @@ import { UserRole } from "@/types";
 import { UseMiddleware } from "./middleware";
 import { IAuthService } from "@/services";
 import { dependencyTokens } from "@/dependencies/tokens";
+import { RequestHandler } from "express";
 
 /**
  * Marks a method as requiring authentication and authorization.
@@ -12,14 +13,21 @@ import { dependencyTokens } from "@/dependencies/tokens";
  */
 export function Roles(...roles: UserRole[]): MethodDecorator {
     return (target, propertyKey, descriptor) => {
-        const authService = container.resolve<IAuthService>(
-            dependencyTokens.authService
-        );
+        const middleware: RequestHandler<unknown, { error: string }> = async (
+            req,
+            res,
+            next
+        ) => {
+            // IMPORTANT: The service resolution is deferred to here to make sure that it has been registered.
+            const authService = container.resolve<IAuthService>(
+                dependencyTokens.authService
+            );
 
-        UseMiddleware(authService.verifySession(...roles))(
-            target,
-            propertyKey,
-            descriptor
-        );
+            await authService.verifySession(...roles)(req, res, next);
+
+            next();
+        };
+
+        UseMiddleware(middleware)(target, propertyKey, descriptor);
     };
 }

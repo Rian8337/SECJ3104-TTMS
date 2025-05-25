@@ -3,9 +3,9 @@ import { StudentController } from "../../src/controllers/StudentController";
 import { IStudent } from "../../src/database/schema";
 import {
     FailedOperationResult,
-    IStudentService,
     SuccessfulOperationResult,
 } from "../../src/services";
+import { IStudentSearchEntry, ITimetable } from "../../src/types";
 import {
     createMockRequest,
     createMockResponse,
@@ -15,7 +15,6 @@ import {
     mockAuthService,
     mockStudentService,
 } from "../mocks/mockContainerFactory";
-import { IStudentSearchEntry, ITimetable } from "../../src/types";
 
 describe("StudentController", () => {
     beforeAll(createMockContainer);
@@ -24,6 +23,14 @@ describe("StudentController", () => {
     describe("login", () => {
         type Req = Partial<{ login: string; password: string }>;
         type Res = IStudent | { error: string };
+
+        const mockStudent: IStudent = {
+            matricNo: "C0000000",
+            name: "John Doe",
+            courseCode: "CS101",
+            facultyCode: "ENG",
+            kpNo: "password123",
+        };
 
         it("Should return 400 if login is missing", async () => {
             const mockRequest = createMockRequest<"/login", Res, Req>({
@@ -96,13 +103,10 @@ describe("StudentController", () => {
         });
 
         it("Should return 401 if password is incorrect", async () => {
-            mockStudentService.getByMatricNo.mockResolvedValue({
-                matricNo: "C0000000",
-                kpNo: "wrongPassword",
-            } satisfies Partial<IStudent>);
+            mockStudentService.getByMatricNo.mockResolvedValue(mockStudent);
 
             const mockRequest = createMockRequest<"/login", Res, Req>({
-                body: { login: "C0000000", password: "password123" },
+                body: { login: "C0000000", password: "wrongpassword" },
             });
 
             const mockResponse = createMockResponse<Res>();
@@ -125,17 +129,7 @@ describe("StudentController", () => {
         });
 
         it("Should return student if login is successful", async () => {
-            const mockStudent: IStudent = {
-                matricNo: "C0000000",
-                name: "John Doe",
-                courseCode: "CS101",
-                facultyCode: "ENG",
-                kpNo: "password123",
-            };
-
-            mockStudentService.getByMatricNo = vi
-                .fn<IStudentService["getByMatricNo"]>()
-                .mockResolvedValue(mockStudent);
+            mockStudentService.getByMatricNo.mockResolvedValue(mockStudent);
 
             const mockRequest = createMockRequest<"/login", Res, Req>({
                 body: { login: "C0000000", password: "password123" },

@@ -15,7 +15,7 @@ import {
     mockAuthService,
     mockStudentService,
 } from "../utils/mockContainerFactory";
-import { ITimetable } from "../../src/types";
+import { IStudentSearchEntry, ITimetable } from "../../src/types";
 
 describe("StudentController", () => {
     beforeAll(createMockContainer);
@@ -401,6 +401,247 @@ describe("StudentController", () => {
             );
 
             expect(mockResponse.json).toHaveBeenCalledWith(mockTimetable);
+        });
+    });
+
+    describe("search", () => {
+        type Req = Partial<{ query: string; limit: string; offset: string }>;
+        type Res = IStudentSearchEntry[] | { error: string };
+
+        it("Should return 400 if query is missing", async () => {
+            const mockRequest = createMockRequest<
+                "/search",
+                Res,
+                Record<string, unknown>,
+                Req
+            >();
+
+            const mockResponse = createMockResponse<Res>();
+
+            const controller = new StudentController(
+                mockStudentService,
+                mockAuthService
+            );
+
+            await controller.search(mockRequest, mockResponse);
+
+            expect(mockResponse.status).toHaveBeenCalledWith(400);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                error: "Query is required",
+            });
+        });
+
+        it("Should return 400 if limit is not a number", async () => {
+            const mockRequest = createMockRequest<
+                "/search",
+                Res,
+                Record<string, unknown>,
+                Req
+            >({
+                query: { query: "John", limit: "not-a-number" },
+            });
+
+            const mockResponse = createMockResponse<Res>();
+
+            const controller = new StudentController(
+                mockStudentService,
+                mockAuthService
+            );
+
+            await controller.search(mockRequest, mockResponse);
+
+            expect(mockResponse.status).toHaveBeenCalledWith(400);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                error: "Invalid limit",
+            });
+        });
+
+        it("Should return 400 if limit is less than 0", async () => {
+            const mockRequest = createMockRequest<
+                "/search",
+                Res,
+                Record<string, unknown>,
+                Req
+            >({
+                query: { query: "John", limit: "-1" },
+            });
+
+            const mockResponse = createMockResponse<Res>();
+
+            const controller = new StudentController(
+                mockStudentService,
+                mockAuthService
+            );
+
+            await controller.search(mockRequest, mockResponse);
+
+            expect(mockResponse.status).toHaveBeenCalledWith(400);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                error: "Invalid limit",
+            });
+        });
+
+        it("Should return 400 if offset is not a number", async () => {
+            const mockRequest = createMockRequest<
+                "/search",
+                Res,
+                Record<string, unknown>,
+                Req
+            >({
+                query: { query: "John", offset: "not-a-number" },
+            });
+
+            const mockResponse = createMockResponse<Res>();
+
+            const controller = new StudentController(
+                mockStudentService,
+                mockAuthService
+            );
+
+            await controller.search(mockRequest, mockResponse);
+
+            expect(mockResponse.status).toHaveBeenCalledWith(400);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                error: "Invalid offset",
+            });
+        });
+
+        it("Should return 400 if offset is less than 0", async () => {
+            const mockRequest = createMockRequest<
+                "/search",
+                Res,
+                Record<string, unknown>,
+                Req
+            >({
+                query: { query: "John", offset: "-1" },
+            });
+
+            const mockResponse = createMockResponse<Res>();
+
+            const controller = new StudentController(
+                mockStudentService,
+                mockAuthService
+            );
+
+            await controller.search(mockRequest, mockResponse);
+
+            expect(mockResponse.status).toHaveBeenCalledWith(400);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                error: "Invalid offset",
+            });
+        });
+
+        it("Should return error if search operation fails", async () => {
+            mockStudentService.search.mockResolvedValueOnce({
+                isSuccessful: () => false,
+                failed: () => true,
+                status: 500,
+                error: "Internal server error",
+            } as FailedOperationResult);
+
+            const mockRequest = createMockRequest<
+                "/search",
+                Res,
+                Record<string, unknown>,
+                Req
+            >({
+                query: { query: "John", limit: "10", offset: "0" },
+            });
+
+            const mockResponse = createMockResponse<Res>();
+
+            const controller = new StudentController(
+                mockStudentService,
+                mockAuthService
+            );
+
+            await controller.search(mockRequest, mockResponse);
+
+            expect(mockStudentService.search).toHaveBeenCalledWith(
+                "John",
+                10,
+                0
+            );
+
+            expect(mockResponse.status).toHaveBeenCalledWith(500);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                error: "Internal server error",
+            });
+        });
+
+        it("Should return search results if operation is successful", async () => {
+            const mockSearchResults: IStudentSearchEntry[] = [
+                { matricNo: "C0000001", name: "John Doe" },
+                { matricNo: "C0000002", name: "Jane Smith" },
+            ];
+
+            mockStudentService.search.mockResolvedValueOnce({
+                isSuccessful: () => true,
+                failed: () => false,
+                status: 200,
+                data: mockSearchResults,
+            } as SuccessfulOperationResult<IStudentSearchEntry[]>);
+
+            const mockRequest = createMockRequest<
+                "/search",
+                Res,
+                Record<string, unknown>,
+                Req
+            >({
+                query: { query: "John", limit: "10", offset: "0" },
+            });
+
+            const mockResponse = createMockResponse<Res>();
+
+            const controller = new StudentController(
+                mockStudentService,
+                mockAuthService
+            );
+
+            await controller.search(mockRequest, mockResponse);
+
+            expect(mockStudentService.search).toHaveBeenCalledWith(
+                "John",
+                10,
+                0
+            );
+
+            expect(mockResponse.json).toHaveBeenCalledWith(mockSearchResults);
+        });
+
+        it("Should return 500 if search throws an error", async () => {
+            mockStudentService.search.mockRejectedValueOnce(
+                new Error("Unexpected error")
+            );
+
+            const mockRequest = createMockRequest<
+                "/search",
+                Res,
+                Record<string, unknown>,
+                Req
+            >({
+                query: { query: "John", limit: "10", offset: "0" },
+            });
+
+            const mockResponse = createMockResponse<Res>();
+
+            const controller = new StudentController(
+                mockStudentService,
+                mockAuthService
+            );
+
+            await controller.search(mockRequest, mockResponse);
+
+            expect(mockStudentService.search).toHaveBeenCalledWith(
+                "John",
+                10,
+                0
+            );
+
+            expect(mockResponse.status).toHaveBeenCalledWith(500);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                error: "Internal server error",
+            });
         });
     });
 });

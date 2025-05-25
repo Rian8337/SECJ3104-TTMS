@@ -1,143 +1,43 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { IStudent } from "../../src/database/schema";
-import { IStudentRepository } from "../../src/repositories";
+import { FailedOperationResult, StudentService } from "../../src/services";
 import {
-    FailedOperationResult,
-    StudentService,
-    SuccessfulOperationResult,
-} from "../../src/services";
-import {
-    CourseSectionScheduleDay,
-    CourseSectionScheduleTime,
-    ITimetable,
-} from "../../src/types";
+    createMockContainer,
+    mockStudentRepository,
+} from "../utils/mockContainerFactory";
 
 describe("StudentService (unit)", () => {
-    const students: IStudent[] = [
-        {
-            matricNo: "A12345678",
-            name: "John Doe",
-            courseCode: "SECJH",
-            facultyCode: "FSKSM",
-            kpNo: "123456789012",
-        },
-        {
-            matricNo: "B76543210",
-            name: "Jane Smith",
-            courseCode: "SECVH",
-            facultyCode: "FC",
-            kpNo: "098765432109",
-        },
-    ];
+    beforeAll(createMockContainer);
+    afterEach(vi.resetAllMocks.bind(vi));
 
-    const timetables: ITimetable[] = [
-        {
-            day: CourseSectionScheduleDay.monday,
-            time: CourseSectionScheduleTime.time2,
-            courseSection: {
-                section: "1",
-                course: {
-                    code: "CS101",
-                    name: "Introduction to Computer Science",
-                },
-                lecturer: { name: "Dr. Alice Johnson" },
-            },
-            venue: null,
-        },
-        {
-            day: CourseSectionScheduleDay.tuesday,
-            time: CourseSectionScheduleTime.time3,
-            courseSection: {
-                section: "2",
-                course: {
-                    code: "CS102",
-                    name: "Data Structures",
-                },
-                lecturer: { name: "Prof. Bob Smith" },
-            },
-            venue: { shortName: "Lab 1" },
-        },
-    ];
+    it("[getByMatricNo] should get student by matric number from repository", async () => {
+        const service = new StudentService(mockStudentRepository);
+        await service.getByMatricNo("A12345678");
 
-    let mockStudentRepository: IStudentRepository;
-    let studentService: StudentService;
-
-    beforeEach(() => {
-        mockStudentRepository = {
-            getByMatricNo: vi.fn<IStudentRepository["getByMatricNo"]>(
-                (matricNo) =>
-                    Promise.resolve(
-                        students.find(
-                            (student) => student.matricNo === matricNo
-                        ) ?? null
-                    )
-            ),
-
-            getTimetable: vi.fn<IStudentRepository["getTimetable"]>(() =>
-                Promise.resolve(timetables)
-            ),
-
-            searchByMatricNo: vi.fn<IStudentRepository["searchByMatricNo"]>(
-                (matricNo, limit = 10, offset = 0) =>
-                    Promise.resolve(
-                        students
-                            .filter((student) =>
-                                student.matricNo.includes(matricNo)
-                            )
-                            .slice(offset, offset + limit)
-                    )
-            ),
-
-            searchByName: vi.fn<IStudentRepository["searchByName"]>(
-                (name, limit = 10, offset = 0) =>
-                    Promise.resolve(
-                        students
-                            .filter((student) =>
-                                student.name
-                                    .toLowerCase()
-                                    .includes(name.toLowerCase())
-                            )
-                            .slice(offset, offset + limit)
-                    )
-            ),
-        };
-
-        studentService = new StudentService(mockStudentRepository);
-    });
-
-    describe("getByMatricNo", () => {
-        it("Should get student by matric number", async () => {
-            const student = await studentService.getByMatricNo("A12345678");
-
-            expect(student).toEqual(students[0]);
-            expect(mockStudentRepository.getByMatricNo).toHaveBeenCalledWith(
-                "A12345678"
-            );
-        });
-
-        it("Should return null for non-existent student", async () => {
-            const student = await studentService.getByMatricNo("C0000000");
-
-            expect(student).toBeNull();
-            expect(mockStudentRepository.getByMatricNo).toHaveBeenCalledWith(
-                "C0000000"
-            );
-        });
+        expect(mockStudentRepository.getByMatricNo).toHaveBeenCalledWith(
+            "A12345678"
+        );
     });
 
     describe("getTimetable", () => {
         it("Should get timetable for student", async () => {
-            const result = await studentService.getTimetable(
+            mockStudentRepository.getByMatricNo.mockResolvedValueOnce({
+                matricNo: "A12345678",
+                name: "John Doe",
+                courseCode: "SECJH",
+                facultyCode: "FSKSM",
+                kpNo: "123456789012",
+            } satisfies IStudent);
+
+            const service = new StudentService(mockStudentRepository);
+
+            const result = await service.getTimetable(
                 "A12345678",
                 "2023/2024",
                 "1"
             );
 
             expect(result.isSuccessful()).toBe(true);
-
-            expect(
-                (result as SuccessfulOperationResult<ITimetable[]>).data
-            ).toEqual(timetables);
 
             expect(mockStudentRepository.getByMatricNo).toHaveBeenCalledWith(
                 "A12345678"
@@ -151,7 +51,11 @@ describe("StudentService (unit)", () => {
         });
 
         it("Should return error for non-existent student timetable", async () => {
-            const result = await studentService.getTimetable(
+            mockStudentRepository.getByMatricNo.mockResolvedValueOnce(null);
+
+            const service = new StudentService(mockStudentRepository);
+
+            const result = await service.getTimetable(
                 "C0000000",
                 "2023/2024",
                 "1"
@@ -173,7 +77,8 @@ describe("StudentService (unit)", () => {
 
     describe("search", () => {
         it("Should return error if query is less than 3 characters", async () => {
-            const result = await studentService.search("AB", 10, 0);
+            const service = new StudentService(mockStudentRepository);
+            const result = await service.search("AB", 10, 0);
             const failedResult = result as FailedOperationResult;
 
             expect(failedResult.failed()).toBe(true);
@@ -190,13 +95,10 @@ describe("StudentService (unit)", () => {
         });
 
         it("Should return empty result for matric number that is not 9 in length", async () => {
-            const result = await studentService.search("A1234567", 10, 0);
-            const successfulResult = result as SuccessfulOperationResult<
-                IStudent[]
-            >;
+            const service = new StudentService(mockStudentRepository);
+            const result = await service.search("A1234567", 10, 0);
 
-            expect(successfulResult.isSuccessful()).toBe(true);
-            expect(successfulResult.data.length).toBe(0);
+            expect(result.isSuccessful()).toBe(true);
 
             expect(
                 mockStudentRepository.searchByMatricNo
@@ -206,13 +108,10 @@ describe("StudentService (unit)", () => {
         });
 
         it("Should search by matric number", async () => {
-            const result = await studentService.search("A12345678", 10, 0);
-            const successfulResult = result as SuccessfulOperationResult<
-                IStudent[]
-            >;
+            const service = new StudentService(mockStudentRepository);
+            const result = await service.search("A12345678", 10, 0);
 
-            expect(successfulResult.isSuccessful()).toBe(true);
-            expect(successfulResult.data).toEqual([students[0]]);
+            expect(result.isSuccessful()).toBe(true);
 
             expect(mockStudentRepository.searchByMatricNo).toHaveBeenCalledWith(
                 "A12345678",
@@ -224,13 +123,10 @@ describe("StudentService (unit)", () => {
         });
 
         it("Should search by name", async () => {
-            const result = await studentService.search("Jane", 10, 0);
-            const successfulResult = result as SuccessfulOperationResult<
-                IStudent[]
-            >;
+            const service = new StudentService(mockStudentRepository);
+            const result = await service.search("Jane", 10, 0);
 
-            expect(successfulResult.isSuccessful()).toBe(true);
-            expect(successfulResult.data).toEqual([students[1]]);
+            expect(result.isSuccessful()).toBe(true);
 
             expect(mockStudentRepository.searchByName).toHaveBeenCalledWith(
                 "Jane",

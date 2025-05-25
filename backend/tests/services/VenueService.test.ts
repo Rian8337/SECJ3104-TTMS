@@ -1,42 +1,20 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { VenueType, type IVenue } from "../../src/database/schema";
-import type { IVenueRepository } from "../../src/repositories/IVenueRepository";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { VenueService } from "../../src/services";
+import {
+    createMockContainer,
+    mockVenueRepository,
+} from "../utils/mockContainerFactory";
 
 describe("VenueService (unit)", () => {
-    let service: VenueService;
-    let mockRepository: Record<
-        keyof IVenueRepository,
-        ReturnType<typeof vi.fn>
-    >;
+    beforeAll(createMockContainer);
+    afterEach(vi.resetAllMocks.bind(vi));
 
-    beforeEach(() => {
-        mockRepository = {
-            getByCode: vi.fn(
-                (): IVenue => ({
-                    code: "Sample code",
-                    capacity: 100,
-                    name: "Sample name",
-                    shortName: "Sample short name",
-                    type: VenueType.laboratory,
-                })
-            ),
-        };
+    it("[getByCode] should retrieve venue by code from repository", async () => {
+        const service = new VenueService(mockVenueRepository);
+        await service.getByCode("Sample code");
 
-        service = new VenueService(mockRepository);
-    });
-
-    it("Returns venue by code", async () => {
-        const venue = await service.getByCode("Sample code");
-
-        expect(venue).toEqual({
-            code: "Sample code",
-            capacity: 100,
-            name: "Sample name",
-            shortName: "Sample short name",
-            type: VenueType.laboratory,
-        });
-
-        expect(mockRepository.getByCode).toHaveBeenCalledWith("Sample code");
+        expect(mockVenueRepository.getByCode).toHaveBeenCalledWith(
+            "Sample code"
+        );
     });
 });

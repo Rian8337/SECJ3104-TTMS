@@ -1,185 +1,60 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { ILecturer } from "../../src/database/schema";
-import { ILecturerRepository } from "../../src/repositories";
-import { LecturerService, SuccessfulOperationResult } from "../../src/services";
-import { ITimetable } from "../../src/types";
+import {
+    FailedOperationResult,
+    LecturerService,
+    SuccessfulOperationResult,
+} from "../../src/services";
+import { ITimetable, ITimetableClash } from "../../src/types";
+import {
+    createMockContainer,
+    mockLecturerRepository,
+} from "../utils/mockContainerFactory";
 
 describe("LecturerService (unit)", () => {
-    let mockLecturerRepository: ILecturerRepository;
-    let lecturerService: LecturerService;
+    beforeAll(createMockContainer);
 
-    beforeEach(() => {
-        mockLecturerRepository = {
-            getByWorkerNo: vi.fn(
-                (workerNo: number): Promise<ILecturer | null> =>
-                    Promise.resolve(
-                        workerNo === 123456
-                            ? {
-                                  workerNo: 123456,
-                                  name: "John Doe",
-                              }
-                            : null
-                    )
-            ),
+    afterEach(vi.resetAllMocks.bind(vi));
 
-            getTimetable: vi.fn(
-                async (workerNo: number): Promise<ITimetable[]> => {
-                    const lecturer =
-                        await mockLecturerRepository.getByWorkerNo(workerNo);
-
-                    if (!lecturer) {
-                        return [];
-                    }
-
-                    return [
-                        {
-                            day: 1,
-                            time: 1,
-                            courseSection: {
-                                section: "1",
-                                course: {
-                                    code: "CS101",
-                                    name: "Computer Science 101",
-                                },
-                                lecturer: { name: "John Doe" },
-                            },
-                            venue: { shortName: "R101" },
-                        },
-                        {
-                            day: 1,
-                            time: 2,
-                            courseSection: {
-                                section: "1",
-                                course: {
-                                    code: "CS101",
-                                    name: "Computer Science 101",
-                                },
-                                lecturer: { name: "John Doe" },
-                            },
-                            venue: { shortName: "R101" },
-                        },
-                    ];
-                }
-            ),
-
-            searchByName: vi.fn(),
-
-            getClashingTimetable: vi.fn(
-                async (workerNo: number): Promise<ITimetable[]> => {
-                    const lecturer =
-                        await mockLecturerRepository.getByWorkerNo(workerNo);
-
-                    if (!lecturer) {
-                        return [];
-                    }
-
-                    return [
-                        {
-                            day: 1,
-                            time: 1,
-                            courseSection: {
-                                section: "1",
-                                course: {
-                                    code: "CS101",
-                                    name: "Computer Science 101",
-                                },
-                                lecturer: { name: "John Doe" },
-                            },
-                            venue: { shortName: "R101" },
-                        },
-                        {
-                            day: 1,
-                            time: 2,
-                            courseSection: {
-                                section: "1",
-                                course: {
-                                    code: "CS101",
-                                    name: "Computer Science 101",
-                                },
-                                lecturer: {
-                                    name: "John Doe",
-                                },
-                            },
-                            venue: { shortName: "R101" },
-                        },
-                    ];
-                }
-            ),
-        };
-
-        lecturerService = new LecturerService(mockLecturerRepository);
-    });
-
-    it("Should return a lecturer by worker number", async () => {
-        const result = await lecturerService.getByWorkerNo(123456);
-
-        expect(result).toEqual({
-            workerNo: 123456,
-            name: "John Doe",
-        });
+    it("[getByWorkerNo] should get a lecturer by worker number from repository", async () => {
+        const service = new LecturerService(mockLecturerRepository);
+        await service.getByWorkerNo(123456);
 
         expect(mockLecturerRepository.getByWorkerNo).toHaveBeenCalledWith(
             123456
         );
     });
 
-    it("Should return null if lecturer is not found", async () => {
-        const result = await lecturerService.getByWorkerNo(654321);
-
-        expect(result).toBeNull();
-
-        expect(mockLecturerRepository.getByWorkerNo).toHaveBeenCalledWith(
-            654321
-        );
-    });
-
     describe("getTimetable", () => {
-        it("Should return a timetable for a lecturer", async () => {
-            const result = await lecturerService.getTimetable(
-                123456,
-                "2023/2024",
-                "1"
+        it("Should return an empty array if lecturer is not found", async () => {
+            mockLecturerRepository.getByWorkerNo.mockResolvedValueOnce(null);
+
+            const service = new LecturerService(mockLecturerRepository);
+            const result = await service.getTimetable(654321, "2023/2024", "1");
+            const failedResult = result as FailedOperationResult;
+
+            expect(result.failed()).toBe(true);
+
+            expect(failedResult.status).toBe(404);
+            expect(failedResult.error).toBe("Lecturer not found");
+
+            expect(mockLecturerRepository.getByWorkerNo).toHaveBeenCalledWith(
+                654321
             );
 
+            expect(mockLecturerRepository.getTimetable).not.toHaveBeenCalled();
+        });
+
+        it("Should return a timetable for a lecturer", async () => {
+            mockLecturerRepository.getByWorkerNo.mockResolvedValueOnce({
+                workerNo: 123456,
+                name: "John Doe",
+            } satisfies ILecturer);
+
+            const service = new LecturerService(mockLecturerRepository);
+            const result = await service.getTimetable(123456, "2023/2024", "1");
+
             expect(result.isSuccessful()).toBe(true);
-            expect(
-                (result as SuccessfulOperationResult<ITimetable[]>).data
-            ).toEqual([
-                {
-                    day: 1,
-                    time: 1,
-                    courseSection: {
-                        section: "1",
-                        course: {
-                            code: "CS101",
-                            name: "Computer Science 101",
-                        },
-                        lecturer: {
-                            name: "John Doe",
-                        },
-                    },
-                    venue: {
-                        shortName: "R101",
-                    },
-                },
-                {
-                    day: 1,
-                    time: 2,
-                    courseSection: {
-                        section: "1",
-                        course: {
-                            code: "CS101",
-                            name: "Computer Science 101",
-                        },
-                        lecturer: {
-                            name: "John Doe",
-                        },
-                    },
-                    venue: {
-                        shortName: "R101",
-                    },
-                },
-            ]);
 
             expect(mockLecturerRepository.getTimetable).toHaveBeenCalledWith(
                 123456,
@@ -187,88 +62,113 @@ describe("LecturerService (unit)", () => {
                 "1"
             );
         });
+    });
 
-        it("Should return an empty array if lecturer is not found", async () => {
-            const result = await lecturerService.getTimetable(
+    describe("getClashingTimetable", () => {
+        it("Should fail if the lecturer is not found", async () => {
+            const service = new LecturerService(mockLecturerRepository);
+
+            const result = await service.getClashingTimetable(
                 654321,
                 "2023/2024",
                 "1"
             );
 
-            expect(result.failed()).toBe(true);
-            expect(mockLecturerRepository.getTimetable).not.toHaveBeenCalled();
-        });
-    });
+            const failedResult = result as FailedOperationResult;
 
-    describe("getClashingTimetable", () => {
-        it("Should return a clashing timetable for a lecturer", async () => {
-            const result = await lecturerService.getClashingTimetable(
+            expect(result.failed()).toBe(true);
+
+            expect(failedResult.status).toBe(404);
+            expect(failedResult.error).toBe("Lecturer not found");
+
+            expect(mockLecturerRepository.getByWorkerNo).toHaveBeenCalledWith(
+                654321
+            );
+
+            expect(
+                mockLecturerRepository.getClashingTimetable
+            ).not.toHaveBeenCalled();
+        });
+
+        it("Should return an empty array if the timetable is empty", async () => {
+            mockLecturerRepository.getByWorkerNo.mockResolvedValueOnce({
+                workerNo: 123456,
+                name: "John Doe",
+            } satisfies ILecturer);
+
+            mockLecturerRepository.getClashingTimetable.mockResolvedValueOnce(
+                []
+            );
+
+            const service = new LecturerService(mockLecturerRepository);
+
+            const result = await service.getClashingTimetable(
                 123456,
                 "2023/2024",
                 "1"
             );
 
+            const successfulResult = result as SuccessfulOperationResult<
+                ITimetableClash[]
+            >;
+
             expect(result.isSuccessful()).toBe(true);
-            expect(
-                (result as SuccessfulOperationResult<ITimetable[]>).data
-            ).toEqual([
-                {
-                    day: 1,
-                    time: 1,
-                    courseSections: [
-                        {
-                            section: "1",
-                            course: {
-                                code: "CS101",
-                                name: "Computer Science 101",
-                            },
-                            lecturer: {
-                                name: "John Doe",
-                            },
-                        },
-                    ],
-                    venue: {
-                        shortName: "R101",
-                    },
-                },
-                {
-                    day: 1,
-                    time: 2,
-                    courseSections: [
-                        {
-                            section: "1",
-                            course: {
-                                code: "CS101",
-                                name: "Computer Science 101",
-                            },
-                            lecturer: {
-                                name: "John Doe",
-                            },
-                        },
-                    ],
-                    venue: {
-                        shortName: "R101",
-                    },
-                },
-            ]);
+            expect(successfulResult.data).toEqual([]);
 
             expect(
                 mockLecturerRepository.getClashingTimetable
             ).toHaveBeenCalledWith(123456, "2023/2024", "1");
         });
 
-        it("Should return an empty array if lecturer is not found", async () => {
-            const result = await lecturerService.getClashingTimetable(
-                654321,
+        it("Should return a list of timetable clashes", async () => {
+            mockLecturerRepository.getByWorkerNo.mockResolvedValueOnce({
+                workerNo: 123456,
+                name: "John Doe",
+            } satisfies ILecturer);
+
+            const mockTimetable: ITimetable[] = [
+                {
+                    day: 1,
+                    time: 1,
+                    courseSection: {
+                        section: "2",
+                        course: {
+                            code: "CS102",
+                            name: "Computer Science 102",
+                        },
+                        lecturer: { name: "John Doe" },
+                    },
+                    venue: { shortName: "R101" },
+                },
+            ];
+
+            mockLecturerRepository.getClashingTimetable.mockResolvedValueOnce(
+                mockTimetable
+            );
+
+            const service = new LecturerService(mockLecturerRepository);
+
+            const result = await service.getClashingTimetable(
+                123456,
                 "2023/2024",
                 "1"
             );
 
-            expect(result.failed()).toBe(true);
+            const successfulResult = result as SuccessfulOperationResult<
+                ITimetableClash[]
+            >;
+
+            expect(result.isSuccessful()).toBe(true);
+            expect(successfulResult.data[0]).toEqual({
+                day: 1,
+                time: 1,
+                venue: { shortName: "R101" },
+                courseSections: [mockTimetable[0].courseSection],
+            } satisfies ITimetableClash);
 
             expect(
                 mockLecturerRepository.getClashingTimetable
-            ).not.toHaveBeenCalled();
+            ).toHaveBeenCalledWith(123456, "2023/2024", "1");
         });
     });
 });

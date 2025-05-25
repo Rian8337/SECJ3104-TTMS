@@ -4,7 +4,7 @@ import { FailedOperationResult, StudentService } from "../../src/services";
 import {
     createMockContainer,
     mockStudentRepository,
-} from "../utils/mockContainerFactory";
+} from "../mocks/mockContainerFactory";
 
 describe("StudentService (unit)", () => {
     beforeAll(createMockContainer);

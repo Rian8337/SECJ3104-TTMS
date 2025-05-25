@@ -9,7 +9,7 @@ import { ITimetable, ITimetableClash } from "../../src/types";
 import {
     createMockContainer,
     mockLecturerRepository,
-} from "../utils/mockContainerFactory";
+} from "../mocks/mockContainerFactory";
 
 describe("LecturerService (unit)", () => {
     beforeAll(createMockContainer);

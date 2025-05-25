@@ -9,12 +9,12 @@ import {
 import {
     createMockRequest,
     createMockResponse,
-} from "../utils/expressMockFactory";
+} from "../mocks/expressMockFactory";
 import {
     createMockContainer,
     mockAuthService,
     mockStudentService,
-} from "../utils/mockContainerFactory";
+} from "../mocks/mockContainerFactory";
 import { IStudentSearchEntry, ITimetable } from "../../src/types";
 
 describe("StudentController", () => {

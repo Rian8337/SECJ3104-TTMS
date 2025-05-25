@@ -3,7 +3,7 @@ import { VenueService } from "../../src/services";
 import {
     createMockContainer,
     mockVenueRepository,
-} from "../utils/mockContainerFactory";
+} from "../mocks/mockContainerFactory";
 
 describe("VenueService (unit)", () => {
     beforeAll(createMockContainer);

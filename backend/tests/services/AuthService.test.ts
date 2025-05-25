@@ -6,7 +6,7 @@ import { encrypt } from "../../src/utils";
 import {
     createMockRequest,
     createMockResponse,
-} from "../utils/expressMockFactory";
+} from "../mocks/expressMockFactory";
 
 describe("AuthService (unit)", () => {
     const authService = new AuthService();

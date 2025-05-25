@@ -1,4 +1,3 @@
-export * from "./controllerRegistry";
 export * from "./ILecturerController";
 export * from "./IStudentController";
 export * from "./LecturerController";

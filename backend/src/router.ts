@@ -1,5 +1,4 @@
 import { RequestHandler, Router } from "express";
-import { controllerRegistry } from "./controllers";
 import { RouteDefinition } from "./decorators/routes";
 import { container } from "tsyringe";
 
@@ -8,7 +7,11 @@ import { container } from "tsyringe";
  */
 export function createRouter(): Router {
     const router = Router();
-    const controllers = controllerRegistry.getControllers();
+
+    const controllers =
+        (Reflect.getMetadata("controllers", globalThis) as
+            | (new () => Record<string, RequestHandler>)[]
+            | undefined) ?? [];
 
     for (const ControllerClass of controllers) {
         const basePath = Reflect.getMetadata("basePath", ControllerClass) as
@@ -21,20 +24,26 @@ export function createRouter(): Router {
             );
         }
 
-        const controllerMiddlewares =
-            (Reflect.getMetadata("controller:middlewares", ControllerClass) as
-                | RequestHandler[]
-                | undefined) ?? [];
-
         const routes =
             (Reflect.getMetadata("routes", ControllerClass) as
                 | RouteDefinition[]
                 | undefined) ?? [];
 
-        const instance = container.resolve(ControllerClass) as Record<
-            string,
-            RequestHandler
-        >;
+        if (routes.length === 0) {
+            // Skip controllers without routes
+            continue;
+        }
+
+        const controllerMiddlewares =
+            (Reflect.getMetadata("controller:middlewares", ControllerClass) as
+                | RequestHandler[]
+                | undefined) ?? [];
+
+        if (!container.isRegistered(ControllerClass)) {
+            container.registerSingleton(ControllerClass);
+        }
+
+        const instance = container.resolve(ControllerClass);
 
         for (const route of routes) {
             const routeMiddlewares =

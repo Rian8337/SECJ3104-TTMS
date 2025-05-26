@@ -175,13 +175,11 @@ export class StudentController implements IStudentController {
                 parsedOffset
             );
 
-            if (result.failed()) {
+            if (result.isSuccessful()) {
+                res.json(result.data);
+            } else if (result.failed()) {
                 res.status(result.status).json({ error: result.error });
-
-                return;
             }
-
-            res.json(result.isSuccessful() ? result.data : []);
         } catch (e) {
             console.error(e);
 

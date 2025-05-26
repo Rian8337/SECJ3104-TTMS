@@ -1,12 +1,13 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { LecturerController } from "../../src/controllers";
 import { ILecturer } from "../../src/database/schema";
-import {
-    FailedOperationResult,
-    SuccessfulOperationResult,
-} from "../../src/services";
 import { ITimetable, ITimetableClash } from "../../src/types";
-import { mockAuthService, mockLecturerService } from "../mocks";
+import {
+    createFailedOperationResultMock,
+    createSuccessfulOperationResultMock,
+    mockAuthService,
+    mockLecturerService,
+} from "../mocks";
 import {
     createMockRequest,
     createMockResponse,
@@ -311,43 +312,12 @@ describe("LecturerController (unit)", () => {
         });
 
         it("Should return error if timetable retrieval fails", async () => {
-            mockLecturerService.getTimetable.mockResolvedValueOnce({
-                isSuccessful: () => false,
-                failed: () => true,
-                status: 500,
-                error: "Database error",
-            } as FailedOperationResult);
+            const result = createFailedOperationResultMock(
+                "Database error",
+                500
+            );
 
-            const mockRequest = createMockRequest<
-                "/timetable",
-                Res,
-                Record<string, unknown>,
-                Req
-            >({
-                query: {
-                    session: "2023/2024",
-                    semester: "1",
-                    worker_no: "12345",
-                },
-            });
-
-            await controller.getTimetable(mockRequest, mockResponse);
-
-            expect(mockResponse.status).toHaveBeenCalledWith(500);
-            expect(mockResponse.json).toHaveBeenCalledWith({
-                error: "Database error",
-            });
-        });
-
-        it("Should return timetable if all parameters are valid", async () => {
-            const mockTimetable: ITimetable[] = [];
-
-            mockLecturerService.getTimetable.mockResolvedValueOnce({
-                isSuccessful: () => true,
-                failed: () => false,
-                status: 200,
-                data: mockTimetable,
-            } as SuccessfulOperationResult<ITimetable[]>);
+            mockLecturerService.getTimetable.mockResolvedValueOnce(result);
 
             const mockRequest = createMockRequest<
                 "/timetable",
@@ -369,6 +339,45 @@ describe("LecturerController (unit)", () => {
                 "2023/2024",
                 1
             );
+
+            expect(result.isSuccessful).toHaveBeenCalled();
+            expect(result.failed).toHaveBeenCalled();
+
+            expect(mockResponse.status).toHaveBeenCalledWith(500);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                error: "Database error",
+            });
+        });
+
+        it("Should return timetable if all parameters are valid", async () => {
+            const mockTimetable: ITimetable[] = [];
+            const result = createSuccessfulOperationResultMock(mockTimetable);
+
+            mockLecturerService.getTimetable.mockResolvedValueOnce(result);
+
+            const mockRequest = createMockRequest<
+                "/timetable",
+                Res,
+                Record<string, unknown>,
+                Req
+            >({
+                query: {
+                    session: "2023/2024",
+                    semester: "1",
+                    worker_no: "12345",
+                },
+            });
+
+            await controller.getTimetable(mockRequest, mockResponse);
+
+            expect(mockLecturerService.getTimetable).toHaveBeenCalledWith(
+                12345,
+                "2023/2024",
+                1
+            );
+
+            expect(result.isSuccessful).toHaveBeenCalled();
+            expect(result.failed).not.toHaveBeenCalled();
 
             expect(mockResponse.status).not.toHaveBeenCalled();
             expect(mockResponse.json).toHaveBeenCalledWith(mockTimetable);
@@ -535,43 +544,14 @@ describe("LecturerController (unit)", () => {
         });
 
         it("Should return error if clashing timetable retrieval fails", async () => {
-            mockLecturerService.getClashingTimetable.mockResolvedValueOnce({
-                isSuccessful: () => false,
-                failed: () => true,
-                status: 500,
-                error: "Database error",
-            } as FailedOperationResult);
+            const result = createFailedOperationResultMock(
+                "Database error",
+                500
+            );
 
-            const mockRequest = createMockRequest<
-                "/clashing-timetable",
-                Res,
-                Record<string, unknown>,
-                Req
-            >({
-                query: {
-                    session: "2023/2024",
-                    semester: "1",
-                    worker_no: "12345",
-                },
-            });
-
-            await controller.getClashingTimetable(mockRequest, mockResponse);
-
-            expect(mockResponse.status).toHaveBeenCalledWith(500);
-            expect(mockResponse.json).toHaveBeenCalledWith({
-                error: "Database error",
-            });
-        });
-
-        it("Should return clashing timetable if all parameters are valid", async () => {
-            const mockClashingTimetable: ITimetableClash[] = [];
-
-            mockLecturerService.getClashingTimetable.mockResolvedValueOnce({
-                isSuccessful: () => true,
-                failed: () => false,
-                status: 200,
-                data: mockClashingTimetable,
-            } as SuccessfulOperationResult<ITimetableClash[]>);
+            mockLecturerService.getClashingTimetable.mockResolvedValueOnce(
+                result
+            );
 
             const mockRequest = createMockRequest<
                 "/clashing-timetable",
@@ -591,6 +571,48 @@ describe("LecturerController (unit)", () => {
             expect(
                 mockLecturerService.getClashingTimetable
             ).toHaveBeenCalledWith(12345, "2023/2024", 1);
+
+            expect(result.isSuccessful).toHaveBeenCalled();
+            expect(result.failed).toHaveBeenCalled();
+
+            expect(mockResponse.status).toHaveBeenCalledWith(500);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                error: "Database error",
+            });
+        });
+
+        it("Should return clashing timetable if all parameters are valid", async () => {
+            const mockClashingTimetable: ITimetableClash[] = [];
+
+            const result = createSuccessfulOperationResultMock(
+                mockClashingTimetable
+            );
+
+            mockLecturerService.getClashingTimetable.mockResolvedValueOnce(
+                result
+            );
+
+            const mockRequest = createMockRequest<
+                "/clashing-timetable",
+                Res,
+                Record<string, unknown>,
+                Req
+            >({
+                query: {
+                    session: "2023/2024",
+                    semester: "1",
+                    worker_no: "12345",
+                },
+            });
+
+            await controller.getClashingTimetable(mockRequest, mockResponse);
+
+            expect(
+                mockLecturerService.getClashingTimetable
+            ).toHaveBeenCalledWith(12345, "2023/2024", 1);
+
+            expect(result.isSuccessful).toHaveBeenCalled();
+            expect(result.failed).not.toHaveBeenCalled();
 
             expect(mockResponse.status).not.toHaveBeenCalled();
             expect(mockResponse.json).toHaveBeenCalledWith(

@@ -1,12 +1,13 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { StudentController } from "../../src/controllers/StudentController";
 import { IStudent } from "../../src/database/schema";
-import {
-    FailedOperationResult,
-    SuccessfulOperationResult,
-} from "../../src/services";
 import { IStudentSearchEntry, ITimetable } from "../../src/types";
-import { mockAuthService, mockStudentService } from "../mocks";
+import {
+    createFailedOperationResultMock,
+    createSuccessfulOperationResultMock,
+    mockAuthService,
+    mockStudentService,
+} from "../mocks";
 import {
     createMockRequest,
     createMockResponse,
@@ -261,12 +262,12 @@ describe("StudentController", () => {
         });
 
         it("Should return error if timetable retrieval operation fails", async () => {
-            mockStudentService.getTimetable.mockResolvedValueOnce({
-                isSuccessful: () => false,
-                failed: () => true,
-                status: 500,
-                error: "Internal server error",
-            } as FailedOperationResult);
+            const result = createFailedOperationResultMock(
+                "Internal server error",
+                500
+            );
+
+            mockStudentService.getTimetable.mockResolvedValueOnce(result);
 
             const mockRequest = createMockRequest<
                 "/timetable",
@@ -288,6 +289,9 @@ describe("StudentController", () => {
                 "2023/2024",
                 1
             );
+
+            expect(result.isSuccessful).toHaveBeenCalled();
+            expect(result.failed).toHaveBeenCalled();
 
             expect(mockResponse.status).toHaveBeenCalledWith(500);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -297,13 +301,9 @@ describe("StudentController", () => {
 
         it("Should return timetable if retrieval is successful", async () => {
             const mockTimetable: ITimetable[] = [];
+            const result = createSuccessfulOperationResultMock(mockTimetable);
 
-            mockStudentService.getTimetable.mockResolvedValueOnce({
-                isSuccessful: () => true,
-                failed: () => false,
-                status: 200,
-                data: mockTimetable,
-            } as SuccessfulOperationResult<ITimetable[]>);
+            mockStudentService.getTimetable.mockResolvedValueOnce(result);
 
             const mockRequest = createMockRequest<
                 "/timetable",
@@ -325,6 +325,9 @@ describe("StudentController", () => {
                 "2023/2024",
                 1
             );
+
+            expect(result.isSuccessful).toHaveBeenCalled();
+            expect(result.failed).not.toHaveBeenCalled();
 
             expect(mockResponse.json).toHaveBeenCalledWith(mockTimetable);
         });
@@ -455,12 +458,12 @@ describe("StudentController", () => {
         });
 
         it("Should return error if search operation fails", async () => {
-            mockStudentService.search.mockResolvedValueOnce({
-                isSuccessful: () => false,
-                failed: () => true,
-                status: 500,
-                error: "Internal server error",
-            } as FailedOperationResult);
+            const result = createFailedOperationResultMock(
+                "Internal server error",
+                500
+            );
+
+            mockStudentService.search.mockResolvedValueOnce(result);
 
             const mockRequest = createMockRequest<
                 "/search",
@@ -478,6 +481,9 @@ describe("StudentController", () => {
                 10,
                 0
             );
+
+            expect(result.isSuccessful).toHaveBeenCalled();
+            expect(result.failed).toHaveBeenCalled();
 
             expect(mockResponse.status).toHaveBeenCalledWith(500);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -491,12 +497,10 @@ describe("StudentController", () => {
                 { matricNo: "C0000002", name: "Jane Smith" },
             ];
 
-            mockStudentService.search.mockResolvedValueOnce({
-                isSuccessful: () => true,
-                failed: () => false,
-                status: 200,
-                data: mockSearchResults,
-            } as SuccessfulOperationResult<IStudentSearchEntry[]>);
+            const result =
+                createSuccessfulOperationResultMock(mockSearchResults);
+
+            mockStudentService.search.mockResolvedValueOnce(result);
 
             const mockRequest = createMockRequest<
                 "/search",
@@ -514,6 +518,9 @@ describe("StudentController", () => {
                 10,
                 0
             );
+
+            expect(result.isSuccessful).toHaveBeenCalled();
+            expect(result.failed).not.toHaveBeenCalled();
 
             expect(mockResponse.json).toHaveBeenCalledWith(mockSearchResults);
         });

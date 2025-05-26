@@ -329,6 +329,7 @@ describe("StudentController", () => {
             expect(result.isSuccessful).toHaveBeenCalled();
             expect(result.failed).not.toHaveBeenCalled();
 
+            expect(mockResponse.status).toHaveBeenCalledWith(200);
             expect(mockResponse.json).toHaveBeenCalledWith(mockTimetable);
         });
 
@@ -522,6 +523,7 @@ describe("StudentController", () => {
             expect(result.isSuccessful).toHaveBeenCalled();
             expect(result.failed).not.toHaveBeenCalled();
 
+            expect(mockResponse.status).toHaveBeenCalledWith(200);
             expect(mockResponse.json).toHaveBeenCalledWith(mockSearchResults);
         });
 

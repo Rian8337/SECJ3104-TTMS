@@ -379,7 +379,7 @@ describe("LecturerController (unit)", () => {
             expect(result.isSuccessful).toHaveBeenCalled();
             expect(result.failed).not.toHaveBeenCalled();
 
-            expect(mockResponse.status).not.toHaveBeenCalled();
+            expect(mockResponse.status).toHaveBeenCalledWith(200);
             expect(mockResponse.json).toHaveBeenCalledWith(mockTimetable);
         });
 
@@ -614,7 +614,7 @@ describe("LecturerController (unit)", () => {
             expect(result.isSuccessful).toHaveBeenCalled();
             expect(result.failed).not.toHaveBeenCalled();
 
-            expect(mockResponse.status).not.toHaveBeenCalled();
+            expect(mockResponse.status).toHaveBeenCalledWith(200);
             expect(mockResponse.json).toHaveBeenCalledWith(
                 mockClashingTimetable
             );

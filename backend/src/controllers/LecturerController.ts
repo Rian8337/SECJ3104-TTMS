@@ -4,18 +4,11 @@ import { Roles } from "@/decorators/roles";
 import { Get, Post } from "@/decorators/routes";
 import { dependencyTokens } from "@/dependencies/tokens";
 import { IAuthService, ILecturerService } from "@/services";
-import {
-    ITimetable,
-    ITimetableClash,
-    TTMSSemester,
-    TTMSSession,
-    UserRole,
-} from "@/types";
-import { validateAcademicSession, validateSemester } from "@/utils";
+import { ITimetable, ITimetableClash, UserRole } from "@/types";
 import { Request, Response } from "express";
 import { inject } from "tsyringe";
-import { ILecturerController } from "./ILecturerController";
 import { BaseController } from "./BaseController";
+import { ILecturerController } from "./ILecturerController";
 
 /**
  * A controller that is responsible for handling lecturer-related operations.
@@ -53,11 +46,9 @@ export class LecturerController
             return;
         }
 
-        const workerNo = parseInt(login);
+        const workerNo = this.validateWorkerNo(req, res);
 
-        if (Number.isNaN(workerNo)) {
-            res.status(400).json({ error: "Invalid login format." });
-
+        if (workerNo === null) {
             return;
         }
 
@@ -101,13 +92,22 @@ export class LecturerController
         >,
         res: Response<ITimetable[] | { error: string }>
     ) {
-        const validatedData = this.validateRequest(req, res);
+        const validatedSessionAndSemester = this.validateSessionSemester(
+            req,
+            res
+        );
 
-        if (!validatedData) {
+        if (!validatedSessionAndSemester) {
             return;
         }
 
-        const { session, semester, workerNo } = validatedData;
+        const workerNo = this.validateWorkerNo(req, res);
+
+        if (workerNo === null) {
+            return;
+        }
+
+        const { session, semester } = validatedSessionAndSemester;
 
         try {
             const result = await this.lecturerService.getTimetable(
@@ -135,13 +135,22 @@ export class LecturerController
         >,
         res: Response<ITimetableClash[] | { error: string }>
     ): Promise<void> {
-        const validatedData = this.validateRequest(req, res);
+        const validatedSessionAndSemester = this.validateSessionSemester(
+            req,
+            res
+        );
 
-        if (!validatedData) {
+        if (!validatedSessionAndSemester) {
             return;
         }
 
-        const { session, semester, workerNo } = validatedData;
+        const workerNo = this.validateWorkerNo(req, res);
+
+        if (workerNo === null) {
+            return;
+        }
+
+        const { session, semester } = validatedSessionAndSemester;
 
         try {
             const result = await this.lecturerService.getClashingTimetable(
@@ -158,32 +167,16 @@ export class LecturerController
         }
     }
 
-    private validateRequest(
+    private validateWorkerNo(
         req: Request<
             unknown,
             { error: string },
             unknown,
-            Partial<{ session: string; semester: string; worker_no: string }>
+            Partial<{ worker_no: string }>
         >,
         res: Response<{ error: string }>
-    ): {
-        session: TTMSSession;
-        semester: TTMSSemester;
-        workerNo: number;
-    } | null {
-        const { session, semester, worker_no: workerNo } = req.query;
-
-        if (!session) {
-            res.status(400).json({ error: "Academic session is required." });
-
-            return null;
-        }
-
-        if (!semester) {
-            res.status(400).json({ error: "Semester is required." });
-
-            return null;
-        }
+    ): number | null {
+        const { worker_no: workerNo } = req.query;
 
         if (!workerNo) {
             res.status(400).json({ error: "Worker number is required." });
@@ -199,28 +192,6 @@ export class LecturerController
             return null;
         }
 
-        if (!validateAcademicSession(session)) {
-            res.status(400).json({
-                error: "Invalid session format. Expected format: YYYY/YYYY.",
-            });
-
-            return null;
-        }
-
-        const parsedSemester = parseInt(semester);
-
-        if (!validateSemester(parsedSemester)) {
-            res.status(400).json({
-                error: "Invalid semester format. Expected format: 1, 2, or 3.",
-            });
-
-            return null;
-        }
-
-        return {
-            session,
-            semester: parsedSemester,
-            workerNo: parsedWorkerNo,
-        };
+        return parsedWorkerNo;
     }
 }

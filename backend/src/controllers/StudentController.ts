@@ -5,11 +5,10 @@ import { Get, Post } from "@/decorators/routes";
 import { dependencyTokens } from "@/dependencies/tokens";
 import { IAuthService, IStudentService } from "@/services";
 import { IStudentSearchEntry, ITimetable, UserRole } from "@/types";
-import { validateAcademicSession, validateSemester } from "@/utils";
 import { Request, Response } from "express";
 import { inject } from "tsyringe";
-import { IStudentController } from "./IStudentController";
 import { BaseController } from "./BaseController";
+import { IStudentController } from "./IStudentController";
 
 /**
  * A controller that is responsible for handling student-related operations.
@@ -83,19 +82,16 @@ export class StudentController
         >,
         res: Response<ITimetable[] | { error: string }>
     ) {
-        const { session, semester, matric_no: matricNo } = req.query;
+        const validatedSessionAndSemester = this.validateSessionSemester(
+            req,
+            res
+        );
 
-        if (!session) {
-            res.status(400).json({ error: "Academic session is required." });
-
+        if (!validatedSessionAndSemester) {
             return;
         }
 
-        if (!semester) {
-            res.status(400).json({ error: "Semester is required." });
-
-            return;
-        }
+        const { matric_no: matricNo } = req.query;
 
         if (!matricNo) {
             res.status(400).json({ error: "Matric number is required." });
@@ -103,29 +99,13 @@ export class StudentController
             return;
         }
 
-        if (!validateAcademicSession(session)) {
-            res.status(400).json({
-                error: "Invalid session format. Expected format: YYYY/YYYY.",
-            });
-
-            return;
-        }
-
-        const parsedSemester = parseInt(semester);
-
-        if (!validateSemester(parsedSemester)) {
-            res.status(400).json({
-                error: "Invalid semester format. Expected format: 1, 2, or 3.",
-            });
-
-            return;
-        }
+        const { session, semester } = validatedSessionAndSemester;
 
         try {
             const result = await this.studentService.getTimetable(
                 matricNo,
                 session,
-                parsedSemester
+                semester
             );
 
             this.respondWithOperationResult(res, result);

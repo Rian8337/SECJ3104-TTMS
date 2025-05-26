@@ -1,9 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { container } from "tsyringe";
+import { afterEach, describe, expect, it } from "vitest";
 import { Repository } from "../../src/decorators/repository";
 import { createMockClassDecoratorTestTarget } from "../mocks/mockDecoratorTargetFactory";
-import { container } from "tsyringe";
 
 describe("@Repository", () => {
+    afterEach(container.reset.bind(container));
+
     it("Registers the repository in the DI global container", () => {
         const testToken = "testToken";
 

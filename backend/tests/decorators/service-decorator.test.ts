@@ -1,9 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { container } from "tsyringe";
+import { afterEach, describe, expect, it } from "vitest";
 import { Service } from "../../src/decorators/service";
 import { createMockClassDecoratorTestTarget } from "../mocks/mockDecoratorTargetFactory";
-import { container } from "tsyringe";
 
 describe("@Service", () => {
+    afterEach(container.reset.bind(container));
+
     it("Registers the service in the DI global container", () => {
         const testToken = "testToken";
 

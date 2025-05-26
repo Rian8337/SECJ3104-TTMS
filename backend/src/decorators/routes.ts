@@ -1,4 +1,7 @@
-enum HttpMethod {
+/**
+ * Available HTTP methods for route definitions.
+ */
+export enum HttpMethod {
     get = "get",
     post = "post",
     put = "put",

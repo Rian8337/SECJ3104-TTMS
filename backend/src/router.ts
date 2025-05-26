@@ -49,11 +49,13 @@ export function createRouter(): Router {
             const routeMiddlewares =
                 (Reflect.getMetadata(
                     "route:middlewares",
-                    ControllerClass,
+                    ControllerClass.prototype as object,
                     route.handlerName
                 ) as RequestHandler[] | undefined) ?? [];
 
             const fullPath = `${basePath}${route.path}`;
+
+            console.log(fullPath, routeMiddlewares);
 
             router[route.method](
                 fullPath,

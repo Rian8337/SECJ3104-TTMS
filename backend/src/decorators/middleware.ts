@@ -15,14 +15,14 @@ export function UseMiddleware(
             const existing =
                 (Reflect.getMetadata(
                     "route:middlewares",
-                    target.constructor,
+                    target,
                     propertyKey
                 ) as RequestHandler[] | undefined) ?? [];
 
             Reflect.defineMetadata(
                 "route:middlewares",
                 existing.concat(middlewares),
-                target.constructor,
+                target,
                 propertyKey
             );
         } else {

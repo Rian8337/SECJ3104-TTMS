@@ -94,6 +94,27 @@ describe("AuthService (unit)", () => {
             expect(next).not.toHaveBeenCalled();
         });
 
+        it("Should return 401 if user role is not recognized", async () => {
+            const mockRequest = createMockRequest({
+                signedCookies: {
+                    session: encrypt(
+                        JSON.stringify({
+                            name: "Test user",
+                            unrecognizedField: "value",
+                        })
+                    ),
+                },
+            });
+
+            await authService.verifySession()(mockRequest, mockResponse, next);
+
+            expect(mockResponse.status).toHaveBeenCalledWith(401);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                error: "Unauthorized",
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
         it("Should call next if user is authenticated and no role is specified", async () => {
             const mockRequest = createMockRequest({
                 signedCookies: {

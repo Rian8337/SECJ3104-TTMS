@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { createMockMethodDecoratorTestTarget } from "../mocks/mockDecoratorTargetFactory";
 import { Roles } from "../../src/decorators/roles";
 import { UserRole } from "../../src/types";
+import { createMockMethodDecoratorTestTarget } from "../mocks/mockDecoratorTargetFactory";
 
 describe("@Roles", () => {
     it("Adds middleware metadata", () => {

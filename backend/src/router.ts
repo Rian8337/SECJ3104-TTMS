@@ -55,8 +55,6 @@ export function createRouter(): Router {
 
             const fullPath = `${basePath}${route.path}`;
 
-            console.log(fullPath, routeMiddlewares);
-
             router[route.method](
                 fullPath,
                 ...controllerMiddlewares,

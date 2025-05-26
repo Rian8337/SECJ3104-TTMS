@@ -4,6 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
+    "coverage": "vitest run --coverage",
     "start": "tsx src/index.ts",
     "test": "vitest"
   },
@@ -19,6 +20,7 @@
     "@types/node": "^22.15.17",
     "@typescript-eslint/eslint-plugin": "^8.32.0",
     "@typescript-eslint/parser": "^8.32.0",
+    "@vitest/coverage-istanbul": "^3.1.4",
     "@vitest/eslint-plugin": "^1.2.0",
     "drizzle-kit": "^0.31.1",
     "eslint": "^9.26.0",

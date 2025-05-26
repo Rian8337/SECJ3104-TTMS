@@ -9,6 +9,7 @@ export default defineConfig({
         passWithNoTests: true,
         coverage: {
             provider: "istanbul",
+            include: ["src/**/*.ts"],
             exclude: [
                 // Test files
                 "tests/**",
@@ -20,6 +21,8 @@ export default defineConfig({
                 "src/dependencies/**",
                 // Upstream API data scrapers
                 "src/scrapers/**",
+                // Well-known encryption utility functions
+                "src/utils/crypto.ts",
                 // Express application setup
                 "src/index.ts",
                 // Express router setup

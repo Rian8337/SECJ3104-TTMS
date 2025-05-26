@@ -1,4 +1,4 @@
-import { container, injectable, InjectionToken } from "tsyringe";
+import { injectable, InjectionToken } from "tsyringe";
 import { constructor } from "tsyringe/dist/typings/types";
 
 /**
@@ -15,6 +15,6 @@ export function Repository(token: InjectionToken): ClassDecorator {
 
         injectable()(targetConstructor);
 
-        container.registerSingleton(token, targetConstructor);
+        Reflect.defineMetadata("registrationToken", token, target);
     };
 }

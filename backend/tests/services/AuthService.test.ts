@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ILecturer, IStudent } from "../../src/database/schema";
 import { AuthService } from "../../src/services";
 import { UserRole } from "../../src/types";
@@ -9,9 +9,13 @@ import {
 } from "../mocks/expressMockFactory";
 
 describe("AuthService (unit)", () => {
-    const authService = new AuthService();
+    let authService: AuthService;
+    let mockResponse: ReturnType<typeof createMockResponse>;
 
-    const mockResponse = createMockResponse();
+    beforeEach(() => {
+        authService = new AuthService();
+        mockResponse = createMockResponse();
+    });
 
     it("Should create a session cookie", () => {
         authService.createSession(mockResponse, { test: "test" });

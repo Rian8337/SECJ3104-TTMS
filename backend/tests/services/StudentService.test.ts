@@ -35,6 +35,7 @@ describe("StudentService (unit)", () => {
             );
 
             expect(result.isSuccessful()).toBe(true);
+            expect(result.failed()).toBe(false);
 
             expect(mockStudentRepository.getByMatricNo).toHaveBeenCalledWith(
                 "A12345678"
@@ -58,7 +59,9 @@ describe("StudentService (unit)", () => {
 
             const failedResult = result as FailedOperationResult;
 
-            expect(failedResult.failed()).toBe(true);
+            expect(result.isSuccessful()).toBe(false);
+            expect(result.failed()).toBe(true);
+
             expect(result.status).toBe(404);
             expect(failedResult.error).toBe("Student not found");
 
@@ -75,7 +78,9 @@ describe("StudentService (unit)", () => {
             const result = await service.search("AB", 10, 0);
             const failedResult = result as FailedOperationResult;
 
-            expect(failedResult.failed()).toBe(true);
+            expect(result.isSuccessful()).toBe(false);
+            expect(result.failed()).toBe(true);
+
             expect(result.status).toBe(400);
             expect(failedResult.error).toBe(
                 "Query must be at least 3 characters long"
@@ -92,6 +97,7 @@ describe("StudentService (unit)", () => {
             const result = await service.search("A1234567", 10, 0);
 
             expect(result.isSuccessful()).toBe(true);
+            expect(result.failed()).toBe(false);
 
             expect(
                 mockStudentRepository.searchByMatricNo
@@ -104,6 +110,7 @@ describe("StudentService (unit)", () => {
             const result = await service.search("A12345678", 10, 0);
 
             expect(result.isSuccessful()).toBe(true);
+            expect(result.failed()).toBe(false);
 
             expect(mockStudentRepository.searchByMatricNo).toHaveBeenCalledWith(
                 "A12345678",
@@ -118,6 +125,7 @@ describe("StudentService (unit)", () => {
             const result = await service.search("Jane", 10, 0);
 
             expect(result.isSuccessful()).toBe(true);
+            expect(result.failed()).toBe(false);
 
             expect(mockStudentRepository.searchByName).toHaveBeenCalledWith(
                 "Jane",
@@ -128,6 +136,21 @@ describe("StudentService (unit)", () => {
             expect(
                 mockStudentRepository.searchByMatricNo
             ).not.toHaveBeenCalled();
+        });
+
+        it("Should search by matric number with default limit and offset", async () => {
+            const result = await service.search("A12345678");
+
+            expect(result.isSuccessful()).toBe(true);
+            expect(result.failed()).toBe(false);
+
+            expect(mockStudentRepository.searchByMatricNo).toHaveBeenCalledWith(
+                "A12345678",
+                10,
+                0
+            );
+
+            expect(mockStudentRepository.searchByName).not.toHaveBeenCalled();
         });
     });
 });

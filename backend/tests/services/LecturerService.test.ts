@@ -51,6 +51,7 @@ describe("LecturerService (unit)", () => {
             const result = await service.getTimetable(123456, "2023/2024", "1");
 
             expect(result.isSuccessful()).toBe(true);
+            expect(result.failed()).toBe(false);
 
             expect(mockLecturerRepository.getTimetable).toHaveBeenCalledWith(
                 123456,
@@ -70,6 +71,7 @@ describe("LecturerService (unit)", () => {
 
             const failedResult = result as FailedOperationResult;
 
+            expect(result.isSuccessful()).toBe(false);
             expect(result.failed()).toBe(true);
 
             expect(failedResult.status).toBe(404);
@@ -105,6 +107,8 @@ describe("LecturerService (unit)", () => {
             >;
 
             expect(result.isSuccessful()).toBe(true);
+            expect(result.failed()).toBe(false);
+
             expect(successfulResult.data).toEqual([]);
 
             expect(
@@ -162,6 +166,8 @@ describe("LecturerService (unit)", () => {
             >;
 
             expect(result.isSuccessful()).toBe(true);
+            expect(result.failed()).toBe(false);
+
             expect(successfulResult.data).toEqual([
                 {
                     day: 1,

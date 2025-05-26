@@ -132,6 +132,19 @@ describe("LecturerService (unit)", () => {
                     },
                     venue: { shortName: "R101" },
                 },
+                {
+                    day: 1,
+                    time: 1,
+                    courseSection: {
+                        section: "1",
+                        course: {
+                            code: "CS101",
+                            name: "Computer Science 101",
+                        },
+                        lecturer: { name: "John Doe" },
+                    },
+                    venue: { shortName: "R101" },
+                },
             ];
 
             mockLecturerRepository.getClashingTimetable.mockResolvedValueOnce(
@@ -144,7 +157,36 @@ describe("LecturerService (unit)", () => {
                 "1"
             );
 
+            const successfulResult = result as SuccessfulOperationResult<
+                ITimetableClash[]
+            >;
+
             expect(result.isSuccessful()).toBe(true);
+            expect(successfulResult.data).toEqual([
+                {
+                    day: 1,
+                    time: 1,
+                    courseSections: [
+                        {
+                            section: "2",
+                            course: {
+                                code: "CS102",
+                                name: "Computer Science 102",
+                            },
+                            lecturer: { name: "John Doe" },
+                        },
+                        {
+                            section: "1",
+                            course: {
+                                code: "CS101",
+                                name: "Computer Science 101",
+                            },
+                            lecturer: { name: "John Doe" },
+                        },
+                    ],
+                    venue: { shortName: "R101" },
+                },
+            ] satisfies ITimetableClash[]);
 
             expect(
                 mockLecturerRepository.getClashingTimetable

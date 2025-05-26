@@ -17,10 +17,10 @@ export function createSuccessfulOperationResultMock<T>(
 ): SuccessfulOperationResult<T> {
     return {
         isSuccessful: vi.fn<SuccessfulOperationResult<T>["isSuccessful"]>(
-            (() => false) as SuccessfulOperationResult<T>["isSuccessful"]
+            (() => true) as SuccessfulOperationResult<T>["isSuccessful"]
         ),
         failed: vi.fn<SuccessfulOperationResult<T>["failed"]>(
-            (() => true) as SuccessfulOperationResult<T>["failed"]
+            (() => false) as SuccessfulOperationResult<T>["failed"]
         ),
         status,
         data,

@@ -1,11 +1,12 @@
 import { ILecturer } from "@/database/schema";
 import { ITimetable, ITimetableClash } from "@/types";
 import { Request, Response } from "express";
+import { IController } from "./IController";
 
 /**
  * A controller that is responsible for handling lecturer-related operations.
  */
-export interface ILecturerController {
+export interface ILecturerController extends IController {
     /**
      * Logins a lecturer into the system.
      *

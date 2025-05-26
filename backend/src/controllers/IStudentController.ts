@@ -1,11 +1,12 @@
 import { IStudent } from "@/database/schema";
 import { IStudentSearchEntry, ITimetable } from "@/types";
 import { Request, Response } from "express";
+import { IController } from "./IController";
 
 /**
  * A controller that is responsible for handling student-related operations.
  */
-export interface IStudentController {
+export interface IStudentController extends IController {
     /**
      * Logins a student into the system.
      *

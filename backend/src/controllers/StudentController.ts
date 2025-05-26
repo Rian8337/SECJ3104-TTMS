@@ -9,18 +9,24 @@ import { validateAcademicSession, validateSemester } from "@/utils";
 import { Request, Response } from "express";
 import { inject } from "tsyringe";
 import { IStudentController } from "./IStudentController";
+import { BaseController } from "./BaseController";
 
 /**
  * A controller that is responsible for handling student-related operations.
  */
 @Controller("/student")
-export class StudentController implements IStudentController {
+export class StudentController
+    extends BaseController
+    implements IStudentController
+{
     constructor(
         @inject(dependencyTokens.studentService)
         private readonly studentService: IStudentService,
         @inject(dependencyTokens.authService)
         private readonly authService: IAuthService
-    ) {}
+    ) {
+        super();
+    }
 
     @Post("/login")
     async login(
@@ -122,11 +128,7 @@ export class StudentController implements IStudentController {
                 parsedSemester
             );
 
-            if (result.isSuccessful()) {
-                res.json(result.data);
-            } else if (result.failed()) {
-                res.status(result.status).json({ error: result.error });
-            }
+            this.respondWithOperationResult(res, result);
         } catch (e) {
             console.error(e);
 
@@ -175,11 +177,7 @@ export class StudentController implements IStudentController {
                 parsedOffset
             );
 
-            if (result.isSuccessful()) {
-                res.json(result.data);
-            } else if (result.failed()) {
-                res.status(result.status).json({ error: result.error });
-            }
+            this.respondWithOperationResult(res, result);
         } catch (e) {
             console.error(e);
 

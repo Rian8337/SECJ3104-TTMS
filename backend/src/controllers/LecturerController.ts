@@ -15,18 +15,24 @@ import { validateAcademicSession, validateSemester } from "@/utils";
 import { Request, Response } from "express";
 import { inject } from "tsyringe";
 import { ILecturerController } from "./ILecturerController";
+import { BaseController } from "./BaseController";
 
 /**
  * A controller that is responsible for handling lecturer-related operations.
  */
 @Controller("/lecturer")
-export class LecturerController implements ILecturerController {
+export class LecturerController
+    extends BaseController
+    implements ILecturerController
+{
     constructor(
         @inject(dependencyTokens.lecturerService)
         private readonly lecturerService: ILecturerService,
         @inject(dependencyTokens.authService)
         private readonly authService: IAuthService
-    ) {}
+    ) {
+        super();
+    }
 
     @Post("/login")
     async login(
@@ -110,11 +116,7 @@ export class LecturerController implements ILecturerController {
                 semester
             );
 
-            if (result.isSuccessful()) {
-                res.json(result.data);
-            } else if (result.failed()) {
-                res.status(result.status).json({ error: result.error });
-            }
+            this.respondWithOperationResult(res, result);
         } catch (e) {
             console.error(e);
 
@@ -148,11 +150,7 @@ export class LecturerController implements ILecturerController {
                 semester
             );
 
-            if (result.isSuccessful()) {
-                res.json(result.data);
-            } else if (result.failed()) {
-                res.status(result.status).json({ error: result.error });
-            }
+            this.respondWithOperationResult(res, result);
         } catch (e) {
             console.error(e);
 

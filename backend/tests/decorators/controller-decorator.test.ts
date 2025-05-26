@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Controller } from "../../src/decorators/controller";
-import { createMockClassDecoratorTestTarget } from "../mocks/mockDecoratorTargetFactory";
+import { createMockClassDecoratorTestTarget } from "../mocks";
 
 describe("@Controller", () => {
     it("Adds controller metadata", () => {

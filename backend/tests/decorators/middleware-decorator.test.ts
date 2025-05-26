@@ -2,15 +2,15 @@ import { describe, expect, it } from "vitest";
 import {
     createMockClassDecoratorTestTarget,
     createMockMethodDecoratorTestTarget,
-} from "../mocks/mockDecoratorTargetFactory";
+} from "../mocks";
 import { UseMiddleware } from "../../src/decorators/middleware";
 
 describe("@UseMiddleware", () => {
-    it("Registers a controller-level middleware with the correct metadata", () => {
-        const middlewareFunction = () => {
-            // Middleware logic
-        };
+    const middlewareFunction = () => {
+        // Middleware logic
+    };
 
+    it("Registers a controller-level middleware with the correct metadata", () => {
         const t = createMockClassDecoratorTestTarget(
             UseMiddleware,
             middlewareFunction
@@ -28,10 +28,6 @@ describe("@UseMiddleware", () => {
     });
 
     it("Registers a route-level middleware with the correct metadata", () => {
-        const middlewareFunction = () => {
-            // Middleware logic
-        };
-
         const t = createMockMethodDecoratorTestTarget(
             UseMiddleware,
             middlewareFunction

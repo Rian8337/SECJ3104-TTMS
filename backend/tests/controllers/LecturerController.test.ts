@@ -1,24 +1,29 @@
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { LecturerController } from "../../src/controllers";
 import { ILecturer } from "../../src/database/schema";
-import {
-    createMockContainer,
-    mockAuthService,
-    mockLecturerService,
-} from "../mocks/mockContainerFactory";
-import {
-    createMockRequest,
-    createMockResponse,
-} from "../mocks/expressMockFactory";
-import { ITimetable, ITimetableClash } from "../../src/types";
 import {
     FailedOperationResult,
     SuccessfulOperationResult,
 } from "../../src/services";
+import { ITimetable, ITimetableClash } from "../../src/types";
+import { mockAuthService, mockLecturerService } from "../mocks";
+import {
+    createMockRequest,
+    createMockResponse,
+} from "../mocks/expressMockFactory";
 
 describe("LecturerController (unit)", () => {
-    beforeAll(createMockContainer);
-    afterEach(vi.resetAllMocks.bind(vi));
+    let controller: LecturerController;
+    let mockResponse: ReturnType<typeof createMockResponse>;
+
+    beforeEach(() => {
+        controller = new LecturerController(
+            mockLecturerService,
+            mockAuthService
+        );
+
+        mockResponse = createMockResponse();
+    });
 
     describe("login", () => {
         type Req = Partial<{ login: string; password: string }>;
@@ -31,12 +36,6 @@ describe("LecturerController (unit)", () => {
 
         it("Should return 400 if login is missing", async () => {
             const mockRequest = createMockRequest<"/login", Res, Req>();
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
 
             await controller.login(mockRequest, mockResponse);
 
@@ -53,12 +52,6 @@ describe("LecturerController (unit)", () => {
             const mockRequest = createMockRequest<"/login", Res, Req>({
                 body: { login: "12345" },
             });
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
 
             await controller.login(mockRequest, mockResponse);
 
@@ -75,13 +68,6 @@ describe("LecturerController (unit)", () => {
             const mockRequest = createMockRequest<"/login", Res, Req>({
                 body: { login: "abcde", password: "12345" },
             });
-
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
 
             await controller.login(mockRequest, mockResponse);
 
@@ -100,13 +86,6 @@ describe("LecturerController (unit)", () => {
             const mockRequest = createMockRequest<"/login", Res, Req>({
                 body: { login: "12345", password: "12345" },
             });
-
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
 
             await controller.login(mockRequest, mockResponse);
 
@@ -130,13 +109,6 @@ describe("LecturerController (unit)", () => {
                 body: { login: "12345", password: "wrongpassword" },
             });
 
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
-
             await controller.login(mockRequest, mockResponse);
 
             expect(mockResponse.status).toHaveBeenCalledWith(401);
@@ -158,13 +130,6 @@ describe("LecturerController (unit)", () => {
             const mockRequest = createMockRequest<"/login", Res, Req>({
                 body: { login: "12345", password: "12345" },
             });
-
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
 
             await controller.login(mockRequest, mockResponse);
 
@@ -188,13 +153,6 @@ describe("LecturerController (unit)", () => {
             const mockRequest = createMockRequest<"/login", Res, Req>({
                 body: { login: "12345", password: "12345" },
             });
-
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
 
             await controller.login(mockRequest, mockResponse);
 
@@ -241,12 +199,6 @@ describe("LecturerController (unit)", () => {
                 Record<string, unknown>,
                 Req
             >();
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
 
             await controller.getTimetable(mockRequest, mockResponse);
 
@@ -265,12 +217,6 @@ describe("LecturerController (unit)", () => {
             >({
                 query: { session: "2023/2024" },
             });
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
 
             await controller.getTimetable(mockRequest, mockResponse);
 
@@ -289,12 +235,6 @@ describe("LecturerController (unit)", () => {
             >({
                 query: { session: "2023/2024", semester: "1" },
             });
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
 
             await controller.getTimetable(mockRequest, mockResponse);
 
@@ -317,12 +257,6 @@ describe("LecturerController (unit)", () => {
                     worker_no: "abcde",
                 },
             });
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
 
             await controller.getTimetable(mockRequest, mockResponse);
 
@@ -346,13 +280,6 @@ describe("LecturerController (unit)", () => {
                 },
             });
 
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
-
             await controller.getTimetable(mockRequest, mockResponse);
 
             expect(mockResponse.status).toHaveBeenCalledWith(400);
@@ -374,13 +301,6 @@ describe("LecturerController (unit)", () => {
                     worker_no: "12345",
                 },
             });
-
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
 
             await controller.getTimetable(mockRequest, mockResponse);
 
@@ -410,13 +330,6 @@ describe("LecturerController (unit)", () => {
                     worker_no: "12345",
                 },
             });
-
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
 
             await controller.getTimetable(mockRequest, mockResponse);
 
@@ -449,13 +362,6 @@ describe("LecturerController (unit)", () => {
                 },
             });
 
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
-
             await controller.getTimetable(mockRequest, mockResponse);
 
             expect(mockLecturerService.getTimetable).toHaveBeenCalledWith(
@@ -485,13 +391,6 @@ describe("LecturerController (unit)", () => {
                     worker_no: "12345",
                 },
             });
-
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
 
             await controller.getTimetable(mockRequest, mockResponse);
 
@@ -524,12 +423,6 @@ describe("LecturerController (unit)", () => {
                 Record<string, unknown>,
                 Req
             >();
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
 
             await controller.getClashingTimetable(mockRequest, mockResponse);
 
@@ -548,12 +441,6 @@ describe("LecturerController (unit)", () => {
             >({
                 query: { session: "2023/2024" },
             });
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
 
             await controller.getClashingTimetable(mockRequest, mockResponse);
 
@@ -572,12 +459,6 @@ describe("LecturerController (unit)", () => {
             >({
                 query: { session: "2023/2024", semester: "1" },
             });
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
 
             await controller.getClashingTimetable(mockRequest, mockResponse);
 
@@ -600,12 +481,6 @@ describe("LecturerController (unit)", () => {
                     worker_no: "abcde",
                 },
             });
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
 
             await controller.getClashingTimetable(mockRequest, mockResponse);
 
@@ -629,13 +504,6 @@ describe("LecturerController (unit)", () => {
                 },
             });
 
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
-
             await controller.getClashingTimetable(mockRequest, mockResponse);
 
             expect(mockResponse.status).toHaveBeenCalledWith(400);
@@ -657,13 +525,6 @@ describe("LecturerController (unit)", () => {
                     worker_no: "12345",
                 },
             });
-
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
 
             await controller.getClashingTimetable(mockRequest, mockResponse);
 
@@ -693,13 +554,6 @@ describe("LecturerController (unit)", () => {
                     worker_no: "12345",
                 },
             });
-
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
 
             await controller.getClashingTimetable(mockRequest, mockResponse);
 
@@ -732,13 +586,6 @@ describe("LecturerController (unit)", () => {
                 },
             });
 
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
-
             await controller.getClashingTimetable(mockRequest, mockResponse);
 
             expect(
@@ -768,13 +615,6 @@ describe("LecturerController (unit)", () => {
                     worker_no: "12345",
                 },
             });
-
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new LecturerController(
-                mockLecturerService,
-                mockAuthService
-            );
 
             await controller.getClashingTimetable(mockRequest, mockResponse);
 

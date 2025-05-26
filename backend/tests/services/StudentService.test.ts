@@ -1,17 +1,16 @@
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { IStudent } from "../../src/database/schema";
 import { FailedOperationResult, StudentService } from "../../src/services";
-import {
-    createMockContainer,
-    mockStudentRepository,
-} from "../mocks/mockContainerFactory";
+import { mockStudentRepository } from "../mocks";
 
 describe("StudentService (unit)", () => {
-    beforeAll(createMockContainer);
-    afterEach(vi.resetAllMocks.bind(vi));
+    let service: StudentService;
+
+    beforeEach(() => {
+        service = new StudentService(mockStudentRepository);
+    });
 
     it("[getByMatricNo] should get student by matric number from repository", async () => {
-        const service = new StudentService(mockStudentRepository);
         await service.getByMatricNo("A12345678");
 
         expect(mockStudentRepository.getByMatricNo).toHaveBeenCalledWith(
@@ -28,8 +27,6 @@ describe("StudentService (unit)", () => {
                 facultyCode: "FSKSM",
                 kpNo: "123456789012",
             } satisfies IStudent);
-
-            const service = new StudentService(mockStudentRepository);
 
             const result = await service.getTimetable(
                 "A12345678",
@@ -53,8 +50,6 @@ describe("StudentService (unit)", () => {
         it("Should return error for non-existent student timetable", async () => {
             mockStudentRepository.getByMatricNo.mockResolvedValueOnce(null);
 
-            const service = new StudentService(mockStudentRepository);
-
             const result = await service.getTimetable(
                 "C0000000",
                 "2023/2024",
@@ -77,7 +72,6 @@ describe("StudentService (unit)", () => {
 
     describe("search", () => {
         it("Should return error if query is less than 3 characters", async () => {
-            const service = new StudentService(mockStudentRepository);
             const result = await service.search("AB", 10, 0);
             const failedResult = result as FailedOperationResult;
 
@@ -95,7 +89,6 @@ describe("StudentService (unit)", () => {
         });
 
         it("Should return empty result for matric number that is not 9 in length", async () => {
-            const service = new StudentService(mockStudentRepository);
             const result = await service.search("A1234567", 10, 0);
 
             expect(result.isSuccessful()).toBe(true);
@@ -108,7 +101,6 @@ describe("StudentService (unit)", () => {
         });
 
         it("Should search by matric number", async () => {
-            const service = new StudentService(mockStudentRepository);
             const result = await service.search("A12345678", 10, 0);
 
             expect(result.isSuccessful()).toBe(true);
@@ -123,7 +115,6 @@ describe("StudentService (unit)", () => {
         });
 
         it("Should search by name", async () => {
-            const service = new StudentService(mockStudentRepository);
             const result = await service.search("Jane", 10, 0);
 
             expect(result.isSuccessful()).toBe(true);

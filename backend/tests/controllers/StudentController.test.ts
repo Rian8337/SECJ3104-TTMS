@@ -1,4 +1,4 @@
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { StudentController } from "../../src/controllers/StudentController";
 import { IStudent } from "../../src/database/schema";
 import {
@@ -6,19 +6,20 @@ import {
     SuccessfulOperationResult,
 } from "../../src/services";
 import { IStudentSearchEntry, ITimetable } from "../../src/types";
+import { mockAuthService, mockStudentService } from "../mocks";
 import {
     createMockRequest,
     createMockResponse,
 } from "../mocks/expressMockFactory";
-import {
-    createMockContainer,
-    mockAuthService,
-    mockStudentService,
-} from "../mocks/mockContainerFactory";
 
 describe("StudentController", () => {
-    beforeAll(createMockContainer);
-    afterEach(vi.resetAllMocks.bind(vi));
+    let controller: StudentController;
+    let mockResponse: ReturnType<typeof createMockResponse>;
+
+    beforeEach(() => {
+        controller = new StudentController(mockStudentService, mockAuthService);
+        mockResponse = createMockResponse();
+    });
 
     describe("login", () => {
         type Req = Partial<{ login: string; password: string }>;
@@ -37,13 +38,6 @@ describe("StudentController", () => {
                 body: { password: "password123" },
             });
 
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new StudentController(
-                mockStudentService,
-                mockAuthService
-            );
-
             await controller.login(mockRequest, mockResponse);
 
             expect(mockStudentService.getByMatricNo).not.toHaveBeenCalled();
@@ -58,13 +52,6 @@ describe("StudentController", () => {
             const mockRequest = createMockRequest<"/login", Res, Req>({
                 body: { login: "C0000000" },
             });
-
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new StudentController(
-                mockStudentService,
-                mockAuthService
-            );
 
             await controller.login(mockRequest, mockResponse);
 
@@ -82,13 +69,6 @@ describe("StudentController", () => {
             const mockRequest = createMockRequest<"/login", Res, Req>({
                 body: { login: "C0000000", password: "password123" },
             });
-
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new StudentController(
-                mockStudentService,
-                mockAuthService
-            );
 
             await controller.login(mockRequest, mockResponse);
 
@@ -109,13 +89,6 @@ describe("StudentController", () => {
                 body: { login: "C0000000", password: "wrongpassword" },
             });
 
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new StudentController(
-                mockStudentService,
-                mockAuthService
-            );
-
             await controller.login(mockRequest, mockResponse);
 
             expect(mockStudentService.getByMatricNo).toHaveBeenCalledWith(
@@ -134,13 +107,6 @@ describe("StudentController", () => {
             const mockRequest = createMockRequest<"/login", Res, Req>({
                 body: { login: "C0000000", password: "password123" },
             });
-
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new StudentController(
-                mockStudentService,
-                mockAuthService
-            );
 
             await controller.login(mockRequest, mockResponse);
 
@@ -165,13 +131,6 @@ describe("StudentController", () => {
                 body: { login: "C0000000", password: "password123" },
             });
 
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new StudentController(
-                mockStudentService,
-                mockAuthService
-            );
-
             await controller.login(mockRequest, mockResponse);
 
             expect(mockStudentService.getByMatricNo).toHaveBeenCalledWith(
@@ -187,12 +146,6 @@ describe("StudentController", () => {
 
     it("[logout] should clear session and return 200", () => {
         const mockRequest = createMockRequest<"/logout">();
-        const mockResponse = createMockResponse();
-
-        const controller = new StudentController(
-            mockStudentService,
-            mockAuthService
-        );
 
         controller.logout(mockRequest, mockResponse);
 
@@ -219,13 +172,6 @@ describe("StudentController", () => {
                 query: { semester: "2023/2024", matric_no: "C0000000" },
             });
 
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new StudentController(
-                mockStudentService,
-                mockAuthService
-            );
-
             await controller.getTimetable(mockRequest, mockResponse);
 
             expect(mockResponse.status).toHaveBeenCalledWith(400);
@@ -244,13 +190,6 @@ describe("StudentController", () => {
                 query: { session: "2023/2024", matric_no: "C0000000" },
             });
 
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new StudentController(
-                mockStudentService,
-                mockAuthService
-            );
-
             await controller.getTimetable(mockRequest, mockResponse);
 
             expect(mockResponse.status).toHaveBeenCalledWith(400);
@@ -268,13 +207,6 @@ describe("StudentController", () => {
             >({
                 query: { session: "2023/2024", semester: "1" },
             });
-
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new StudentController(
-                mockStudentService,
-                mockAuthService
-            );
 
             await controller.getTimetable(mockRequest, mockResponse);
 
@@ -298,13 +230,6 @@ describe("StudentController", () => {
                 },
             });
 
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new StudentController(
-                mockStudentService,
-                mockAuthService
-            );
-
             await controller.getTimetable(mockRequest, mockResponse);
 
             expect(mockResponse.status).toHaveBeenCalledWith(400);
@@ -326,13 +251,6 @@ describe("StudentController", () => {
                     matric_no: "C0000000",
                 },
             });
-
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new StudentController(
-                mockStudentService,
-                mockAuthService
-            );
 
             await controller.getTimetable(mockRequest, mockResponse);
 
@@ -362,13 +280,6 @@ describe("StudentController", () => {
                     matric_no: "C0000000",
                 },
             });
-
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new StudentController(
-                mockStudentService,
-                mockAuthService
-            );
 
             await controller.getTimetable(mockRequest, mockResponse);
 
@@ -407,13 +318,6 @@ describe("StudentController", () => {
                 },
             });
 
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new StudentController(
-                mockStudentService,
-                mockAuthService
-            );
-
             await controller.getTimetable(mockRequest, mockResponse);
 
             expect(mockStudentService.getTimetable).toHaveBeenCalledWith(
@@ -443,13 +347,6 @@ describe("StudentController", () => {
                 },
             });
 
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new StudentController(
-                mockStudentService,
-                mockAuthService
-            );
-
             await controller.getTimetable(mockRequest, mockResponse);
 
             expect(mockStudentService.getTimetable).toHaveBeenCalledWith(
@@ -477,13 +374,6 @@ describe("StudentController", () => {
                 Req
             >();
 
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new StudentController(
-                mockStudentService,
-                mockAuthService
-            );
-
             await controller.search(mockRequest, mockResponse);
 
             expect(mockResponse.status).toHaveBeenCalledWith(400);
@@ -501,13 +391,6 @@ describe("StudentController", () => {
             >({
                 query: { query: "John", limit: "not-a-number" },
             });
-
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new StudentController(
-                mockStudentService,
-                mockAuthService
-            );
 
             await controller.search(mockRequest, mockResponse);
 
@@ -527,13 +410,6 @@ describe("StudentController", () => {
                 query: { query: "John", limit: "-1" },
             });
 
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new StudentController(
-                mockStudentService,
-                mockAuthService
-            );
-
             await controller.search(mockRequest, mockResponse);
 
             expect(mockResponse.status).toHaveBeenCalledWith(400);
@@ -552,13 +428,6 @@ describe("StudentController", () => {
                 query: { query: "John", offset: "not-a-number" },
             });
 
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new StudentController(
-                mockStudentService,
-                mockAuthService
-            );
-
             await controller.search(mockRequest, mockResponse);
 
             expect(mockResponse.status).toHaveBeenCalledWith(400);
@@ -576,13 +445,6 @@ describe("StudentController", () => {
             >({
                 query: { query: "John", offset: "-1" },
             });
-
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new StudentController(
-                mockStudentService,
-                mockAuthService
-            );
 
             await controller.search(mockRequest, mockResponse);
 
@@ -608,13 +470,6 @@ describe("StudentController", () => {
             >({
                 query: { query: "John", limit: "10", offset: "0" },
             });
-
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new StudentController(
-                mockStudentService,
-                mockAuthService
-            );
 
             await controller.search(mockRequest, mockResponse);
 
@@ -652,13 +507,6 @@ describe("StudentController", () => {
                 query: { query: "John", limit: "10", offset: "0" },
             });
 
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new StudentController(
-                mockStudentService,
-                mockAuthService
-            );
-
             await controller.search(mockRequest, mockResponse);
 
             expect(mockStudentService.search).toHaveBeenCalledWith(
@@ -683,13 +531,6 @@ describe("StudentController", () => {
             >({
                 query: { query: "John", limit: "10", offset: "0" },
             });
-
-            const mockResponse = createMockResponse<Res>();
-
-            const controller = new StudentController(
-                mockStudentService,
-                mockAuthService
-            );
 
             await controller.search(mockRequest, mockResponse);
 

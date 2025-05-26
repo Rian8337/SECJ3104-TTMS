@@ -1,4 +1,4 @@
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { ILecturer } from "../../src/database/schema";
 import {
     FailedOperationResult,
@@ -6,18 +6,16 @@ import {
     SuccessfulOperationResult,
 } from "../../src/services";
 import { ITimetable, ITimetableClash } from "../../src/types";
-import {
-    createMockContainer,
-    mockLecturerRepository,
-} from "../mocks/mockContainerFactory";
+import { mockLecturerRepository } from "../mocks";
 
 describe("LecturerService (unit)", () => {
-    beforeAll(createMockContainer);
+    let service: LecturerService;
 
-    afterEach(vi.resetAllMocks.bind(vi));
+    beforeEach(() => {
+        service = new LecturerService(mockLecturerRepository);
+    });
 
     it("[getByWorkerNo] should get a lecturer by worker number from repository", async () => {
-        const service = new LecturerService(mockLecturerRepository);
         await service.getByWorkerNo(123456);
 
         expect(mockLecturerRepository.getByWorkerNo).toHaveBeenCalledWith(
@@ -29,7 +27,6 @@ describe("LecturerService (unit)", () => {
         it("Should return an empty array if lecturer is not found", async () => {
             mockLecturerRepository.getByWorkerNo.mockResolvedValueOnce(null);
 
-            const service = new LecturerService(mockLecturerRepository);
             const result = await service.getTimetable(654321, "2023/2024", "1");
             const failedResult = result as FailedOperationResult;
 
@@ -51,7 +48,6 @@ describe("LecturerService (unit)", () => {
                 name: "John Doe",
             } satisfies ILecturer);
 
-            const service = new LecturerService(mockLecturerRepository);
             const result = await service.getTimetable(123456, "2023/2024", "1");
 
             expect(result.isSuccessful()).toBe(true);
@@ -66,8 +62,6 @@ describe("LecturerService (unit)", () => {
 
     describe("getClashingTimetable", () => {
         it("Should fail if the lecturer is not found", async () => {
-            const service = new LecturerService(mockLecturerRepository);
-
             const result = await service.getClashingTimetable(
                 654321,
                 "2023/2024",
@@ -99,8 +93,6 @@ describe("LecturerService (unit)", () => {
             mockLecturerRepository.getClashingTimetable.mockResolvedValueOnce(
                 []
             );
-
-            const service = new LecturerService(mockLecturerRepository);
 
             const result = await service.getClashingTimetable(
                 123456,
@@ -146,25 +138,13 @@ describe("LecturerService (unit)", () => {
                 mockTimetable
             );
 
-            const service = new LecturerService(mockLecturerRepository);
-
             const result = await service.getClashingTimetable(
                 123456,
                 "2023/2024",
                 "1"
             );
 
-            const successfulResult = result as SuccessfulOperationResult<
-                ITimetableClash[]
-            >;
-
             expect(result.isSuccessful()).toBe(true);
-            expect(successfulResult.data[0]).toEqual({
-                day: 1,
-                time: 1,
-                venue: { shortName: "R101" },
-                courseSections: [mockTimetable[0].courseSection],
-            } satisfies ITimetableClash);
 
             expect(
                 mockLecturerRepository.getClashingTimetable

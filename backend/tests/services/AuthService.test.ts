@@ -3,10 +3,7 @@ import { ILecturer, IStudent } from "../../src/database/schema";
 import { AuthService } from "../../src/services";
 import { UserRole } from "../../src/types";
 import { encrypt } from "../../src/utils";
-import {
-    createMockRequest,
-    createMockResponse,
-} from "../mocks/expressMockFactory";
+import { createMockRequest, createMockResponse } from "../mocks";
 
 describe("AuthService (unit)", () => {
     let authService: AuthService;

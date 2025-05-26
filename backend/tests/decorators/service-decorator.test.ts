@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Service } from "../../src/decorators/service";
-import { createMockClassDecoratorTestTarget } from "../mocks/mockDecoratorTargetFactory";
+import { createMockClassDecoratorTestTarget } from "../mocks";
 
 describe("@Service", () => {
     it("Registers the service in the DI global container", () => {

@@ -4,6 +4,8 @@ import { vi } from "vitest";
 /**
  * Creates a mock request object for testing with Express.js.
  *
+ * **Do not reuse this mock across tests.**
+ *
  * @param overrides Partial overrides for the request object.
  * @returns A mock request object with default values and the provided overrides.
  */
@@ -26,6 +28,8 @@ export function createMockRequest<
 
 /**
  * Creates a mock response object for testing with Express.js.
+ *
+ * **Do not reuse this mock across tests.**
  */
 export function createMockResponse<TResponse = unknown>() {
     type Res = Response<TResponse>;

@@ -13,10 +13,12 @@ app.use(express.json())
     .use(cookieParser(process.env.COOKIE_SECRET))
     .use(createRouter());
 
-app.listen(parseInt(process.env.SERVER_PORT ?? "3000"), (err) => {
+const port = parseInt(process.env.SERVER_PORT ?? "3000");
+
+app.listen(port, (err) => {
     if (err) {
         throw err;
     }
 
-    console.log("Server is running on port 3000");
+    console.log(`Server is running on port ${port.toString()}`);
 });

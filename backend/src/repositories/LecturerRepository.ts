@@ -10,6 +10,8 @@ import { ITimetable, TTMSSemester, TTMSSession } from "@/types";
 import { and, eq, isNotNull, ne, or, sql } from "drizzle-orm";
 import { BaseRepository } from "./BaseRepository";
 import { ILecturerRepository } from "./ILecturerRepository";
+import { inject } from "tsyringe";
+import { DrizzleDb } from "@/database";
 
 /**
  * A repository that is responsible for handling lecturer-related operations.
@@ -19,6 +21,10 @@ export class LecturerRepository
     extends BaseRepository
     implements ILecturerRepository
 {
+    constructor(@inject(dependencyTokens.drizzleDb) db: DrizzleDb) {
+        super(db);
+    }
+
     async getByWorkerNo(workerNo: number): Promise<ILecturer | null> {
         const res = await this.db
             .select()

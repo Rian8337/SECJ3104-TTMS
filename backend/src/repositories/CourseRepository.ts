@@ -4,6 +4,8 @@ import { dependencyTokens } from "@/dependencies/tokens";
 import { eq } from "drizzle-orm";
 import { BaseRepository } from "./BaseRepository";
 import { ICourseRepository } from "./ICourseRepository";
+import { inject } from "tsyringe";
+import { DrizzleDb } from "@/database";
 
 /**
  * A repository that is responsible for handling course-related operations.
@@ -13,6 +15,10 @@ export class CourseRepository
     extends BaseRepository
     implements ICourseRepository
 {
+    constructor(@inject(dependencyTokens.drizzleDb) db: DrizzleDb) {
+        super(db);
+    }
+
     async getCourseByCode(code: string): Promise<ICourse | null> {
         const res = await this.db
             .select()

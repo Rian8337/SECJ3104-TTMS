@@ -4,6 +4,8 @@ import { dependencyTokens } from "@/dependencies/tokens";
 import { eq } from "drizzle-orm";
 import { BaseRepository } from "./BaseRepository";
 import { IVenueRepository } from "./IVenueRepository";
+import { inject } from "tsyringe";
+import { DrizzleDb } from "@/database";
 
 /**
  * A repository that is responsible for handling venue-related operations.
@@ -13,6 +15,10 @@ export class VenueRepository
     extends BaseRepository
     implements IVenueRepository
 {
+    constructor(@inject(dependencyTokens.drizzleDb) db: DrizzleDb) {
+        super(db);
+    }
+
     async getByCode(code: string): Promise<IVenue | null> {
         const res = await this.db
             .select()

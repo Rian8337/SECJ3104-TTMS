@@ -3,8 +3,9 @@ import cors from "cors";
 import "dotenv/config";
 import express from "express";
 import "reflect-metadata";
-import "./dependencies/register";
 import "./controllers";
+import "./database/register";
+import "./dependencies/register";
 import { createRouter } from "./router";
 
 const app = express();

@@ -14,10 +14,6 @@ import {
 } from "@/services";
 import { container } from "tsyringe";
 import { constructor } from "tsyringe/dist/typings/types";
-import { dependencyTokens } from "./tokens";
-import { db } from "@/database";
-
-container.registerInstance(dependencyTokens.drizzleDb, db);
 
 const classes = [
     CourseRepository,

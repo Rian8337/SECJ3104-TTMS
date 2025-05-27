@@ -10,6 +10,8 @@ import { ITimetable, TTMSSemester, TTMSSession } from "@/types";
 import { and, eq, or, sql } from "drizzle-orm";
 import { IStudentRepository } from "./IStudentRepository";
 import { BaseRepository } from "./BaseRepository";
+import { inject } from "tsyringe";
+import { DrizzleDb } from "@/database";
 
 /**
  * A repository that is responsible for handling student-related operations.
@@ -19,6 +21,10 @@ export class StudentRepository
     extends BaseRepository
     implements IStudentRepository
 {
+    constructor(@inject(dependencyTokens.drizzleDb) db: DrizzleDb) {
+        super(db);
+    }
+
     async getByMatricNo(matricNo: string): Promise<IStudent | null> {
         const res = await this.db
             .select()

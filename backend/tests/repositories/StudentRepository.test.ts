@@ -50,6 +50,10 @@ describe("StudentRepository (unit)", () => {
             await repository.getTimetable("123456", "2023/2024", "1");
 
             expect(mockDb.select).toHaveBeenCalledTimes(1);
+            expect(mockDb.select).toHaveBeenCalledWith({
+                courseCode: studentRegisteredCourses.courseCode,
+                section: studentRegisteredCourses.section,
+            });
 
             expect(mockDb.from).toHaveBeenCalledWith(studentRegisteredCourses);
             expect(mockDb.from).toHaveBeenCalledAfter(mockDb.select);
@@ -100,9 +104,35 @@ describe("StudentRepository (unit)", () => {
             );
 
             expect(mockDb.select).toHaveBeenCalledTimes(1);
+            expect(mockDb.select).toHaveBeenCalledWith({
+                courseCode: studentRegisteredCourses.courseCode,
+                section: studentRegisteredCourses.section,
+            });
 
             expect(mockDb.from).toHaveBeenCalledWith(studentRegisteredCourses);
             expect(mockDb.from).toHaveBeenCalledAfter(mockDb.select);
+
+            expect(
+                mockDb.query.courseSectionSchedules.findMany
+            ).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    columns: {
+                        day: true,
+                        time: true,
+                    },
+                    with: {
+                        courseSection: {
+                            columns: { section: true },
+                            with: {
+                                course: { columns: { code: true, name: true } },
+                                lecturer: true,
+                            },
+                        },
+                        venue: { columns: { shortName: true } },
+                    },
+                    where: expect.anything() as unknown,
+                })
+            );
 
             expect(
                 mockDb.query.courseSectionSchedules.findMany

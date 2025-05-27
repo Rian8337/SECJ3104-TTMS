@@ -146,7 +146,7 @@ export function StudentDashboard() {
             startTime,
             endTime,
             venue: entry.venue?.shortName || 'TBA',
-            lecturer: entry.lecturer?.name || 'TBA',
+            lecturer: entry.courseSection.lecturer?.name || 'TBA',
             courseCode: entry.courseSection?.course?.code || 'UNKNOWN',
             section: entry.courseSection?.section || 'UNKNOWN'
           }

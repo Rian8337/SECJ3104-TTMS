@@ -17,6 +17,7 @@ import { container } from "tsyringe";
  * each test to ensure a clean state.
  */
 export const mockAuthService: Mocked<IAuthService> = {
+    login: vi.fn(),
     createFailedResponse: vi.fn(),
     createSuccessfulResponse: vi.fn(),
     clearSession: vi.fn(),

@@ -7,6 +7,7 @@ import { inject } from "tsyringe";
 import { BaseService } from "./BaseService";
 import { IStudentService } from "./IStudentService";
 import { OperationResult } from "./OperationResult";
+import { isValidMatricNumber } from "@/utils";
 
 /**
  * A service that is responsible for handling student-related operations.
@@ -59,7 +60,7 @@ export class StudentService extends BaseService implements IStudentService {
 
         // Names cannot contain digits, so assume that matric numbers are being searched in that case
         if (/\d/.test(query)) {
-            if (query.length !== 9) {
+            if (!isValidMatricNumber(query)) {
                 return this.createSuccessfulResponse([]);
             }
 

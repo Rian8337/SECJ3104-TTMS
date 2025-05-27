@@ -31,3 +31,13 @@ export function validateSemester(semester: number): semester is TTMSSemester {
 export function isValidMatricNumber(str: unknown): str is string {
     return typeof str === "string" && /^[a-z]{1}\d{2}[a-z]{2}\d{4}$/.test(str);
 }
+
+/**
+ * Validates whether the given string is a valid KP number.
+ *
+ * @param str The string to validate.
+ * @returns `true` if the string is a valid KP number, `false` otherwise.
+ */
+export function isValidKpNo(str: unknown): str is string {
+    return typeof str === "string" && str.length === 12;
+}

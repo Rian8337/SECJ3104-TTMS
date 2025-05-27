@@ -2,7 +2,7 @@ import { ILecturer, isLecturer, isStudent, IStudent } from "@/database/schema";
 import { Service } from "@/decorators/service";
 import { dependencyTokens } from "@/dependencies/tokens";
 import { UserRole } from "@/types";
-import { decrypt, encrypt, isValidMatricNumber } from "@/utils";
+import { decrypt, encrypt, isValidKpNo, isValidMatricNumber } from "@/utils";
 import { RequestHandler, Response } from "express";
 import { BaseService } from "./BaseService";
 import { IAuthService } from "./IAuthService";
@@ -110,6 +110,13 @@ export class AuthService extends BaseService implements IAuthService {
         login: string,
         password: string
     ): Promise<OperationResult<IStudent>> {
+        if (!isValidKpNo(password)) {
+            return this.createFailedResponse(
+                "Invalid username or password.",
+                401
+            );
+        }
+
         const student = await this.studentRepository.getByMatricNo(login);
 
         if (student?.kpNo !== password) {

@@ -1,3 +1,4 @@
+export * from "./drizzleMock";
 export * from "./expressMockFactory";
 export * from "./mockDecoratorTargetFactory";
 export * from "./operationResultMockFactory";

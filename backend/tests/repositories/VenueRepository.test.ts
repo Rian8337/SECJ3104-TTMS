@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { VenueRepository } from "../../src/repositories";
-import { mockDb } from "../mocks/drizzleMock";
+import { mockDb } from "../mocks";
 import { venues } from "../../src/database/schema";
 
 describe("VenueRepository (unit)", () => {

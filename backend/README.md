@@ -31,7 +31,7 @@ SCRAPER_PASSWORD= # The password for scraping data from upstream API
 COOKIE_SECRET= # The secret that will be used to sign cookies (required)
 SESSION_ENCRYPTION_KEY= # The key that will be used to encrypt user sessions (required)
 TTMS_UPSTREAM_HOST= # The host of the upstream API. Only required for data scraping
-SERVER_PORT= # The port the server will listen on. Defaults to 3000
+SERVER_PORT= # The port the server will listen on. Defaults to 3001
 ```
 
 All database environment variables default to the values that your database management system employs.

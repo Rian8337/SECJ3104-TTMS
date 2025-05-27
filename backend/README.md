@@ -80,33 +80,31 @@ For all endpoints, unless otherwise specified, non-2xx responses will return the
 
 | Name                                                                  | Description                                                   |
 | --------------------------------------------------------------------- | ------------------------------------------------------------- |
-| [POST `/student/login`](#post-studentlogin)                           | Logins a student to the server                                |
-| [POST `/student/logout`](#post-studentlogout)                         | Logs a student out                                            |
+| [POST `/auth/login`](#post-authlogin)                                 | Logs a user into the server                                   |
+| [POST `/auth/logout`](#post-authlogout)                               | Logs a user out                                               |
 | [GET `/student/timetable`](#get-studenttimetable)                     | Obtains a student's timetable                                 |
 | [GET `/student/search`](#get-studentsearch)                           | Searches for students                                         |
-| [POST `/lecturer/login`](#post-lecturerlogin)                         | Logins a lecturer to the server                               |
-| [POST `/lecturer/logout`](#post-lecturerlogout)                       | Logs a lecturer out                                           |
 | [GET `/lecturer/timetable`](#get-lecturertimetable)                   | Obtains a lecturer's timetable                                |
 | [GET `/lecturer/clashing-timetable`](#get-lecturerclashing-timetable) | Obtains the timetables that clash with a lecturer's timetable |
 
-## POST `/student/login`
+## POST `/auth/login`
 
-Logins a student to the server.
+Logs a user into the server.
 
 ### Body Parameters
 
-| Name       | Required | Default | Description                                      |
-| ---------- | -------- | ------- | ------------------------------------------------ |
-| `login`    | ✅       | N/A     | The matric number of the student                 |
-| `password` | ✅       | N/A     | The password to authenticate (typically K.P. no) |
+| Name       | Required | Default | Description                       |
+| ---------- | -------- | ------- | --------------------------------- |
+| `login`    | ✅       | N/A     | The login to authenticate with    |
+| `password` | ✅       | N/A     | The password to authenticate with |
 
 ### Response
 
-A [`Student`](#student) object. A session will be stored as a cookie.
+Any of the [`User`](#users) object.
 
-## POST `/student/logout`
+## POST `/auth/logout`
 
-Logs a student out. This clears the session cookie. This endpoint does not need any parameter.
+Logs a user out. This clears the session cookie. This endpoint does not need any parameter.
 
 ### Response
 
@@ -148,29 +146,6 @@ This endpoint is restricted to a student or lecturer, in which they must authent
 
 A list of [`Student`](#student) objects that fulfill the search criteria.
 
-## POST `/lecturer/login`
-
-Logins a lecturer to the server.
-
-### Body Parameters
-
-| Name       | Required | Default | Description                       |
-| ---------- | -------- | ------- | --------------------------------- |
-| `login`    | ✅       | N/A     | The worker number of the lecturer |
-| `password` | ✅       | N/A     | The password to authenticate      |
-
-### Response
-
-A [`Lecturer`](#lecturer) object. A session will be stored as a cookie.
-
-## POST `/lecturer/logout`
-
-Logs a lecturer out. This clears the session cookie. This endpoint does not need any parameter.
-
-### Response
-
-Returns a 200 OK on success.
-
 ## GET `/lecturer/timetable`
 
 Obtains a lecturer's timetable.
@@ -209,7 +184,11 @@ A list of [`ClashTimetable`](#clash-timetable) objects.
 
 # Data Types
 
-## Student
+## Users
+
+These are users who can authenticate to the server.
+
+### Student
 
 ```ts
 type IStudent = {
@@ -240,7 +219,7 @@ type IStudent = {
 };
 ```
 
-## Lecturer
+### Lecturer
 
 ```ts
 type ILecturer = {

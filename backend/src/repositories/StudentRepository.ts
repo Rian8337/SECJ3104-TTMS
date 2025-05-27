@@ -110,6 +110,14 @@ export class StudentRepository
     }
 
     searchByName(name: string, limit = 10, offset = 0): Promise<IStudent[]> {
+        if (limit < 1) {
+            throw new RangeError("Limit must be greater than 0");
+        }
+
+        if (offset < 0) {
+            throw new RangeError("Offset must be greater than or equal to 0");
+        }
+
         return this.db
             .select()
             .from(students)

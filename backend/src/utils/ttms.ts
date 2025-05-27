@@ -29,7 +29,7 @@ export function validateSemester(semester: number): semester is TTMSSemester {
  * @returns `true` if the string is a valid matriculation number, `false` otherwise.
  */
 export function isValidMatricNumber(str: unknown): str is string {
-    return typeof str === "string" && /^[a-z]{1}\d{2}[a-z]{2}\d{4}$/.test(str);
+    return typeof str === "string" && /^[a-z]{1}\d{2}[a-z]{2}\d{4}$/i.test(str);
 }
 
 /**

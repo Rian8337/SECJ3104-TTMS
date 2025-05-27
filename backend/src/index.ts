@@ -13,7 +13,7 @@ app.use(express.json())
     .use(cookieParser(process.env.COOKIE_SECRET))
     .use(createRouter());
 
-const port = parseInt(process.env.SERVER_PORT ?? "3000");
+const port = parseInt(process.env.SERVER_PORT ?? "3001");
 
 app.listen(port, (err) => {
     if (err) {

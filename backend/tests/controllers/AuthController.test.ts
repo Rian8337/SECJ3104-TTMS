@@ -29,6 +29,7 @@ describe("AuthController (unit)", () => {
             await controller.login(mockRequest, mockResponse);
 
             expect(mockAuthService.login).not.toHaveBeenCalled();
+            expect(mockAuthService.createSession).not.toHaveBeenCalled();
 
             expect(mockResponse.status).toHaveBeenCalledWith(400);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -44,6 +45,7 @@ describe("AuthController (unit)", () => {
             await controller.login(mockRequest, mockResponse);
 
             expect(mockAuthService.login).not.toHaveBeenCalled();
+            expect(mockAuthService.createSession).not.toHaveBeenCalled();
 
             expect(mockResponse.status).toHaveBeenCalledWith(400);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -67,6 +69,8 @@ describe("AuthController (unit)", () => {
                 "password123"
             );
 
+            expect(mockAuthService.createSession).toHaveBeenCalled();
+
             expect(mockResponse.status).toHaveBeenCalledWith(200);
             expect(mockResponse.json).toHaveBeenCalledWith({});
         });
@@ -86,6 +90,8 @@ describe("AuthController (unit)", () => {
                 "C00000000",
                 "password123"
             );
+
+            expect(mockAuthService.createSession).not.toHaveBeenCalled();
 
             expect(mockResponse.status).toHaveBeenCalledWith(500);
             expect(mockResponse.json).toHaveBeenCalledWith({

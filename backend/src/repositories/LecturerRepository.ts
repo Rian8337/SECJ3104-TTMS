@@ -29,7 +29,8 @@ export class LecturerRepository
         const res = await this.db
             .select()
             .from(lecturers)
-            .where(eq(lecturers.workerNo, workerNo));
+            .where(eq(lecturers.workerNo, workerNo))
+            .limit(1);
 
         return res.at(0) ?? null;
     }

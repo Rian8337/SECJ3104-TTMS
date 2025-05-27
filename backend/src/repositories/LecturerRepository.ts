@@ -177,6 +177,14 @@ export class LecturerRepository
     }
 
     searchByName(name: string, limit = 10, offset = 0): Promise<ILecturer[]> {
+        if (limit < 1) {
+            throw new Error("Limit must be at least 1");
+        }
+
+        if (offset < 0) {
+            throw new Error("Offset must be at least 0");
+        }
+
         return this.db
             .select()
             .from(lecturers)

@@ -29,7 +29,7 @@ export class StudentRepository
         const res = await this.db
             .select()
             .from(students)
-            .where(eq(students.matricNo, matricNo))
+            .where(eq(students.matricNo, matricNo.toUpperCase()))
             .limit(1);
 
         return res.at(0) ?? null;
@@ -48,7 +48,10 @@ export class StudentRepository
             .from(studentRegisteredCourses)
             .where(
                 and(
-                    eq(studentRegisteredCourses.matricNo, matricNo),
+                    eq(
+                        studentRegisteredCourses.matricNo,
+                        matricNo.toUpperCase()
+                    ),
                     eq(studentRegisteredCourses.session, session),
                     eq(studentRegisteredCourses.semester, semester)
                 )

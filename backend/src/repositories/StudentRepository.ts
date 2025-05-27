@@ -68,7 +68,7 @@ export class StudentRepository
                     columns: { section: true },
                     with: {
                         course: { columns: { code: true, name: true } },
-                        lecturer: { columns: { name: true } },
+                        lecturer: true,
                     },
                 },
                 venue: { columns: { shortName: true } },

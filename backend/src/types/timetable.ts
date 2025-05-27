@@ -15,7 +15,7 @@ interface IBaseTimetable extends Pick<ICourseSectionSchedule, "day" | "time"> {
 export interface ITimetableCourseSection {
     readonly section: string;
     readonly course: Pick<ICourse, "code" | "name">;
-    readonly lecturer: Pick<ILecturer, "name"> | null;
+    readonly lecturer: ILecturer | null;
 }
 
 /**

@@ -1,4 +1,3 @@
-import { db } from "@/database";
 import {
     courseSections,
     courseSectionSchedules,
@@ -9,15 +8,19 @@ import { Repository } from "@/decorators/repository";
 import { dependencyTokens } from "@/dependencies/tokens";
 import { ITimetable, TTMSSemester, TTMSSession } from "@/types";
 import { and, eq, isNotNull, ne, or, sql } from "drizzle-orm";
+import { BaseRepository } from "./BaseRepository";
 import { ILecturerRepository } from "./ILecturerRepository";
 
 /**
  * A repository that is responsible for handling lecturer-related operations.
  */
 @Repository(dependencyTokens.lecturerRepository)
-export class LecturerRepository implements ILecturerRepository {
+export class LecturerRepository
+    extends BaseRepository
+    implements ILecturerRepository
+{
     async getByWorkerNo(workerNo: number): Promise<ILecturer | null> {
-        const res = await db
+        const res = await this.db
             .select()
             .from(lecturers)
             .where(eq(lecturers.workerNo, workerNo));
@@ -30,7 +33,7 @@ export class LecturerRepository implements ILecturerRepository {
         session: TTMSSession,
         semester: TTMSSemester
     ): Promise<ITimetable[]> {
-        const registeredCourses = await db
+        const registeredCourses = await this.db
             .select({
                 courseCode: courseSections.courseCode,
                 section: courseSections.section,
@@ -48,7 +51,7 @@ export class LecturerRepository implements ILecturerRepository {
             return [];
         }
 
-        return db.query.courseSectionSchedules.findMany({
+        return this.db.query.courseSectionSchedules.findMany({
             columns: {
                 day: true,
                 time: true,
@@ -81,7 +84,7 @@ export class LecturerRepository implements ILecturerRepository {
         session: TTMSSession,
         semester: TTMSSemester
     ): Promise<ITimetable[]> {
-        const registeredCourses = await db
+        const registeredCourses = await this.db
             .select({
                 courseCode: courseSections.courseCode,
                 section: courseSections.section,
@@ -99,7 +102,7 @@ export class LecturerRepository implements ILecturerRepository {
             return [];
         }
 
-        const lecturerTimetable = await db
+        const lecturerTimetable = await this.db
             .select({
                 day: courseSectionSchedules.day,
                 time: courseSectionSchedules.time,
@@ -131,7 +134,7 @@ export class LecturerRepository implements ILecturerRepository {
             return [];
         }
 
-        return db.query.courseSectionSchedules.findMany({
+        return this.db.query.courseSectionSchedules.findMany({
             columns: {
                 day: true,
                 time: true,
@@ -166,12 +169,8 @@ export class LecturerRepository implements ILecturerRepository {
         });
     }
 
-    /*
-    SELECT * FROM `course_section_schedule` WHERE session = "2024/2025" AND semester = 2 AND day = 2 AND time = 3 AND venue_code = (SELECT code FROM venue WHERE short_name = "MPK9");
-    */
-
     searchByName(name: string, limit = 10, offset = 0): Promise<ILecturer[]> {
-        return db
+        return this.db
             .select()
             .from(lecturers)
             .where(

@@ -1,4 +1,3 @@
-import { db } from "@/database";
 import {
     courseSectionSchedules,
     IStudent,
@@ -10,14 +9,18 @@ import { dependencyTokens } from "@/dependencies/tokens";
 import { ITimetable, TTMSSemester, TTMSSession } from "@/types";
 import { and, eq, or, sql } from "drizzle-orm";
 import { IStudentRepository } from "./IStudentRepository";
+import { BaseRepository } from "./BaseRepository";
 
 /**
  * A repository that is responsible for handling student-related operations.
  */
 @Repository(dependencyTokens.studentRepository)
-export class StudentRepository implements IStudentRepository {
+export class StudentRepository
+    extends BaseRepository
+    implements IStudentRepository
+{
     async getByMatricNo(matricNo: string): Promise<IStudent | null> {
-        const res = await db
+        const res = await this.db
             .select()
             .from(students)
             .where(eq(students.matricNo, matricNo))
@@ -31,7 +34,7 @@ export class StudentRepository implements IStudentRepository {
         session: TTMSSession,
         semester: TTMSSemester
     ): Promise<ITimetable[]> {
-        const registeredCourses = await db
+        const registeredCourses = await this.db
             .select({
                 courseCode: studentRegisteredCourses.courseCode,
                 section: studentRegisteredCourses.section,
@@ -49,7 +52,7 @@ export class StudentRepository implements IStudentRepository {
             return [];
         }
 
-        return db.query.courseSectionSchedules.findMany({
+        return this.db.query.courseSectionSchedules.findMany({
             columns: {
                 day: true,
                 time: true,
@@ -90,7 +93,7 @@ export class StudentRepository implements IStudentRepository {
             throw new RangeError("Offset must be greater than or equal to 0");
         }
 
-        return db
+        return this.db
             .select()
             .from(students)
             .where(
@@ -101,7 +104,7 @@ export class StudentRepository implements IStudentRepository {
     }
 
     searchByName(name: string, limit = 10, offset = 0): Promise<IStudent[]> {
-        return db
+        return this.db
             .select()
             .from(students)
             .where(

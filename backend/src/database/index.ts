@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { drizzle } from "drizzle-orm/mysql2";
+import { drizzle, MySql2Database } from "drizzle-orm/mysql2";
 import { createPool } from "mysql2/promise";
 import * as schema from "./schema";
 
@@ -16,6 +16,11 @@ export const db = drizzle<typeof schema>(
     }).pool,
     { casing: "snake_case", schema: schema, mode: "default" }
 );
+
+/**
+ * The type of the Drizzle database.
+ */
+export type DrizzleDb = MySql2Database<typeof schema>;
 
 // Since Drizzle does not support FULLTEXT indexes yet, we need to create them manually.
 // See: https://github.com/drizzle-team/drizzle-orm/pull/1030

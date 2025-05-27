@@ -2,6 +2,9 @@
  * Tokens for dependency injection.
  */
 export const dependencyTokens = {
+    // Drizzle ORM
+    drizzleDb: Symbol.for("IDatabase"),
+
     // Repositories
     courseRepository: Symbol.for("ICourseRepository"),
     lecturerRepository: Symbol.for("ILecturerRepository"),

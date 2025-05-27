@@ -1,13 +1,19 @@
 import { ILecturer, isLecturer, isStudent, IStudent } from "@/database/schema";
 import { Service } from "@/decorators/service";
 import { dependencyTokens } from "@/dependencies/tokens";
+import { ILecturerRepository, IStudentRepository } from "@/repositories";
 import { UserRole } from "@/types";
-import { decrypt, encrypt, isValidKpNo, isValidMatricNumber } from "@/utils";
+import {
+    decrypt,
+    encrypt,
+    isValidKpNo,
+    isValidMatricNumber,
+    isValidWorkerNo,
+} from "@/utils";
 import { RequestHandler, Response } from "express";
+import { inject } from "tsyringe";
 import { BaseService } from "./BaseService";
 import { IAuthService } from "./IAuthService";
-import { inject } from "tsyringe";
-import { ILecturerRepository, IStudentRepository } from "@/repositories";
 import { OperationResult } from "./OperationResult";
 
 /**
@@ -31,7 +37,7 @@ export class AuthService extends BaseService implements IAuthService {
             return this.loginStudent(login, password);
         }
 
-        if (/^\d$/.test(login)) {
+        if (isValidWorkerNo(login)) {
             return this.loginLecturer(login, password);
         }
 

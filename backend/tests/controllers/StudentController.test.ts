@@ -1,11 +1,9 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { StudentController } from "../../src/controllers/StudentController";
-import { IStudent } from "../../src/database/schema";
 import { IStudentSearchEntry, ITimetable } from "../../src/types";
 import {
     createFailedOperationResultMock,
     createSuccessfulOperationResultMock,
-    mockAuthService,
     mockStudentService,
 } from "../mocks";
 import {
@@ -18,140 +16,8 @@ describe("StudentController", () => {
     let mockResponse: ReturnType<typeof createMockResponse>;
 
     beforeEach(() => {
-        controller = new StudentController(mockStudentService, mockAuthService);
+        controller = new StudentController(mockStudentService);
         mockResponse = createMockResponse();
-    });
-
-    describe("login", () => {
-        type Req = Partial<{ login: string; password: string }>;
-        type Res = IStudent | { error: string };
-
-        const mockStudent: IStudent = {
-            matricNo: "C0000000",
-            name: "John Doe",
-            courseCode: "CS101",
-            facultyCode: "ENG",
-            kpNo: "password123",
-        };
-
-        it("Should return 400 if login is missing", async () => {
-            const mockRequest = createMockRequest<"/login", Res, Req>({
-                body: { password: "password123" },
-            });
-
-            await controller.login(mockRequest, mockResponse);
-
-            expect(mockStudentService.getByMatricNo).not.toHaveBeenCalled();
-
-            expect(mockResponse.status).toHaveBeenCalledWith(400);
-            expect(mockResponse.json).toHaveBeenCalledWith({
-                error: "Login and password are required",
-            });
-        });
-
-        it("Should return 400 if password is missing", async () => {
-            const mockRequest = createMockRequest<"/login", Res, Req>({
-                body: { login: "C0000000" },
-            });
-
-            await controller.login(mockRequest, mockResponse);
-
-            expect(mockStudentService.getByMatricNo).not.toHaveBeenCalled();
-
-            expect(mockResponse.status).toHaveBeenCalledWith(400);
-            expect(mockResponse.json).toHaveBeenCalledWith({
-                error: "Login and password are required",
-            });
-        });
-
-        it("Should return 401 if student not found", async () => {
-            mockStudentService.getByMatricNo.mockResolvedValue(null);
-
-            const mockRequest = createMockRequest<"/login", Res, Req>({
-                body: { login: "C0000000", password: "password123" },
-            });
-
-            await controller.login(mockRequest, mockResponse);
-
-            expect(mockStudentService.getByMatricNo).toHaveBeenCalledWith(
-                "C0000000"
-            );
-
-            expect(mockResponse.status).toHaveBeenCalledWith(401);
-            expect(mockResponse.json).toHaveBeenCalledWith({
-                error: "Invalid username or password",
-            });
-        });
-
-        it("Should return 401 if password is incorrect", async () => {
-            mockStudentService.getByMatricNo.mockResolvedValue(mockStudent);
-
-            const mockRequest = createMockRequest<"/login", Res, Req>({
-                body: { login: "C0000000", password: "wrongpassword" },
-            });
-
-            await controller.login(mockRequest, mockResponse);
-
-            expect(mockStudentService.getByMatricNo).toHaveBeenCalledWith(
-                "C0000000"
-            );
-
-            expect(mockResponse.status).toHaveBeenCalledWith(401);
-            expect(mockResponse.json).toHaveBeenCalledWith({
-                error: "Invalid username or password",
-            });
-        });
-
-        it("Should return student if login is successful", async () => {
-            mockStudentService.getByMatricNo.mockResolvedValue(mockStudent);
-
-            const mockRequest = createMockRequest<"/login", Res, Req>({
-                body: { login: "C0000000", password: "password123" },
-            });
-
-            await controller.login(mockRequest, mockResponse);
-
-            expect(mockStudentService.getByMatricNo).toHaveBeenCalledWith(
-                "C0000000"
-            );
-
-            expect(mockAuthService.createSession).toHaveBeenCalledWith(
-                mockResponse,
-                mockStudent
-            );
-
-            expect(mockResponse.json).toHaveBeenCalledWith(mockStudent);
-        });
-
-        it("Should return 500 if an error occurs during login", async () => {
-            mockStudentService.getByMatricNo.mockRejectedValueOnce(
-                new Error("Unexpected error")
-            );
-
-            const mockRequest = createMockRequest<"/login", Res, Req>({
-                body: { login: "C0000000", password: "password123" },
-            });
-
-            await controller.login(mockRequest, mockResponse);
-
-            expect(mockStudentService.getByMatricNo).toHaveBeenCalledWith(
-                "C0000000"
-            );
-
-            expect(mockResponse.status).toHaveBeenCalledWith(500);
-            expect(mockResponse.json).toHaveBeenCalledWith({
-                error: "Internal server error",
-            });
-        });
-    });
-
-    it("[logout] should clear session and return 200", () => {
-        const mockRequest = createMockRequest<"/logout">();
-
-        controller.logout(mockRequest, mockResponse);
-
-        expect(mockAuthService.clearSession).toHaveBeenCalledWith(mockResponse);
-        expect(mockResponse.sendStatus).toHaveBeenCalledWith(200);
     });
 
     describe("getTimetable", () => {

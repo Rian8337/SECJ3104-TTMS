@@ -2,17 +2,13 @@
 
 import type React from "react"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Search } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { API_BASE_URL } from "@/lib/config"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertTriangle } from "lucide-react"
+import { TimetableView } from "@/components/student/timetable-view"
 
 interface StudentSearchResult {
   matricNo: string
@@ -37,15 +33,90 @@ interface TimetableByDay {
   [key: string]: TimetableEntry[]
 }
 
+const AnimatedPlaceholder = ({ text }: { text: string }) => {
+  const [displayText, setDisplayText] = useState("")
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [currentText, setCurrentText] = useState(text)
+  const [isComplete, setIsComplete] = useState(false)
+
+  // Get the common prefix and changing part based on the text
+  const getTextParts = (text: string) => {
+    if (text.startsWith("Search student by")) {
+      return {
+        prefix: "Search student by ",
+        changingPart: text.replace("Search student by ", "")
+      }
+    }
+    return {
+      prefix: "Search ",
+      changingPart: text.replace("Search ", "")
+    }
+  }
+
+  useEffect(() => {
+    if (isComplete) {
+      setCurrentText(text)
+      setCurrentIndex(0)
+      const { prefix } = getTextParts(text)
+      setDisplayText(prefix)
+      setIsDeleting(false)
+      setIsComplete(false)
+    }
+  }, [text, isComplete])
+
+  useEffect(() => {
+    const { prefix, changingPart } = getTextParts(currentText)
+    const timeout = setTimeout(() => {
+      if (!isDeleting && currentIndex < changingPart.length) {
+        setDisplayText(prefix + changingPart.slice(0, currentIndex + 1))
+        setCurrentIndex(currentIndex + 1)
+      } else if (isDeleting && currentIndex > 0) {
+        setDisplayText(prefix + changingPart.slice(0, currentIndex - 1))
+        setCurrentIndex(currentIndex - 1)
+      } else if (!isDeleting && currentIndex === changingPart.length) {
+        setTimeout(() => setIsDeleting(true), 1000)
+      } else if (isDeleting && currentIndex === 0) {
+        setIsDeleting(false)
+        setIsComplete(true)
+      }
+    }, isDeleting ? 50 : 100)
+
+    return () => clearTimeout(timeout)
+  }, [currentIndex, isDeleting, currentText])
+
+  return (
+    <span className="text-muted-foreground">
+      {displayText}
+      <span className="animate-blink">|</span>
+    </span>
+  )
+}
+
 export function SearchStudentForm() {
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<StudentSearchResult[]>([])
   const [selectedStudent, setSelectedStudent] = useState<StudentSearchResult | null>(null)
   const [isSearching, setIsSearching] = useState(false)
   const [selectedDay, setSelectedDay] = useState("Monday")
-  const [timetable, setTimetable] = useState<TimetableByDay>({})
+  const [timetable, setTimetable] = useState<TimetableEntry[]>([])
   const [loadingTimetable, setLoadingTimetable] = useState(false)
   const [searchError, setSearchError] = useState<string | null>(null)
+  const [placeholderIndex, setPlaceholderIndex] = useState(0)
+
+  const placeholders = [
+    "Search student by name",
+    "Search student by matric no",
+    "Search lecturer by name"
+  ]
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPlaceholderIndex((prevIndex) => (prevIndex + 1) % placeholders.length)
+    }, 100) // Very short interval, actual timing controlled by animation completion
+
+    return () => clearInterval(interval)
+  }, [])
 
   // Weekdays
   const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
@@ -164,49 +235,7 @@ export function SearchStudentForm() {
         }
       })
 
-      // Process timetable to merge consecutive classes
-      const processClasses = (classes: TimetableEntry[]): TimetableByDay => {
-        const dayGroups = weekdays.reduce((acc, day) => {
-          acc[day] = classes.filter(c => c.day === day)
-          return acc
-        }, {} as TimetableByDay)
-
-        // Merge consecutive classes for each day
-        Object.keys(dayGroups).forEach(day => {
-          const dayClasses = dayGroups[day].sort((a, b) => a.startTime.localeCompare(b.startTime))
-          const mergedClasses: TimetableEntry[] = []
-          let currentClass: TimetableEntry | null = null
-
-          dayClasses.forEach((classItem) => {
-            if (!currentClass) {
-              currentClass = { ...classItem }
-            } else if (
-              currentClass.course === classItem.course &&
-              currentClass.venue === classItem.venue &&
-              currentClass.lecturer === classItem.lecturer &&
-              areTimesConsecutive(currentClass.endTime, classItem.startTime)
-            ) {
-              // Merge consecutive classes
-              currentClass.endTime = classItem.endTime
-              currentClass.id = `${currentClass.id}-${classItem.id}`
-            } else {
-              mergedClasses.push(currentClass)
-              currentClass = { ...classItem }
-            }
-          })
-
-          if (currentClass) {
-            mergedClasses.push(currentClass)
-          }
-
-          dayGroups[day] = mergedClasses
-        })
-
-        return dayGroups
-      }
-
-      const processedTimetable = processClasses(formattedTimetable)
-      setTimetable(processedTimetable)
+      setTimetable(formattedTimetable)
     } catch (error) {
       console.error('Error fetching timetable:', error)
     } finally {
@@ -214,46 +243,22 @@ export function SearchStudentForm() {
     }
   }
 
-  // Helper function to check if two times are consecutive
-  const areTimesConsecutive = (endTime: string, startTime: string): boolean => {
-    // Convert times to minutes for easier comparison
-    const toMinutes = (time: string) => {
-      const [hours, minutes] = time.split(':').map(Number)
-      return hours * 60 + minutes
-    }
-
-    const endMinutes = toMinutes(endTime)
-    const startMinutes = toMinutes(startTime)
-
-    // Classes are consecutive if they are exactly 10 minutes apart
-    // (e.g., 09:50 ends and 10:00 starts)
-    return startMinutes - endMinutes === 10
-  }
-
-  // Check if a class has a clash with another class on the same day
-  const hasClash = (classItem: TimetableEntry, classes: TimetableEntry[]) => {
-    return classes.some(
-      (c) =>
-        c.id !== classItem.id &&
-        ((classItem.startTime >= c.startTime && classItem.startTime < c.endTime) ||
-          (classItem.endTime > c.startTime && classItem.endTime <= c.endTime) ||
-          (classItem.startTime <= c.startTime && classItem.endTime >= c.endTime)),
-    )
-  }
-
   return (
-    //add some margin top
-
-
     <div className="mt-6 space-y-4">
       <form onSubmit={handleSearch} className="flex gap-2">
-        <Input
-          type="text"
-          placeholder="Search by name or matric number..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="flex-1"
-        />
+        <div className="relative flex-1">
+          <Input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1"
+          />
+          <div className="absolute inset-0 flex items-center px-3 pointer-events-none">
+            {searchQuery === "" && (
+              <AnimatedPlaceholder text={placeholders[placeholderIndex]} />
+            )}
+          </div>
+        </div>
         <Button type="submit" disabled={isSearching}>
           {isSearching ? "Searching..." : "Search"}
         </Button>
@@ -295,79 +300,15 @@ export function SearchStudentForm() {
             <Badge variant="outline">{selectedStudent.courseCode}</Badge>
           </div>
 
-          {/* Horizontal day selector */}
-          <div className="flex space-x-2 overflow-x-auto">
-            {weekdays.map((day) => {
-              // Use Icon8 CDN URL directly
-              const iconUrl = `https://img.icons8.com/sf-black-filled/100/9a231b/${day.toLowerCase()}.png`
-
-              return (
-                <button
-                  key={day}
-                  className={`flex flex-col items-center p-1 w-16 transition-all duration-200 ease-in-out ${
-                    selectedDay === day
-                      ? "border-b-2 border-[#9A231B] text-[#9A231B] rounded-t-md rounded-b-none"
-                      : "text-gray-700 hover:bg-gray-100 rounded-md"
-                  }`}
-                  onClick={() => setSelectedDay(day)}
-                >
-                  <img src={iconUrl} alt={day} className="h-10 w-10 mb-1" />
-                </button>
-              )
-            })}
-          </div>
-
-          {/* Classes for selected day */}
-          <div className="space-y-2">
-            {loadingTimetable ? (
-              <div className="text-center py-4">Loading timetable...</div>
-            ) : timetable[selectedDay]?.length > 0 ? (
-              <div className="space-y-2">
-                {timetable[selectedDay].map((classItem) => {
-                  const hasClashHighlight = hasClash(classItem, timetable[selectedDay])
-                  return (
-                    <Card
-                      key={classItem.id}
-                      className={`${
-                        hasClashHighlight ? "border-red-500 bg-red-50" : ""
-                      }`}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-medium">{classItem.course}</h4>
-                            <div className="text-sm text-muted-foreground mt-2 space-y-1">
-                              <div className="flex items-center">
-                                <span className="inline-block w-16 font-medium">Time:</span>
-                                <span>
-                                  {classItem.startTime} - {classItem.endTime}
-                                </span>
-                              </div>
-                              <div className="flex items-center">
-                                <span className="inline-block w-16 font-medium">Venue:</span>
-                                <span>{classItem.venue}</span>
-                              </div>
-                              <div className="flex items-center">
-                                <span className="inline-block w-16 font-medium">Lecturer:</span>
-                                <span>{classItem.lecturer}</span>
-                              </div>
-                            </div>
-                          </div>
-                          {hasClashHighlight && (
-                            <Badge variant="destructive">Clash</Badge>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-4 text-muted-foreground">
-                No classes scheduled for {selectedDay}
-              </div>
-            )}
-          </div>
+          {loadingTimetable ? (
+            <div className="text-center py-4">Loading timetable...</div>
+          ) : (
+            <TimetableView 
+              classes={timetable} 
+              selectedDay={selectedDay}
+              onDaySelect={setSelectedDay}
+            />
+          )}
         </div>
       )}
     </div>

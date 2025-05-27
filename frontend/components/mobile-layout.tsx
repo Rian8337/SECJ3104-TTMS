@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
@@ -14,6 +14,7 @@ import { API_BASE_URL } from "@/lib/config"
 interface StudentInfo {
   name: string
   matricNo: string
+  facultyCode?: string
 }
 
 interface MobileLayoutProps {
@@ -22,14 +23,54 @@ interface MobileLayoutProps {
   studentInfo?: StudentInfo | null
 }
 
-export function MobileLayout({ children, userType, studentInfo }: MobileLayoutProps) {
+export function MobileLayout({ children, userType, studentInfo: initialStudentInfo }: MobileLayoutProps) {
   const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(initialStudentInfo || null)
+
+  useEffect(() => {
+    const fetchStudentInfo = async () => {
+      if (userType === "student" && !studentInfo) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              login: localStorage.getItem('matricNo'),
+              password: localStorage.getItem('password')
+            })
+          })
+          
+          if (!response.ok) {
+            if (response.status === 401) {
+              router.push('/')
+              return
+            }
+            throw new Error('Failed to fetch student information')
+          }
+          
+          const data = await response.json()
+          setStudentInfo({
+            name: data.name,
+            matricNo: data.matricNo,
+            facultyCode: data.facultyCode
+          })
+        } catch (err) {
+          console.error('Error fetching student info:', err)
+        }
+      }
+    }
+
+    fetchStudentInfo()
+  }, [userType, studentInfo, router])
 
   const handleLogout = async () => {
     console.log('Attempting logout...')
     try {
-      const response = await fetch(`${API_BASE_URL}/student/logout`, {
+      const response = await fetch(`${API_BASE_URL}/auth/logout`, {
         method: 'POST',
         credentials: 'include',
       })
@@ -72,13 +113,13 @@ export function MobileLayout({ children, userType, studentInfo }: MobileLayoutPr
                     <Avatar className="h-10 w-10 mr-3">
                       <AvatarImage src="/diverse-students-studying.png" alt="User" />
                       <AvatarFallback className="bg-red-100 text-red-800">
-                        {userType === "student" ? "SS" : "AR"}
+                        {userType === "student" ? (studentInfo?.name?.split(' ').map(n => n[0]).join('') || "SS") : "AR"}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <div className="font-medium">{userType === "student" ? studentInfo?.name || "Student" : "Dr. Ahmad Rizal"}</div>
+                      <div className="font-medium">{userType === "student" ? studentInfo?.name || "Loading..." : "Dr. Ahmad Rizal"}</div>
                       <div className="text-xs text-muted-foreground">
-                        {userType === "student" ? studentInfo?.matricNo || "N/A" : "Faculty of Computing"}
+                        {userType === "student" ? studentInfo?.matricNo || "Loading..." : "Faculty of Computing"}
                       </div>
                     </div>
                   </div>
@@ -94,8 +135,8 @@ export function MobileLayout({ children, userType, studentInfo }: MobileLayoutPr
 
                   <NavItem
                     icon={Search}
-                    label="Search Student"
-                    href={`/${userType}/dashboard?tab=search-student`}
+                    label="Search"
+                    href={`/${userType}/dashboard?tab=search-timetable`}
                     onClick={() => setIsMenuOpen(false)}
                   />
 

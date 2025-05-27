@@ -25,7 +25,7 @@ export function StudentProfile() {
     const fetchStudentInfo = async () => {
       try {
         setLoading(true)
-        const response = await fetch(`${API_BASE_URL}/student/login`, {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
           method: 'POST',
           credentials: 'include',
           headers: {

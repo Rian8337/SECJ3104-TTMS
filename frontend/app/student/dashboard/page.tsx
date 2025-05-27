@@ -21,7 +21,7 @@ export default function StudentDashboardPage() {
     const fetchStudentInfo = async () => {
       try {
         console.log('Fetching student info...')
-        const response = await fetch(`${API_BASE_URL}/student/login`, {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
           method: 'POST',
           credentials: 'include',
           headers: {

@@ -9,6 +9,7 @@ import { AlertTriangle } from "lucide-react"
 import { DailyClassesView } from "@/components/student/daily-classes-view"
 import { useSearchParams, useRouter } from "next/navigation"
 import { API_BASE_URL } from "@/lib/config"
+import { motion } from "framer-motion"
 
 interface TimetableEntry {
   id: string
@@ -25,56 +26,28 @@ interface TimetableEntry {
 interface StudentInfo {
   name: string
   matricNo: string
+  facultyCode?: string
 }
 
-export function StudentDashboard() {
-  const [activeTab, setActiveTab] = useState("my-timetable")
+interface StudentDashboardProps {
+  studentInfo: StudentInfo
+}
+
+export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
+  const searchParams = useSearchParams()
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || "my-timetable")
   const [timetable, setTimetable] = useState<TimetableEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null)
   const router = useRouter()
 
-  // Fetch student information
+  // Update activeTab when URL changes
   useEffect(() => {
-    const fetchStudentInfo = async () => {
-      try {
-        console.log('Fetching student info...')
-        const response = await fetch(`${API_BASE_URL}/student/login`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            login: localStorage.getItem('matricNo'),
-            password: localStorage.getItem('password')
-          })
-        })
-        
-        if (!response.ok) {
-          if (response.status === 401) {
-            console.log('Not authenticated, redirecting to login...')
-            router.push('/')
-            return
-          }
-          throw new Error('Failed to fetch student information')
-        }
-        
-        const data = await response.json()
-        console.log('Student info received:', data)
-        setStudentInfo({
-          name: data.name,
-          matricNo: data.matricNo
-        })
-      } catch (err) {
-        console.error('Error fetching student info:', err)
-        setError(err instanceof Error ? err.message : 'Failed to fetch student information')
-      }
+    const tab = searchParams.get('tab')
+    if (tab) {
+      setActiveTab(tab)
     }
-
-    fetchStudentInfo()
-  }, [router])
+  }, [searchParams])
 
   // Fetch timetable data
   useEffect(() => {
@@ -146,7 +119,7 @@ export function StudentDashboard() {
             startTime,
             endTime,
             venue: entry.venue?.shortName || 'TBA',
-            lecturer: entry.courseSection.lecturer?.name || 'TBA',
+            lecturer: entry.lecturer?.name || 'TBA',
             courseCode: entry.courseSection?.course?.code || 'UNKNOWN',
             section: entry.courseSection?.section || 'UNKNOWN'
           }
@@ -189,16 +162,26 @@ export function StudentDashboard() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between mb-2">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-4"
+    >
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+        className="flex items-center justify-between mb-2"
+      >
         <h1 className="text-xl font-bold">Welcome, {studentInfo.name}</h1>
         {/* <div className="text-sm text-muted-foreground">{studentInfo.matricNo}</div> */}
-      </div>
+      </motion.div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="my-timetable">Dashboard</TabsTrigger>
-          <TabsTrigger value="search-student">Search Student</TabsTrigger>
+          <TabsTrigger value="search-timetable">Search Timetable</TabsTrigger>
         </TabsList>
 
         <TabsContent value="my-timetable" className="space-y-4 mt-4">
@@ -218,25 +201,22 @@ export function StudentDashboard() {
             </Alert>
           )}
 
-          <Card>
-            <CardHeader>
-              <CardTitle>My Classes</CardTitle>
-              <CardDescription>Faculty of Computing | Semester 2 2023/2024</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="text-center py-4">Loading timetable...</div>
-              ) : (
-                <DailyClassesView classes={timetable} />
-              )}
-            </CardContent>
-          </Card>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground text-center p-4">
+              {studentInfo.facultyCode ? `Faculty of ${studentInfo.facultyCode}` : ''}
+            </p>
+            {loading ? (
+              <div className="text-center py-4">Loading timetable...</div>
+            ) : (
+              <DailyClassesView classes={timetable} />
+            )}
+          </div>
         </TabsContent>
 
-        <TabsContent value="search-student">
+        <TabsContent value="search-timetable">
           <SearchStudentForm />
         </TabsContent>
       </Tabs>
-    </div>
+    </motion.div>
   )
 }

@@ -1,11 +1,21 @@
 import { UserRole } from "@/types";
 import { RequestHandler, Response } from "express";
 import { IService } from "./IService";
+import { OperationResult } from "./OperationResult";
 
 /**
  * A service that is responsible for handling authentication-related operations.
  */
 export interface IAuthService extends IService {
+    /**
+     * Logs a user into the system.
+     *
+     * @param login The login of the user.
+     * @param password The password of the user.
+     * @returns A promise that resolves to an operation result containing the user data or an error.
+     */
+    login(login: string, password: string): Promise<OperationResult<unknown>>;
+
     /**
      * Creates a session for a user.
      *

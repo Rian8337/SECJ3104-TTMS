@@ -1,4 +1,3 @@
-import { IStudent } from "@/database/schema";
 import { IStudentSearchEntry, ITimetable } from "@/types";
 import { Request, Response } from "express";
 import { IController } from "./IController";
@@ -7,29 +6,6 @@ import { IController } from "./IController";
  * A controller that is responsible for handling student-related operations.
  */
 export interface IStudentController extends IController {
-    /**
-     * Logins a student into the system.
-     *
-     * @param req The request object.
-     * @param res The response object.
-     */
-    login(
-        req: Request<
-            "/login",
-            unknown,
-            Partial<{ login: string; password: string }>
-        >,
-        res: Response<IStudent | { error: string }>
-    ): Promise<void>;
-
-    /**
-     * Logs out a student from the system.
-     *
-     * @param req The request object.
-     * @param res The response object.
-     */
-    logout(req: Request<"/logout">, res: Response): void;
-
     /**
      * Obtains a student's timetable by their matriculation number.
      *

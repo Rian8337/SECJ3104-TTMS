@@ -1,4 +1,3 @@
-import { ILecturer } from "@/database/schema";
 import { ITimetable, ITimetableClash } from "@/types";
 import { Request, Response } from "express";
 import { IController } from "./IController";
@@ -7,29 +6,6 @@ import { IController } from "./IController";
  * A controller that is responsible for handling lecturer-related operations.
  */
 export interface ILecturerController extends IController {
-    /**
-     * Logins a lecturer into the system.
-     *
-     * @param req The request object.
-     * @param res The response object.
-     */
-    login(
-        req: Request<
-            "/login",
-            unknown,
-            Partial<{ login: string; password: string }>
-        >,
-        res: Response<ILecturer | { error: string }>
-    ): Promise<void>;
-
-    /**
-     * Logs out a lecturer from the system.
-     *
-     * @param req The request object.
-     * @param res The response object.
-     */
-    logout(req: Request<"/logout">, res: Response): void;
-
     /**
      * Obtains a lecturer's timetable by their worker number.
      *

@@ -1,9 +1,8 @@
-import { ILecturer } from "@/database/schema";
 import { Controller } from "@/decorators/controller";
 import { Roles } from "@/decorators/roles";
-import { Get, Post } from "@/decorators/routes";
+import { Get } from "@/decorators/routes";
 import { dependencyTokens } from "@/dependencies/tokens";
-import { IAuthService, ILecturerService } from "@/services";
+import { ILecturerService } from "@/services";
 import { ITimetable, ITimetableClash, UserRole } from "@/types";
 import { Request, Response } from "express";
 import { inject } from "tsyringe";
@@ -20,65 +19,9 @@ export class LecturerController
 {
     constructor(
         @inject(dependencyTokens.lecturerService)
-        private readonly lecturerService: ILecturerService,
-        @inject(dependencyTokens.authService)
-        private readonly authService: IAuthService
+        private readonly lecturerService: ILecturerService
     ) {
         super();
-    }
-
-    @Post("/login")
-    async login(
-        req: Request<
-            "/login",
-            ILecturer | { error: string },
-            Partial<{ login: string; password: string }>
-        >,
-        res: Response<ILecturer | { error: string }>
-    ) {
-        const { login, password } = req.body;
-
-        if (!login || !password) {
-            res.status(400).json({
-                error: "Login and password are required.",
-            });
-
-            return;
-        }
-
-        const workerNo = this.validateWorkerNo(req, res);
-
-        if (workerNo === null) {
-            return;
-        }
-
-        try {
-            const lecturer = await this.lecturerService.getByWorkerNo(workerNo);
-
-            if (lecturer?.workerNo.toString() !== password) {
-                res.status(401).json({
-                    error: "Invalid username or password.",
-                });
-
-                return;
-            }
-
-            this.authService.createSession(res, lecturer);
-
-            res.json(lecturer);
-        } catch (e) {
-            console.error(e);
-
-            res.status(500).json({ error: "Internal server error." });
-        }
-    }
-
-    @Post("/logout")
-    @Roles(UserRole.lecturer)
-    logout(_: Request<"/logout">, res: Response) {
-        this.authService.clearSession(res);
-
-        res.sendStatus(200);
     }
 
     @Get("/timetable")

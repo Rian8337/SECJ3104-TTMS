@@ -1,9 +1,8 @@
-import { IStudent } from "@/database/schema";
 import { Controller } from "@/decorators/controller";
 import { Roles } from "@/decorators/roles";
-import { Get, Post } from "@/decorators/routes";
+import { Get } from "@/decorators/routes";
 import { dependencyTokens } from "@/dependencies/tokens";
-import { IAuthService, IStudentService } from "@/services";
+import { IStudentService } from "@/services";
 import { IStudentSearchEntry, ITimetable, UserRole } from "@/types";
 import { Request, Response } from "express";
 import { inject } from "tsyringe";
@@ -20,55 +19,9 @@ export class StudentController
 {
     constructor(
         @inject(dependencyTokens.studentService)
-        private readonly studentService: IStudentService,
-        @inject(dependencyTokens.authService)
-        private readonly authService: IAuthService
+        private readonly studentService: IStudentService
     ) {
         super();
-    }
-
-    @Post("/login")
-    async login(
-        req: Request<
-            "/login",
-            IStudent | { error: string },
-            Partial<{ login: string; password: string }>
-        >,
-        res: Response<IStudent | { error: string }>
-    ) {
-        const { login, password } = req.body;
-
-        if (!login || !password) {
-            res.status(400).json({ error: "Login and password are required" });
-
-            return;
-        }
-
-        try {
-            const student = await this.studentService.getByMatricNo(login);
-
-            if (student?.kpNo !== password) {
-                res.status(401).json({ error: "Invalid username or password" });
-
-                return;
-            }
-
-            this.authService.createSession(res, student);
-
-            res.json(student);
-        } catch (e) {
-            console.error(e);
-
-            res.status(500).json({ error: "Internal server error" });
-        }
-    }
-
-    @Post("/logout")
-    @Roles(UserRole.student)
-    logout(_: Request<"/logout">, res: Response) {
-        this.authService.clearSession(res);
-
-        res.sendStatus(200);
     }
 
     @Get("/timetable")

@@ -1,11 +1,14 @@
-import { isLecturer, isStudent } from "@/database/schema";
+import { ILecturer, isLecturer, isStudent, IStudent } from "@/database/schema";
 import { Service } from "@/decorators/service";
 import { dependencyTokens } from "@/dependencies/tokens";
 import { UserRole } from "@/types";
-import { decrypt, encrypt } from "@/utils";
+import { decrypt, encrypt, isValidMatricNumber } from "@/utils";
 import { RequestHandler, Response } from "express";
 import { BaseService } from "./BaseService";
 import { IAuthService } from "./IAuthService";
+import { inject } from "tsyringe";
+import { ILecturerRepository, IStudentRepository } from "@/repositories";
+import { OperationResult } from "./OperationResult";
 
 /**
  * A service that is responsible for handling authentication-related operations.
@@ -13,6 +16,29 @@ import { IAuthService } from "./IAuthService";
 @Service(dependencyTokens.authService)
 export class AuthService extends BaseService implements IAuthService {
     private readonly sessionCookieName = "session";
+
+    constructor(
+        @inject(dependencyTokens.studentRepository)
+        private readonly studentRepository: IStudentRepository,
+        @inject(dependencyTokens.lecturerRepository)
+        private readonly lecturerRepository: ILecturerRepository
+    ) {
+        super();
+    }
+
+    login(login: string, password: string): Promise<OperationResult<unknown>> {
+        if (isValidMatricNumber(login)) {
+            return this.loginStudent(login, password);
+        }
+
+        if (/^\d$/.test(login)) {
+            return this.loginLecturer(login, password);
+        }
+
+        return Promise.resolve(
+            this.createFailedResponse("Invalid username or password.", 401)
+        );
+    }
 
     createSession(res: Response, data: unknown) {
         const encrypted = encrypt(JSON.stringify(data));
@@ -78,5 +104,38 @@ export class AuthService extends BaseService implements IAuthService {
                 res.status(401).json({ error: "Unauthorized" });
             }
         };
+    }
+
+    private async loginStudent(
+        login: string,
+        password: string
+    ): Promise<OperationResult<IStudent>> {
+        const student = await this.studentRepository.getByMatricNo(login);
+
+        if (student?.kpNo !== password) {
+            return this.createFailedResponse(
+                "Invalid username or password.",
+                401
+            );
+        }
+
+        return this.createSuccessfulResponse(student);
+    }
+
+    private async loginLecturer(
+        login: string,
+        password: string
+    ): Promise<OperationResult<ILecturer>> {
+        const workerNo = parseInt(login);
+        const lecturer = await this.lecturerRepository.getByWorkerNo(workerNo);
+
+        if (lecturer?.workerNo.toString() !== password) {
+            return this.createFailedResponse(
+                "Invalid username or password.",
+                401
+            );
+        }
+
+        return this.createSuccessfulResponse(lecturer);
     }
 }

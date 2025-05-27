@@ -93,7 +93,7 @@ describe("StudentService (unit)", () => {
             expect(mockStudentRepository.searchByName).not.toHaveBeenCalled();
         });
 
-        it("Should return empty result for matric number that is not 9 in length", async () => {
+        it("Should return empty result for an invalid matric number", async () => {
             const result = await service.search("A1234567", 10, 0);
 
             expect(result.isSuccessful()).toBe(true);
@@ -107,13 +107,13 @@ describe("StudentService (unit)", () => {
         });
 
         it("Should search by matric number", async () => {
-            const result = await service.search("A12345678", 10, 0);
+            const result = await service.search("A12FS5678", 10, 0);
 
             expect(result.isSuccessful()).toBe(true);
             expect(result.failed()).toBe(false);
 
             expect(mockStudentRepository.searchByMatricNo).toHaveBeenCalledWith(
-                "A12345678",
+                "A12FS5678",
                 10,
                 0
             );
@@ -139,13 +139,13 @@ describe("StudentService (unit)", () => {
         });
 
         it("Should search by matric number with default limit and offset", async () => {
-            const result = await service.search("A12345678");
+            const result = await service.search("A12FS5678");
 
             expect(result.isSuccessful()).toBe(true);
             expect(result.failed()).toBe(false);
 
             expect(mockStudentRepository.searchByMatricNo).toHaveBeenCalledWith(
-                "A12345678",
+                "A12FS5678",
                 10,
                 0
             );

@@ -49,5 +49,5 @@ export function isValidKpNo(str: unknown): str is string {
  * @returns `true` if the string is a valid worker number, `false` otherwise.
  */
 export function isValidWorkerNo(str: unknown): str is string {
-    return typeof str === "string" && /^[1-9]\d{0,}$/.test(str);
+    return typeof str === "string" && /^[1-9]\d{0,7}$/.test(str);
 }

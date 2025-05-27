@@ -18,8 +18,14 @@ describe("CourseRepository (unit)", () => {
         await repository.getCourseByCode("CS101");
 
         expect(mockDb.select).toHaveBeenCalled();
+
         expect(mockDb.from).toHaveBeenCalledWith(courses);
+        expect(mockDb.from).toHaveBeenCalledAfter(mockDb.select);
+
         expect(mockDb.where).toHaveBeenCalled();
+        expect(mockDb.where).toHaveBeenCalledAfter(mockDb.from);
+
         expect(mockDb.limit).toHaveBeenCalledWith(1);
+        expect(mockDb.limit).toHaveBeenCalledAfter(mockDb.where);
     });
 });

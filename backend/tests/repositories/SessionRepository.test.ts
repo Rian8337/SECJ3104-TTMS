@@ -14,6 +14,8 @@ describe("SessionRepository (unit)", () => {
         await repository.getSessions();
 
         expect(mockDb.select).toHaveBeenCalled();
+
         expect(mockDb.from).toHaveBeenCalledWith(sessions);
+        expect(mockDb.from).toHaveBeenCalledAfter(mockDb.select);
     });
 });

@@ -60,6 +60,10 @@ describe("StudentRepository (unit)", () => {
 
             expect(mockDb.where).toHaveBeenCalled();
             expect(mockDb.where).toHaveBeenCalledAfter(mockDb.from);
+
+            expect(
+                mockDb.query.courseSectionSchedules.findMany
+            ).not.toHaveBeenCalled();
         });
 
         it("Should query database twice if there are registered courses", async () => {
@@ -114,7 +118,7 @@ describe("StudentRepository (unit)", () => {
 
             expect(
                 mockDb.query.courseSectionSchedules.findMany
-            ).toHaveBeenCalledWith(
+            ).toHaveBeenCalledExactlyOnceWith(
                 expect.objectContaining({
                     columns: {
                         day: true,
@@ -136,10 +140,6 @@ describe("StudentRepository (unit)", () => {
 
             expect(
                 mockDb.query.courseSectionSchedules.findMany
-            ).toHaveBeenCalledTimes(1);
-
-            expect(
-                mockDb.query.courseSectionSchedules.findMany
             ).toHaveBeenCalledAfter(mockDb.from);
 
             expect(timetable).toEqual(mockTimetable);
@@ -151,12 +151,16 @@ describe("StudentRepository (unit)", () => {
             await expect(async () =>
                 repository.searchByMatricNo("123456", 0)
             ).rejects.toThrow("Limit must be greater than 0");
+
+            expect(mockDb.select).not.toHaveBeenCalled();
         });
 
         it("Should throw an error if offset is lower than 0", async () => {
             await expect(async () =>
                 repository.searchByMatricNo("123456", 10, -1)
             ).rejects.toThrow("Offset must be greater than or equal to 0");
+
+            expect(mockDb.select).not.toHaveBeenCalled();
         });
 
         it("Should query database", async () => {
@@ -197,12 +201,16 @@ describe("StudentRepository (unit)", () => {
             await expect(async () =>
                 repository.searchByName("John Doe", 0)
             ).rejects.toThrow("Limit must be greater than 0");
+
+            expect(mockDb.select).not.toHaveBeenCalled();
         });
 
         it("Should throw an error if offset is lower than 0", async () => {
             await expect(async () =>
                 repository.searchByName("John Doe", 10, -1)
             ).rejects.toThrow("Offset must be greater than or equal to 0");
+
+            expect(mockDb.select).not.toHaveBeenCalled();
         });
 
         it("Should query database", async () => {

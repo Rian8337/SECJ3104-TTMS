@@ -1,5 +1,10 @@
 import { IStudent } from "@/database/schema";
-import { ITimetable, TTMSSemester, TTMSSession } from "@/types";
+import {
+    IStudentAnalytics,
+    ITimetable,
+    TTMSSemester,
+    TTMSSession,
+} from "@/types";
 import { IService } from "./IService";
 import { OperationResult } from "./OperationResult";
 
@@ -42,4 +47,16 @@ export interface IStudentService extends IService {
         limit?: number,
         offset?: number
     ): Promise<OperationResult<IStudent[]>>;
+
+    /**
+     * Generates analytics for students in a given academic session and semester.
+     *
+     * @param session The academic session to generate analytics for.
+     * @param semester The academic semester to generate analytics for.
+     * @return The analytics for students in the given session and semester.
+     */
+    generateAnalytics(
+        session: TTMSSession,
+        semester: TTMSSemester
+    ): Promise<OperationResult<IStudentAnalytics>>;
 }

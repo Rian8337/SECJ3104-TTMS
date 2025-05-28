@@ -1,11 +1,12 @@
-import { courses, ICourse } from "@/database/schema";
+import { DrizzleDb } from "@/database";
+import { courses, courseSections, ICourse } from "@/database/schema";
 import { Repository } from "@/decorators/repository";
 import { dependencyTokens } from "@/dependencies/tokens";
-import { eq } from "drizzle-orm";
+import { IStudentAnalyticsCourse, TTMSSemester, TTMSSession } from "@/types";
+import { and, eq } from "drizzle-orm";
+import { inject } from "tsyringe";
 import { BaseRepository } from "./BaseRepository";
 import { ICourseRepository } from "./ICourseRepository";
-import { inject } from "tsyringe";
-import { DrizzleDb } from "@/database";
 
 /**
  * A repository that is responsible for handling course-related operations.
@@ -27,5 +28,30 @@ export class CourseRepository
             .limit(1);
 
         return res.at(0) ?? null;
+    }
+
+    async getSchedulesForAnalytics(
+        session: TTMSSession,
+        semester: TTMSSemester
+    ): Promise<IStudentAnalyticsCourse[]> {
+        return this.db.query.courseSections.findMany({
+            columns: { section: true },
+            with: {
+                course: { columns: { code: true, name: true } },
+                schedules: {
+                    columns: {
+                        day: true,
+                        time: true,
+                    },
+                    with: {
+                        venue: { columns: { shortName: true } },
+                    },
+                },
+            },
+            where: and(
+                eq(courseSections.session, session),
+                eq(courseSections.semester, semester)
+            ),
+        });
     }
 }

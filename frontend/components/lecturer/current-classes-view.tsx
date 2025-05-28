@@ -1,41 +1,124 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Clock, MapPin, Users } from "lucide-react"
+import { API_BASE_URL } from "@/lib/config"
+
+interface TimetableEntry {
+  id: string
+  course: string
+  day: string
+  startTime: string
+  endTime: string
+  venue: string
+  lecturer: string
+  courseCode: string
+  section: string
+  courseSection: {
+    lecturer?: {
+      name: string
+    }
+  }
+}
 
 export function CurrentClassesView() {
   const [selectedTime, setSelectedTime] = useState("now")
+  const [currentClasses, setCurrentClasses] = useState<TimetableEntry[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // Mock data for current classes with UTM courses
-  const currentClasses = [
-    {
-      id: "secp3204",
-      course: "SECP3204 - Software Engineering",
-      time: "09:00 - 11:00",
-      venue: "N28-A",
-      students: [
-        { id: "A22EC4040", name: "Samin Sarwat" },
-        { id: "A22EC4043", name: "Muhammad Hafiz" },
-        { id: "A22EC4045", name: "Tan Wei Ming" },
-        { id: "A22EC4046", name: "Amirah Zainal" },
-        { id: "A22EC4047", name: "Rajesh Kumar" },
-      ],
-    },
-    {
-      id: "secj3303",
-      course: "SECJ3303 - Internet Programming",
-      time: "11:00 - 13:00",
-      venue: "N28-B",
-      students: [
-        { id: "A22EC4040", name: "Samin Sarwat" },
-        { id: "A22EC4041", name: "Ahmad Firdaus" },
-        { id: "A22EC4048", name: "Nurul Huda" },
-      ],
-    },
-  ]
+  useEffect(() => {
+    const fetchCurrentClasses = async () => {
+      try {
+        setLoading(true)
+        const storedInfo = localStorage.getItem('lecturerInfo')
+        if (!storedInfo) {
+          throw new Error('No lecturer information found')
+        }
+        
+        const lecturerInfo = JSON.parse(storedInfo)
+        
+        const response = await fetch(
+          `${API_BASE_URL}/lecturer/timetable?session=2024/2025&semester=1&worker_no=${lecturerInfo.workerNo}`,
+          {
+            credentials: 'include'
+          }
+        )
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch timetable')
+        }
+
+        const data = await response.json()
+        // Transform the data to match the expected format
+        const formattedTimetable = data.map((entry: any) => ({
+          id: `${entry.courseSection.course.code}-${entry.courseSection.section}`,
+          course: `${entry.courseSection.course.code} - ${entry.courseSection.course.name}`,
+          day: entry.day,
+          startTime: entry.time.split(' - ')[0],
+          endTime: entry.time.split(' - ')[1],
+          venue: entry.venue?.shortName || 'TBA',
+          lecturer: entry.courseSection.lecturer?.name || 'TBA',
+          courseCode: entry.courseSection.course.code,
+          section: entry.courseSection.section,
+          courseSection: {
+            lecturer: entry.courseSection.lecturer
+          }
+        }))
+
+        // Filter classes based on current time
+        const now = new Date()
+        const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' })
+        const currentTime = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })
+
+        const filteredClasses = formattedTimetable.filter((classItem) => {
+          if (classItem.day !== currentDay) return false
+          return classItem.startTime <= currentTime && classItem.endTime >= currentTime
+        })
+
+        setCurrentClasses(filteredClasses)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch current classes')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCurrentClasses()
+    // Refresh every minute
+    const interval = setInterval(fetchCurrentClasses, 60000)
+    return () => clearInterval(interval)
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="text-center py-8">
+        <div className="text-lg font-medium">Loading current classes...</div>
+        <div className="text-muted-foreground">Please wait while we fetch your schedule</div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <div className="text-lg font-medium text-red-600">Error</div>
+        <div className="text-muted-foreground">{error}</div>
+      </div>
+    )
+  }
+
+  if (currentClasses.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <div className="text-lg font-medium">No Current Classes</div>
+        <div className="text-muted-foreground">You don't have any classes at the moment</div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-4">
@@ -62,7 +145,7 @@ export function CurrentClassesView() {
                 <h3 className="font-medium">{classItem.course}</h3>
                 <div className="flex items-center text-sm text-muted-foreground mt-1">
                   <Clock className="h-3.5 w-3.5 mr-1" />
-                  <span>{classItem.time}</span>
+                  <span>{classItem.startTime} - {classItem.endTime}</span>
                   <span className="mx-2">•</span>
                   <MapPin className="h-3.5 w-3.5 mr-1" />
                   <span>{classItem.venue}</span>
@@ -72,21 +155,15 @@ export function CurrentClassesView() {
               <div className="p-3">
                 <div className="flex items-center mb-2">
                   <Users className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <span className="text-sm font-medium">Students ({classItem.students.length})</span>
+                  <span className="text-sm font-medium">Section {classItem.section}</span>
                 </div>
 
                 <div className="space-y-2">
-                  {classItem.students.map((student) => (
-                    <div key={student.id} className="flex justify-between items-center">
-                      <div>
-                        <div className="text-sm font-medium">{student.name}</div>
-                        <div className="text-xs text-muted-foreground">{student.id}</div>
-                      </div>
-                      <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                        Present
-                      </Badge>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm font-medium">{classItem.lecturer}</div>
                     </div>
-                  ))}
+                  </div>
                 </div>
               </div>
             </CardContent>

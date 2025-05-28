@@ -1,23 +1,17 @@
 "use client"
 
-import { TimetableView } from "./timetable-view"
-
-interface ClassItem {
-  id: string
-  course: string
-  day: string
-  startTime: string
-  endTime: string
-  venue: string
-  lecturer: string
-  courseCode: string
-  section: string
-}
+import { TimetableView } from "../timetable-view"
+import { ClassItem } from "@/types/timetable"
 
 interface DailyClassesViewProps {
   classes: ClassItem[]
+  onLecturerClick?: (workerNo: string) => void
 }
 
-export function DailyClassesView({ classes }: DailyClassesViewProps) {
-  return <TimetableView classes={classes} />
+export function DailyClassesView({ classes, onLecturerClick }: DailyClassesViewProps) {
+  return <TimetableView 
+    classes={classes} 
+    userType="student" 
+    onLecturerClick={onLecturerClick}
+  />
 }

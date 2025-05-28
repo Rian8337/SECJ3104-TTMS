@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { API_BASE_URL } from "@/lib/config"
-import { TimetableView } from "@/components/student/timetable-view"
+import { TimetableView } from "@/components/timetable-view"
+import { ClassItem } from "@/types/timetable"
 
 interface StudentSearchResult {
   matricNo: string
@@ -17,20 +18,8 @@ interface StudentSearchResult {
   facultyCode: string
 }
 
-interface TimetableEntry {
-  id: string
-  course: string
-  day: string
-  startTime: string
-  endTime: string
-  venue: string
-  lecturer: string
-  courseCode: string
-  section: string
-}
-
 interface TimetableByDay {
-  [key: string]: TimetableEntry[]
+  [key: string]: ClassItem[]
 }
 
 const AnimatedPlaceholder = ({ text }: { text: string }) => {
@@ -99,7 +88,7 @@ export function SearchStudentForm() {
   const [selectedStudent, setSelectedStudent] = useState<StudentSearchResult | null>(null)
   const [isSearching, setIsSearching] = useState(false)
   const [selectedDay, setSelectedDay] = useState("Monday")
-  const [timetable, setTimetable] = useState<TimetableEntry[]>([])
+  const [timetable, setTimetable] = useState<ClassItem[]>([])
   const [loadingTimetable, setLoadingTimetable] = useState(false)
   const [searchError, setSearchError] = useState<string | null>(null)
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
@@ -229,9 +218,15 @@ export function SearchStudentForm() {
           startTime,
           endTime,
           venue: entry.venue?.shortName || 'TBA',
-          lecturer: entry.lecturer?.name || 'TBA',
+          lecturer: entry.courseSection.lecturer?.name || 'TBA',
           courseCode: entry.courseSection?.course?.code || 'UNKNOWN',
-          section: entry.courseSection?.section || 'UNKNOWN'
+          section: entry.courseSection?.section || 'UNKNOWN',
+          courseSection: {
+            lecturer: entry.courseSection.lecturer ? {
+              name: entry.courseSection.lecturer.name,
+              workerNo: entry.courseSection.lecturer.workerNo || undefined
+            } : undefined
+          }
         }
       })
 
@@ -307,6 +302,7 @@ export function SearchStudentForm() {
               classes={timetable} 
               selectedDay={selectedDay}
               onDaySelect={setSelectedDay}
+              userType="student"
             />
           )}
         </div>

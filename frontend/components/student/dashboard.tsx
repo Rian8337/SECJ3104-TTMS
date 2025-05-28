@@ -10,6 +10,8 @@ import { DailyClassesView } from "@/components/student/daily-classes-view"
 import { useSearchParams, useRouter } from "next/navigation"
 import { API_BASE_URL } from "@/lib/config"
 import { motion } from "framer-motion"
+import { formatTimetableData } from "@/lib/timetable-utils"
+import { TimetableView } from "@/components/timetable-view"
 
 interface TimetableEntry {
   id: string
@@ -21,6 +23,12 @@ interface TimetableEntry {
   lecturer: string
   courseCode: string
   section: string
+  courseSection: {
+    lecturer?: {
+      name: string
+      workerNo: string | number
+    }
+  }
 }
 
 interface StudentInfo {
@@ -39,6 +47,10 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
   const [timetable, setTimetable] = useState<TimetableEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showLecturerTimetable, setShowLecturerTimetable] = useState(false)
+  const [lecturerTimetable, setLecturerTimetable] = useState<TimetableEntry[]>([])
+  const [lecturerLoading, setLecturerLoading] = useState(false)
+  const [lecturerError, setLecturerError] = useState<string | null>(null)
   const router = useRouter()
 
   // Update activeTab when URL changes
@@ -74,57 +86,8 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
         const data = await response.json()
         console.log('Raw timetable data:', data)
 
-        // Transform the data to match the expected format
-        const formattedTimetable = data.map((entry: any) => {
-          console.log('Processing timetable entry:', entry)
-          
-          // Convert day number to string
-          const dayMap: { [key: number]: string } = {
-            1: 'Sunday',
-            2: 'Monday',
-            3: 'Tuesday',
-            4: 'Wednesday',
-            5: 'Thursday',
-            6: 'Friday',
-            7: 'Saturday'
-          }
-
-          // Convert time number to actual time
-          const timeMap: { [key: number]: string } = {
-            1: '07:00 - 07:50',
-            2: '08:00 - 08:50',
-            3: '09:00 - 09:50',
-            4: '10:00 - 10:50',
-            5: '11:00 - 11:50',
-            6: '12:00 - 12:50',
-            7: '13:00 - 13:50',
-            8: '14:00 - 14:50',
-            9: '15:00 - 15:50',
-            10: '16:00 - 16:50',
-            11: '17:00 - 17:50',
-            12: '18:00 - 18:50',
-            13: '19:00 - 19:50',
-            14: '20:00 - 20:50',
-            15: '21:00 - 21:50',
-            16: '22:00 - 22:50'
-          }
-
-          const timeRange = timeMap[entry.time] || 'TBA'
-          const [startTime, endTime] = timeRange.split(' - ')
-
-          return {
-            id: `${entry.courseSection?.course?.code || 'UNKNOWN'}-${entry.courseSection?.section || 'UNKNOWN'}`,
-            course: `${entry.courseSection?.course?.code || 'UNKNOWN'} - ${entry.courseSection?.course?.name || 'Unknown Course'}`,
-            day: dayMap[entry.day] || 'Unknown',
-            startTime,
-            endTime,
-            venue: entry.venue?.shortName || 'TBA',
-            lecturer: entry.lecturer?.name || 'TBA',
-            courseCode: entry.courseSection?.course?.code || 'UNKNOWN',
-            section: entry.courseSection?.section || 'UNKNOWN'
-          }
-        })
-
+        // Use the shared formatTimetableData function
+        const formattedTimetable = formatTimetableData(data)
         console.log('Formatted timetable:', formattedTimetable)
         setTimetable(formattedTimetable)
       } catch (err) {
@@ -149,6 +112,40 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
           (class1.startTime <= class2.startTime && class1.endTime >= class2.endTime)),
     ),
   )
+
+  // Add new function to fetch lecturer timetable
+  const fetchLecturerTimetable = async (workerNo: string) => {
+    try {
+      setLecturerLoading(true)
+      setLecturerError(null)
+      const response = await fetch(
+        `/api/lecturer/timetable?worker_no=${encodeURIComponent(workerNo)}&session=2024/2025&semester=2`,
+        {
+          credentials: 'include'
+        }
+      )
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to fetch lecturer timetable')
+      }
+
+      const data = await response.json()
+      const formattedTimetable = formatTimetableData(data)
+      setLecturerTimetable(formattedTimetable)
+    } catch (err) {
+      console.error('Error in fetchLecturerTimetable:', err)
+      setLecturerError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setLecturerLoading(false)
+    }
+  }
+
+  // Add function to handle lecturer name click
+  const handleLecturerClick = (workerNo: string) => {
+    setShowLecturerTimetable(true)
+    fetchLecturerTimetable(workerNo)
+  }
 
   if (!studentInfo) {
     return (
@@ -205,10 +202,44 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
             <p className="text-sm text-muted-foreground text-center p-4">
               {studentInfo.facultyCode ? `Faculty of ${studentInfo.facultyCode}` : ''}
             </p>
-            {loading ? (
-              <div className="text-center py-4">Loading timetable...</div>
+            {showLecturerTimetable ? (
+              <div className="space-y-4">
+                <div className="flex justify-center items-center">
+                  <button
+                  onClick={() => setShowLecturerTimetable(false)}
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-white text-black border rounded hover:bg-gray-100 transition-colors"
+                  style={{ borderColor: '#000000' }}
+                >
+                  <img
+                    src="https://img.icons8.com/pastel-glyph/100/u-turn-to-left.png"
+                    alt="Back Icon"
+                    className="w-8 h-8"
+                  />
+                  Show My Timetable
+                </button>
+
+                </div>
+                {lecturerLoading ? (
+                  <div className="text-center py-4">Loading lecturer timetable...</div>
+                ) : lecturerError ? (
+                  <div className="text-center py-4 text-red-500">{lecturerError}</div>
+                ) : (
+                  <TimetableView 
+                    classes={lecturerTimetable} 
+                    userType="lecturer"
+                    showDaySelector={true}
+                  />
+                )}
+              </div>
             ) : (
-              <DailyClassesView classes={timetable} />
+              loading ? (
+                <div className="text-center py-4">Loading timetable...</div>
+              ) : (
+                <DailyClassesView 
+                  classes={timetable} 
+                  onLecturerClick={handleLecturerClick}
+                />
+              )
             )}
           </div>
         </TabsContent>

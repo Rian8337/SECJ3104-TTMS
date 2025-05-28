@@ -29,6 +29,9 @@ export async function GET(request: NextRequest) {
     const response = await fetch(
       `${process.env.BACKEND_URL}/lecturer/timetable?session=${session}&semester=${semester}&worker_no=${worker_no}`,
       {
+        headers: {
+          'Cookie': `session=${sessionCookie.value}`
+        },
         credentials: 'include'
       }
     )

@@ -43,17 +43,24 @@ export function LoginForm() {
         throw new Error(data.error || 'Login failed')
       }
 
-      // Store student info from login response
-      localStorage.setItem('studentInfo', JSON.stringify({
-        name: data.name,
-        matricNo: data.matricNo,
-        facultyCode: data.facultyCode
-      }))
-
       // Check if response has workerNo to determine if it's a lecturer
       if ('workerNo' in data) {
+        console.log("Lecturer login")
+        // Store lecturer info from login response
+        localStorage.setItem('lecturerInfo', JSON.stringify({
+          name: data.name,
+          workerNo: data.workerNo,
+          facultyCode: data.facultyCode
+        }))
         router.push("/lecturer/dashboard")
       } else {
+        console.log("student login")
+        // Store student info from login response
+        localStorage.setItem('studentInfo', JSON.stringify({
+          name: data.name,
+          matricNo: data.matricNo,
+          facultyCode: data.facultyCode
+        }))
         router.push("/student/dashboard")
       }
     } catch (err) {

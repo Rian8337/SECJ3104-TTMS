@@ -29,46 +29,25 @@ export function MobileLayout({ children, userType, studentInfo: initialStudentIn
   const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(initialStudentInfo || null)
 
   useEffect(() => {
-    const fetchStudentInfo = async () => {
-      if (userType === "student" && !studentInfo) {
-        try {
-          const response = await fetch(`${API_BASE_URL}/auth/login`, {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              login: localStorage.getItem('matricNo'),
-              password: localStorage.getItem('password')
-            })
-          })
-          
-          if (!response.ok) {
-            if (response.status === 401) {
-              router.push('/')
-              return
-            }
-            throw new Error('Failed to fetch student information')
-          }
-          
-          const data = await response.json()
-          setStudentInfo({
-            name: data.name,
-            matricNo: data.matricNo,
-            facultyCode: data.facultyCode
-          })
-        } catch (err) {
-          console.error('Error fetching student info:', err)
-        }
+    if (userType === "student" && !studentInfo) {
+      const storedInfo = localStorage.getItem('studentInfo')
+      if (!storedInfo) {
+        router.push('/')
+        return
+      }
+
+      try {
+        const info = JSON.parse(storedInfo)
+        setStudentInfo(info)
+      } catch (err) {
+        console.error('Error parsing student info:', err)
+        localStorage.removeItem('studentInfo')
+        router.push('/')
       }
     }
-
-    fetchStudentInfo()
   }, [userType, studentInfo, router])
 
   const handleLogout = async () => {
-    console.log('Attempting logout...')
     try {
       const response = await fetch(`${API_BASE_URL}/auth/logout`, {
         method: 'POST',
@@ -77,18 +56,13 @@ export function MobileLayout({ children, userType, studentInfo: initialStudentIn
 
       if (!response.ok) {
         console.error('Logout failed:', response.status)
-        // Even if API call fails, clear local storage and redirect
       }
 
-      console.log('Logout successful, clearing credentials and redirecting.')
-      localStorage.removeItem('matricNo')
-      localStorage.removeItem('password')
+      localStorage.removeItem('studentInfo')
       router.push("/")
     } catch (error) {
       console.error('Error during logout:', error)
-      // Even if error occurs, clear local storage and redirect
-      localStorage.removeItem('matricNo')
-      localStorage.removeItem('password')
+      localStorage.removeItem('studentInfo')
       router.push("/")
     }
   }

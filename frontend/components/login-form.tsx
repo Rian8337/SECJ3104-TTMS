@@ -27,11 +27,7 @@ export function LoginForm() {
     const login = formData.get("login") as string
     const password = formData.get("password") as string
 
-
-
     try {
-      console.log('Attempting login with:', { login, password })
-
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
@@ -41,17 +37,18 @@ export function LoginForm() {
         credentials: 'include',
       })
 
-      console.log('Response status:', response.status)
       const data = await response.json()
-      console.log('Response data:', data)
 
       if (!response.ok) {
         throw new Error(data.error || 'Login failed')
       }
 
-      // Store credentials for future use
-      localStorage.setItem('matricNo', login)
-      localStorage.setItem('password', password)
+      // Store student info from login response
+      localStorage.setItem('studentInfo', JSON.stringify({
+        name: data.name,
+        matricNo: data.matricNo,
+        facultyCode: data.facultyCode
+      }))
 
       // Check if response has workerNo to determine if it's a lecturer
       if ('workerNo' in data) {

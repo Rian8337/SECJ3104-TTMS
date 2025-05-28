@@ -22,40 +22,23 @@ export function StudentProfile() {
   const router = useRouter()
 
   useEffect(() => {
-    const fetchStudentInfo = async () => {
-      try {
-        setLoading(true)
-        const response = await fetch(`${API_BASE_URL}/auth/login`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            login: localStorage.getItem('matricNo'),
-            password: localStorage.getItem('password')
-          })
-        })
-
-        if (!response.ok) {
-          if (response.status === 401) {
-            router.push('/') // Redirect to login if not authenticated
-            return
-          }
-          throw new Error('Failed to fetch student information')
-        }
-
-        const data = await response.json()
-        setStudentInfo(data)
-      } catch (err) {
-        console.error('Error fetching student info:', err)
-        setError(err instanceof Error ? err.message : 'Failed to fetch student information')
-      } finally {
-        setLoading(false)
-      }
+    const storedInfo = localStorage.getItem('studentInfo')
+    if (!storedInfo) {
+      router.push('/')
+      return
     }
 
-    fetchStudentInfo()
+    try {
+      const info = JSON.parse(storedInfo)
+      setStudentInfo(info)
+    } catch (err) {
+      console.error('Error parsing student info:', err)
+      setError('Failed to load student information')
+      localStorage.removeItem('studentInfo')
+      router.push('/')
+    } finally {
+      setLoading(false)
+    }
   }, [router])
 
   if (loading) {

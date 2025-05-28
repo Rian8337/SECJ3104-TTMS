@@ -355,6 +355,11 @@ type TimetableVenue = {
 ```ts
 type TimetableLecturer = {
     /**
+     * The worker number of the lecturer.
+     */
+    workerNo: number;
+
+    /**
      * The name of the lecturer.
      */
     name: string;

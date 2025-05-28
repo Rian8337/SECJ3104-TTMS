@@ -1,5 +1,10 @@
 import { IStudent } from "@/database/schema";
-import { ITimetable, TTMSSemester, TTMSSession } from "@/types";
+import {
+    IRegisteredStudent,
+    ITimetable,
+    TTMSSemester,
+    TTMSSession,
+} from "@/types";
 
 /**
  * A repository that is responsible for handling student-related operations.
@@ -58,4 +63,16 @@ export interface IStudentRepository {
         limit?: number,
         offset?: number
     ): Promise<IStudent[]>;
+
+    /**
+     * Obtains the list of registered students for a given session and semester.
+     *
+     * @param session The academic session to obtain the registered students for.
+     * @param semester The academic semester to obtain the registered students for.
+     * @return The list of registered students
+     */
+    getRegisteredStudents(
+        session: TTMSSession,
+        semester: TTMSSemester
+    ): Promise<IRegisteredStudent[]>;
 }

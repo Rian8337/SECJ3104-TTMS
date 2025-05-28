@@ -1,3 +1,4 @@
+import { DrizzleDb } from "@/database";
 import {
     courseSectionSchedules,
     IStudent,
@@ -6,12 +7,16 @@ import {
 } from "@/database/schema";
 import { Repository } from "@/decorators/repository";
 import { dependencyTokens } from "@/dependencies/tokens";
-import { ITimetable, TTMSSemester, TTMSSession } from "@/types";
+import {
+    IRegisteredStudent,
+    ITimetable,
+    TTMSSemester,
+    TTMSSession,
+} from "@/types";
 import { and, eq, or, sql } from "drizzle-orm";
-import { IStudentRepository } from "./IStudentRepository";
-import { BaseRepository } from "./BaseRepository";
 import { inject } from "tsyringe";
-import { DrizzleDb } from "@/database";
+import { BaseRepository } from "./BaseRepository";
+import { IStudentRepository } from "./IStudentRepository";
 
 /**
  * A repository that is responsible for handling student-related operations.
@@ -130,5 +135,26 @@ export class StudentRepository
             .limit(limit)
             .offset(offset)
             .execute({ name: name.split(" ").join("+ ").trim() });
+    }
+
+    getRegisteredStudents(
+        session: TTMSSession,
+        semester: TTMSSemester
+    ): Promise<IRegisteredStudent[]> {
+        return this.db.query.studentRegisteredCourses.findMany({
+            columns: {
+                courseCode: true,
+                section: true,
+            },
+            with: {
+                student: {
+                    columns: { matricNo: true, name: true, courseCode: true },
+                },
+            },
+            where: and(
+                eq(studentRegisteredCourses.session, session),
+                eq(studentRegisteredCourses.semester, semester)
+            ),
+        });
     }
 }

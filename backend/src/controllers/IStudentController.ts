@@ -1,4 +1,4 @@
-import { IStudentSearchEntry, ITimetable } from "@/types";
+import { IStudentAnalytics, IStudentSearchEntry, ITimetable } from "@/types";
 import { Request, Response } from "express";
 import { IController } from "./IController";
 
@@ -20,6 +20,22 @@ export interface IStudentController extends IController {
             Partial<{ session: string; semester: string; matric_no: string }>
         >,
         res: Response<ITimetable[] | { error: string }>
+    ): Promise<void>;
+
+    /**
+     * Obtains student analytics in an academic session and semester.
+     *
+     * @param req The request object.
+     * @param res The response object.
+     */
+    getAnalytics(
+        req: Request<
+            "/analytics",
+            IStudentAnalytics | { error: string },
+            unknown,
+            Partial<{ session: string; semester: string }>
+        >,
+        res: Response<IStudentAnalytics | { error: string }>
     ): Promise<void>;
 
     /**

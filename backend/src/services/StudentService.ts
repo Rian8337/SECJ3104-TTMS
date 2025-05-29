@@ -11,6 +11,7 @@ import {
     IStudentAnalyticsCourseSchedule,
     IStudentAnalyticsDepartment,
     IStudentAnalyticsScheduleClash,
+    IStudentSearchEntry,
     ITimetable,
     TTMSCourseCode,
     TTMSSemester,
@@ -61,17 +62,19 @@ export class StudentService extends BaseService implements IStudentService {
     }
 
     async search(
+        session: TTMSSession,
+        semester: TTMSSemester,
         query: string,
         limit = 10,
         offset = 0
-    ): Promise<OperationResult<IStudent[]>> {
+    ): Promise<OperationResult<IStudentSearchEntry[]>> {
         if (query.length < 3) {
             return this.createFailedResponse(
                 "Query must be at least 3 characters long"
             );
         }
 
-        let res: IStudent[];
+        let res: IStudentSearchEntry[];
 
         // Names cannot contain digits, so assume that matric numbers are being searched in that case
         if (/\d/.test(query)) {
@@ -80,12 +83,16 @@ export class StudentService extends BaseService implements IStudentService {
             }
 
             res = await this.studentRepository.searchByMatricNo(
+                session,
+                semester,
                 query,
                 limit,
                 offset
             );
         } else {
             res = await this.studentRepository.searchByName(
+                session,
+                semester,
                 query,
                 limit,
                 offset

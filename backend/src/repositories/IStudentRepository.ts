@@ -1,6 +1,7 @@
 import { IStudent } from "@/database/schema";
 import {
     IRegisteredStudent,
+    IStudentSearchEntry,
     ITimetable,
     TTMSSemester,
     TTMSSession,
@@ -37,32 +38,40 @@ export interface IStudentRepository {
      *
      * This uses a full-text search to find students whose matric numbers match the given matric number.
      *
+     * @param session The academic session to search in.
+     * @param semester The academic semester to search in.
      * @param matricNo The matric number to search.
      * @param limit The maximum number of students to return. Defaults to 10.
      * @param offset The number of students to skip before starting to collect the result set. Defaults to 0.
      * @returns The students whose matric numbers match the given matric number.
      */
     searchByMatricNo(
+        session: TTMSSession,
+        semester: TTMSSemester,
         matricNo: string,
         limit?: number,
         offset?: number
-    ): Promise<IStudent[]>;
+    ): Promise<IStudentSearchEntry[]>;
 
     /**
      * Searches students by their name.
      *
      * This uses a full-text search to find students whose names match the given name.
      *
+     * @param session The academic session to search in.
+     * @param semester The academic semester to search in.
      * @param name The name to search.
      * @param limit The maximum number of students to return. Defaults to 10.
      * @param offset The number of students to skip before starting to collect the result set. Defaults to 0.
      * @returns The students whose names match the given name.
      */
     searchByName(
+        session: TTMSSession,
+        semester: TTMSSemester,
         name: string,
         limit?: number,
         offset?: number
-    ): Promise<IStudent[]>;
+    ): Promise<IStudentSearchEntry[]>;
 
     /**
      * Obtains the list of registered students for a given session and semester.

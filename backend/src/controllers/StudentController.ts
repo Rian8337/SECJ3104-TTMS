@@ -117,10 +117,25 @@ export class StudentController
             "/search",
             IStudentSearchEntry[] | { error: string },
             unknown,
-            Partial<{ query: string; limit: string; offset: string }>
+            Partial<{
+                session: string;
+                semester: string;
+                query: string;
+                limit: string;
+                offset: string;
+            }>
         >,
         res: Response<IStudentSearchEntry[] | { error: string }>
     ) {
+        const validatedSessionAndSemester = this.validateSessionSemester(
+            req,
+            res
+        );
+
+        if (!validatedSessionAndSemester) {
+            return;
+        }
+
         const { query, limit, offset } = req.query;
 
         if (!query) {
@@ -132,7 +147,7 @@ export class StudentController
         const parsedLimit = parseInt(limit ?? "10");
         const parsedOffset = parseInt(offset ?? "0");
 
-        if (Number.isNaN(parsedLimit) || parsedLimit < 0) {
+        if (Number.isNaN(parsedLimit) || parsedLimit < 1) {
             res.status(400).json({ error: "Invalid limit" });
 
             return;
@@ -144,8 +159,12 @@ export class StudentController
             return;
         }
 
+        const { session, semester } = validatedSessionAndSemester;
+
         try {
             const result = await this.studentService.search(
+                session,
+                semester,
                 query,
                 parsedLimit,
                 parsedOffset

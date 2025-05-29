@@ -1,6 +1,7 @@
 import { IStudent } from "@/database/schema";
 import {
     IStudentAnalytics,
+    IStudentSearchEntry,
     ITimetable,
     TTMSSemester,
     TTMSSession,
@@ -37,16 +38,20 @@ export interface IStudentService extends IService {
     /**
      * Searches students by their matric number or name.
      *
+     * @param session The academic session to search in.
+     * @param semester The academic semester to search in.
      * @param query The query to search.
      * @param limit The maximum number of students to return. Defaults to 10.
      * @param offset The number of students to skip before starting to collect the result set. Defaults to 0.
      * @returns The students whose matric numbers or names match the given query.
      */
     search(
+        session: TTMSSession,
+        semester: TTMSSemester,
         query: string,
         limit?: number,
         offset?: number
-    ): Promise<OperationResult<IStudent[]>>;
+    ): Promise<OperationResult<IStudentSearchEntry[]>>;
 
     /**
      * Generates analytics for students in a given academic session and semester.

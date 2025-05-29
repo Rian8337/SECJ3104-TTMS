@@ -16,7 +16,8 @@ interface TimetableViewProps {
   onDaySelect?: (day: string) => void
   showDaySelector?: boolean
   userType: "student" | "lecturer"
-  onLecturerClick?: (workerNo: string) => void
+  onLecturerClick?: (workerNo: string, lecturerName: string) => void
+  lecturerName?: string
 }
 
 // Constants
@@ -29,7 +30,8 @@ export function TimetableView({
   onDaySelect,
   showDaySelector = true,
   userType,
-  onLecturerClick
+  onLecturerClick,
+  lecturerName
 }: TimetableViewProps) {
   const router = useRouter()
 
@@ -156,6 +158,11 @@ export function TimetableView({
 
   return (
     <div className="space-y-4">
+      {userType === "lecturer" && lecturerName && (
+        <div className="text-center">
+          <h2 className="text-l font-semibold text-blue-700">{lecturerName}'s Timetable</h2>
+        </div>
+      )}
       {renderDaySelector()}
 
       <div className="space-y-3">
@@ -187,7 +194,7 @@ export function TimetableView({
                           <div className="font-bold text-xs text-gray-700">{formatTime(classItem.startTime)}</div>
                           <div className="relative flex-grow flex items-center justify-center w-full my-2">
                             <div className="absolute w-0.5 h-full bg-gray-200 left-1/2 transform -translate-x-1/2"></div>
-                            <div className="bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs font-medium border border-gray-200 z-10 scale-75">
+                            <div className={`bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs font-medium border border-gray-200 z-10 ${userType === 'lecturer' ? 'scale-75 text-xs' : 'scale-100 text-s'}`}>
                               {(() => {
                                 const start = new Date(`2000-01-01T${classItem.startTime}`)
                                 const end = new Date(`2000-01-01T${classItem.endTime}`)
@@ -217,7 +224,7 @@ export function TimetableView({
                                 onClick={() => {
                                   const lecturer = classItem.courseSection?.lecturer
                                   if (lecturer?.workerNo) {
-                                    onLecturerClick?.(String(lecturer.workerNo))
+                                    onLecturerClick?.(String(lecturer.workerNo), lecturer.name)
                                   }
                                 }}
                                 className="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline"

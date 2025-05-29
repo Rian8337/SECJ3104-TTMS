@@ -31,15 +31,9 @@ const AnimatedPlaceholder = ({ text }: { text: string }) => {
 
   // Get the common prefix and changing part based on the text
   const getTextParts = (text: string) => {
-    if (text.startsWith("Search student by")) {
-      return {
-        prefix: "Search student by ",
-        changingPart: text.replace("Search student by ", "")
-      }
-    }
     return {
-      prefix: "Search ",
-      changingPart: text.replace("Search ", "")
+      prefix: "Search student by ",
+      changingPart: text.replace("Search student by ", "")
     }
   }
 
@@ -92,17 +86,21 @@ export function SearchStudentForm() {
   const [loadingTimetable, setLoadingTimetable] = useState(false)
   const [searchError, setSearchError] = useState<string | null>(null)
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
+  const [showLecturerTimetable, setShowLecturerTimetable] = useState(false)
+  const [lecturerTimetable, setLecturerTimetable] = useState<ClassItem[]>([])
+  const [lecturerLoading, setLecturerLoading] = useState(false)
+  const [lecturerError, setLecturerError] = useState<string | null>(null)
+  const [currentLecturerName, setCurrentLecturerName] = useState<string>("")
 
   const placeholders = [
     "Search student by name",
-    "Search student by matric no",
-    "Search lecturer by name"
+    "Search student by matric no"
   ]
 
   useEffect(() => {
     const interval = setInterval(() => {
       setPlaceholderIndex((prevIndex) => (prevIndex + 1) % placeholders.length)
-    }, 100) // Very short interval, actual timing controlled by animation completion
+    }, 200) // Very short interval, actual timing controlled by animation completion
 
     return () => clearInterval(interval)
   }, [])
@@ -171,10 +169,11 @@ export function SearchStudentForm() {
 
       if (!response.ok) {
         throw new Error('Failed to fetch timetable')
-      }
-
+      } 
+       
       const timetableData = await response.json()
       
+
       // Transform the data to match the expected format
       const formattedTimetable = timetableData.map((entry: any) => {
         // Convert day number to string
@@ -224,18 +223,106 @@ export function SearchStudentForm() {
           courseSection: {
             lecturer: entry.courseSection.lecturer ? {
               name: entry.courseSection.lecturer.name,
-              workerNo: entry.courseSection.lecturer.workerNo || undefined
+              workerNo: entry.courseSection.lecturer.workerNo
             } : undefined
           }
         }
       })
 
       setTimetable(formattedTimetable)
+      console.log(formattedTimetable)
     } catch (error) {
       console.error('Error fetching timetable:', error)
     } finally {
       setLoadingTimetable(false)
     }
+  }
+
+  // Add function to fetch lecturer timetable
+  const fetchLecturerTimetable = async (workerNo: string) => {
+    try {
+      setLecturerLoading(true)
+      setLecturerError(null)
+      const response = await fetch(
+        `${API_BASE_URL}/lecturer/timetable?worker_no=${encodeURIComponent(workerNo)}&session=2024/2025&semester=2`,
+        {
+          credentials: 'include'
+        }
+      )
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to fetch lecturer timetable')
+      }
+
+      const data = await response.json()
+      const formattedTimetable = data.map((entry: any) => {
+        // Convert day number to string
+        const dayMap: { [key: number]: string } = {
+          1: 'Sunday',
+          2: 'Monday',
+          3: 'Tuesday',
+          4: 'Wednesday',
+          5: 'Thursday',
+          6: 'Friday',
+          7: 'Saturday'
+        }
+
+        // Convert time number to actual time
+        const timeMap: { [key: number]: string } = {
+          1: '07:00 - 07:50',
+          2: '08:00 - 08:50',
+          3: '09:00 - 09:50',
+          4: '10:00 - 10:50',
+          5: '11:00 - 11:50',
+          6: '12:00 - 12:50',
+          7: '13:00 - 13:50',
+          8: '14:00 - 14:50',
+          9: '15:00 - 15:50',
+          10: '16:00 - 16:50',
+          11: '17:00 - 17:50',
+          12: '18:00 - 18:50',
+          13: '19:00 - 19:50',
+          14: '20:00 - 20:50',
+          15: '21:00 - 21:50',
+          16: '22:00 - 22:50'
+        }
+
+        const timeRange = timeMap[entry.time] || 'TBA'
+        const [startTime, endTime] = timeRange.split(' - ')
+
+        return {
+          id: `${entry.courseSection?.course?.code || 'UNKNOWN'}-${entry.courseSection?.section || 'UNKNOWN'}-${entry.day}-${entry.time}`,
+          course: `${entry.courseSection?.course?.code || 'UNKNOWN'} - ${entry.courseSection?.course?.name || 'Unknown Course'}`,
+          day: dayMap[entry.day] || 'Unknown',
+          startTime,
+          endTime,
+          venue: entry.venue?.shortName || 'TBA',
+          lecturer: entry.courseSection.lecturer?.name || 'TBA',
+          courseCode: entry.courseSection?.course?.code || 'UNKNOWN',
+          section: entry.courseSection?.section || 'UNKNOWN',
+          courseSection: {
+            lecturer: entry.courseSection.lecturer ? {
+              name: entry.courseSection.lecturer.name,
+              workerNo: entry.courseSection.lecturer.workerNo
+            } : undefined
+          }
+        }
+      })
+      setLecturerTimetable(formattedTimetable)
+    } catch (err) {
+      console.error('Error in fetchLecturerTimetable:', err)
+      setLecturerError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setLecturerLoading(false)
+    }
+  }
+
+  // Add function to handle lecturer name click
+  const handleLecturerClick = (workerNo: string, lecturerName: string) => {
+    setShowLecturerTimetable(true)
+    setCurrentLecturerName(lecturerName)
+    fetchLecturerTimetable(workerNo)
   }
 
   return (
@@ -287,22 +374,52 @@ export function SearchStudentForm() {
 
       {selectedStudent && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold">{selectedStudent.name}</h3>
-              <p className="text-sm text-muted-foreground">{selectedStudent.matricNo}</p>
+          <div className="p-4 flex flex-col gap-2 border-2 border-blue-500 rounded-md text-blue-500">
+            <h4 className="text-xs font-semibold ">{`${selectedStudent.name}'s timetable`}</h4>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-blue-400">{selectedStudent.matricNo}</span>
+              <span className="px-2 py-1 border border-blue-500 rounded-md text-sm">{selectedStudent.courseCode}</span>
             </div>
-            <Badge variant="outline">{selectedStudent.courseCode}</Badge>
           </div>
 
           {loadingTimetable ? (
             <div className="text-center py-4">Loading timetable...</div>
+          ) : showLecturerTimetable ? (
+            <div className="space-y-4">
+              <div className="flex flex-col items-center gap-2">
+                <button
+                  onClick={() => setShowLecturerTimetable(false)}
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-white text-black border rounded hover:bg-gray-100 transition-colors"
+                  style={{ borderColor: '#000000' }}
+                >
+                  <img
+                    src="https://img.icons8.com/pastel-glyph/100/u-turn-to-left.png"
+                    alt="Back Icon"
+                    className="w-8 h-8"
+                  />
+                  Return
+                </button>
+              </div>
+              {lecturerLoading ? (
+                <div className="text-center py-4">Loading lecturer timetable...</div>
+              ) : lecturerError ? (
+                <div className="text-center py-4 text-red-500">{lecturerError}</div>
+              ) : (
+                <TimetableView 
+                  classes={lecturerTimetable} 
+                  userType="lecturer"
+                  showDaySelector={true}
+                  lecturerName={currentLecturerName}
+                />
+              )}
+            </div>
           ) : (
             <TimetableView 
               classes={timetable} 
               selectedDay={selectedDay}
               onDaySelect={setSelectedDay}
               userType="student"
+              onLecturerClick={handleLecturerClick}
             />
           )}
         </div>

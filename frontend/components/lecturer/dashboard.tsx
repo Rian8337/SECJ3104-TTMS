@@ -134,9 +134,10 @@ export function LecturerDashboard() {
         className="flex items-center justify-between"
       >
         <div>
-          <h2 className="text-2xl font-bold">Welcome, </h2>
-          <h3>{lecturerInfo.name}</h3>
-        
+          <div className="space-y-1">
+            <h2 className="text-2xl font-bold font-cursive">Welcome,</h2>
+            <h3 className="text-2xl font-cursive">{lecturerInfo.name}</h3>
+          </div>
         </div>
       </motion.div>
 

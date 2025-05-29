@@ -171,7 +171,10 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
         transition={{ delay: 0.2, duration: 0.5 }}
         className="flex items-center justify-between mb-2"
       >
-        <h1 className="text-xl font-bold">Welcome, {studentInfo.name}</h1>
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold font-cursive">Welcome,</h1> 
+          <h3 className="text-2xl font-cursive">{studentInfo.name}</h3> 
+        </div>
         {/* <div className="text-sm text-muted-foreground">{studentInfo.matricNo}</div> */}
       </motion.div>
 
@@ -215,7 +218,7 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
                     alt="Back Icon"
                     className="w-8 h-8"
                   />
-                  Show My Timetable
+                  Return
                 </button>
 
                 </div>

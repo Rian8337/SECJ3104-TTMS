@@ -84,12 +84,20 @@ export function MobileLayout({ children, userType, studentInfo: initialStudentIn
                 </SheetHeader>
                 <div className="flex flex-col gap-1 mt-6">
                   <div className="flex items-center p-2">
-                    <Avatar className="h-10 w-10 mr-3">
-                      <AvatarImage src="/diverse-students-studying.png" alt="User" />
-                      <AvatarFallback className="bg-red-100 text-red-800">
-                        {userType === "student" ? (studentInfo?.name?.split(' ').map(n => n[0]).join('') || "SS") : "AR"}
-                      </AvatarFallback>
-                    </Avatar>
+                    {userType === "lecturer" ? (
+                      <img src="/lecturer.png" alt="Lecturer" style={{ objectFit: 'contain' }} className="h-10 w-10 mr-3" />
+                    ) : studentInfo ? (
+                      <Avatar className="h-10 w-10 mr-3">
+                        <AvatarImage src="/diverse-students-studying.png" alt={studentInfo.name} style={{ objectFit: 'contain' }} />
+                        <AvatarFallback className="bg-red-100 text-red-800">
+                          {studentInfo.name.split(' ').map(n => n[0]).join('') || "SS"}
+                        </AvatarFallback>
+                      </Avatar>
+                    ) : (
+                      <Avatar className="h-10 w-10 mr-3">
+                        <AvatarFallback className="bg-red-100 text-red-800">SS</AvatarFallback>
+                      </Avatar>
+                    )}
                     <div>
                       <div className="font-medium">{userType === "student" ? studentInfo?.name || "Loading..." : "Dr. Ahmad Rizal"}</div>
                       <div className="text-xs text-muted-foreground">
@@ -155,10 +163,18 @@ export function MobileLayout({ children, userType, studentInfo: initialStudentIn
               UTM TMS | {userType === "student" ? "Student Portal" : "Lecturer Portal"}
             </h1>
           </div>
-          <Avatar className="h-8 w-8 border-2 border-white/20">
-            <AvatarImage src="/diverse-students-studying.png" alt="User" />
-            <AvatarFallback className="bg-red-100 text-red-800">{userType === "student" ? "SS" : "AR"}</AvatarFallback>
-          </Avatar>
+          {userType === "lecturer" ? (
+            <img src="/lecturer.png" alt="Lecturer" style={{ objectFit: 'contain' }} className="h-10 w-10 ml-2" />
+          ) : studentInfo ? (
+            <Avatar className="h-10 w-10 ml-2">
+              <AvatarImage src="/diverse-students-studying.png" alt={studentInfo.name} style={{ objectFit: 'contain' }} />
+              <AvatarFallback className="bg-red-100 text-red-800">{studentInfo.name.split(' ').map(n => n[0]).join('') || "SS"}</AvatarFallback>
+            </Avatar>
+          ) : (
+            <Avatar className="h-10 w-10 ml-2">
+              <AvatarFallback className="bg-red-100 text-red-800">SS</AvatarFallback>
+            </Avatar>
+          )}
         </div>
       </header>
 

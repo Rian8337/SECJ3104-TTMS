@@ -50,7 +50,7 @@ export interface TimetableEntry {
 }
 
 export function formatTimetableData(data: any[]): TimetableEntry[] {
-  console.log('Raw data received:', JSON.stringify(data, null, 2))
+  // console.log('Raw data received:', JSON.stringify(data, null, 2))
   
   return data.map((entry: any) => {
     const timeRange = timeMap[entry.time]
@@ -63,15 +63,15 @@ export function formatTimetableData(data: any[]): TimetableEntry[] {
 
     // Ensure we have the lecturer data
     const lecturer = entry.courseSection?.lecturer
-    console.log('Raw lecturer data:', {
-      raw: entry.courseSection?.lecturer,
-      name: lecturer?.name,
-      workerNo: lecturer?.workerNo,
-      workerNoType: typeof lecturer?.workerNo
-    })
+    // console.log('Raw lecturer data:', {
+    //   raw: entry.courseSection?.lecturer,
+    //   name: lecturer?.name,
+    //   workerNo: lecturer?.workerNo,
+    //   workerNoType: typeof lecturer?.workerNo
+    // })
 
     if (!lecturer) {
-      console.error('No lecturer data found for entry:', entry)
+      console.log('No lecturer data found for entry:', entry)
     }
 
     // Create the formatted entry
@@ -94,11 +94,11 @@ export function formatTimetableData(data: any[]): TimetableEntry[] {
     }
 
     // Log the formatted entry for debugging
-    console.log('Formatted entry lecturer data:', {
-      name: formattedEntry.courseSection.lecturer?.name,
-      workerNo: formattedEntry.courseSection.lecturer?.workerNo,
-      workerNoType: typeof formattedEntry.courseSection.lecturer?.workerNo
-    })
+    // console.log('Formatted entry lecturer data:', {
+    //   name: formattedEntry.courseSection.lecturer?.name,
+    //   workerNo: formattedEntry.courseSection.lecturer?.workerNo,
+    //   workerNoType: typeof formattedEntry.courseSection.lecturer?.workerNo
+    // })
 
     return formattedEntry
   }).filter(Boolean) as TimetableEntry[]

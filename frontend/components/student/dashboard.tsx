@@ -118,7 +118,7 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
       setLecturerLoading(true)
       setLecturerError(null)
       const response = await fetch(
-        `/api/lecturer/timetable?worker_no=${encodeURIComponent(workerNo)}&session=2024/2025&semester=2`,
+        `${process.env.BACKEND_URL}/lecturer/timetable?worker_no=${encodeURIComponent(workerNo)}&session=2024/2025&semester=2`,
         {
           credentials: 'include'
         }

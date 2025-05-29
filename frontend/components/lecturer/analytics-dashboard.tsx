@@ -11,11 +11,30 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 
+// Add type definitions
+type DepartmentCode = 'SE' | 'DE' | 'CS' | 'AI'
+
+interface Student {
+  id: string
+  name: string
+  hasClash: boolean
+  hasBackToBack: boolean
+}
+
+interface Department {
+  name: string
+  students: Student[]
+}
+
+interface DepartmentDetails {
+  [key: string]: Department
+}
+
 export function AnalyticsDashboard() {
   const [showBackToBackDialog, setShowBackToBackDialog] = useState(false)
   const [showClashesDialog, setShowClashesDialog] = useState(false)
   const [showDepartmentDialog, setShowDepartmentDialog] = useState(false)
-  const [selectedDepartment, setSelectedDepartment] = useState("")
+  const [selectedDepartment, setSelectedDepartment] = useState<DepartmentCode | "">("")
 
   // Mock data for analytics with UTM courses
   const analyticsData = {
@@ -154,7 +173,7 @@ export function AnalyticsDashboard() {
   ]
 
   // Mock data for department details
-  const departmentDetails = {
+  const departmentDetails: DepartmentDetails = {
     SE: {
       name: "Software Engineering",
       students: [
@@ -189,7 +208,7 @@ export function AnalyticsDashboard() {
     },
   }
 
-  const handleDepartmentClick = (dept: string) => {
+  const handleDepartmentClick = (dept: DepartmentCode) => {
     setSelectedDepartment(dept)
     setShowDepartmentDialog(true)
   }
@@ -273,7 +292,7 @@ export function AnalyticsDashboard() {
                     margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
                     onClick={(data) => {
                       if (data && data.activePayload && data.activePayload[0]) {
-                        handleDepartmentClick(data.activePayload[0].payload.name)
+                        handleDepartmentClick(data.activePayload[0].payload.name as DepartmentCode)
                       }
                     }}
                   >

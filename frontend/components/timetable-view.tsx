@@ -7,8 +7,6 @@ import React from "react"
 import { ClassItem } from "@/types/timetable"
 import { processClasses, hasClash, renderGapAndLunch, GapInfo } from "@/lib/timetable-utils"
 import { useRouter } from "next/navigation"
-import { API_BASE_URL } from "@/lib/config"
-import { redirect } from "next/dist/server/api-utils"
 
 interface TimetableViewProps {
   classes: ClassItem[]

@@ -6,7 +6,6 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { API_BASE_URL } from "@/lib/config"
 import { TimetableView } from "@/components/timetable-view"
 import { ClassItem } from "@/types/timetable"
@@ -16,10 +15,6 @@ interface StudentSearchResult {
   name: string
   courseCode: string
   facultyCode: string
-}
-
-interface TimetableByDay {
-  [key: string]: ClassItem[]
 }
 
 const AnimatedPlaceholder = ({ text }: { text: string }) => {

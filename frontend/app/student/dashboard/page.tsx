@@ -3,7 +3,6 @@
 import { Suspense, useState, useEffect } from "react"
 import { StudentDashboard } from "@/components/student/dashboard"
 import { MobileLayout } from "@/components/mobile-layout"
-import { API_BASE_URL } from "@/lib/config"
 import { useRouter } from "next/navigation"
 
 interface StudentInfo {
@@ -14,7 +13,6 @@ interface StudentInfo {
 
 export default function StudentDashboardPage() {
   const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null)
-  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
   // Get student information from localStorage
@@ -30,7 +28,6 @@ export default function StudentDashboardPage() {
       setStudentInfo(info)
     } catch (err) {
       console.error('Error parsing student info:', err)
-      setError('Failed to load student information')
       localStorage.removeItem('studentInfo')
       router.push('/')
     }

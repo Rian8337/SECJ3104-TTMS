@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
 import { Clock, MapPin, Users } from "lucide-react"
 import { API_BASE_URL } from "@/lib/config"
 

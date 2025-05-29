@@ -84,6 +84,7 @@ For all endpoints, unless otherwise specified, non-2xx responses will return the
 | [POST `/auth/logout`](#post-authlogout)                               | Logs a user out                                               |
 | [GET `/student/timetable`](#get-studenttimetable)                     | Obtains a student's timetable                                 |
 | [GET `/student/search`](#get-studentsearch)                           | Searches for students                                         |
+| [GET `/student/analytics`](#get-studentanalytics)                     | Obtains student analytics                                     |
 | [GET `/lecturer/timetable`](#get-lecturertimetable)                   | Obtains a lecturer's timetable                                |
 | [GET `/lecturer/clashing-timetable`](#get-lecturerclashing-timetable) | Obtains the timetables that clash with a lecturer's timetable |
 
@@ -145,6 +146,23 @@ This endpoint is restricted to a student or lecturer, in which they must authent
 ### Response
 
 A list of [`Student`](#student) objects that fulfill the search criteria.
+
+## GET `/student/analytics`
+
+Obtains student analytics in an academic session and semester.
+
+This endpoint is restricted to a lecturer, in which they must authenticate first.
+
+### Query Parameters
+
+| Name       | Required | Default | Description                                         | Example    |
+| ---------- | -------- | ------- | --------------------------------------------------- | ---------- |
+| `session`  | ✅       | N/A     | The academic session to retrieve the analytics for  | 2024/2025  |
+| `semester` | ✅       | N/A     | The academic semester to retrieve the analytics for | 1, 2, or 3 |
+
+### Response
+
+An [`Analytics`](#analytics) object.
 
 ## GET `/lecturer/timetable`
 
@@ -363,6 +381,185 @@ type TimetableLecturer = {
      * The name of the lecturer.
      */
     name: string;
+};
+```
+
+## Analytics
+
+```ts
+type IStudentAnalytics = {
+    /**
+     * The amount of students that are active in the academic session and semester.
+     */
+    activeStudents: number;
+
+    /**
+     * Students with back-to-back classes in the academic session and semester.
+     *
+     * A student has back-to-back classes if they have classes for 5 consecutive hours or more.
+     *
+     * See Back-to-back Student data types section.
+     */
+    backToBackStudents: IStudentAnalyticsBackToBackStudent[];
+
+    /**
+     * Students with clashing classes in the academic session and semester.
+     *
+     * A student has clashing classes if they have classes that overlap in time on the same day.
+     *
+     * See Clashing Student data types section.
+     */
+    clashingStudents: IStudentAnalyticsClashingStudent[];
+
+    /**
+     * Analytics about departments.
+     *
+     * See Department data types section.
+     */
+    departments: IStudentAnalyticsDepartment[];
+};
+```
+
+### (Analytics) Back-to-back Student
+
+```ts
+type IStudentAnalyticsBackToBackStudent = {
+    /**
+     * The matric number of the student.
+     */
+    matricNo: string;
+
+    /**
+     * The name of the student.
+     */
+    name: string;
+
+    /**
+     * The code of the course the student is enrolled in. See enrolled course codes data types section.
+     */
+    courseCode: TTMSCourseCode;
+
+    /**
+     * Schedules of the student that are back-to-back.
+     *
+     * Each array item in the nested array contains schedules that are back-to-back.
+     */
+    schedules: IStudentAnalyticsCourseSchedule[][];
+};
+```
+
+### (Analytics) Back-to-back Course Schedule
+
+```ts
+type IStudentAnalyticsCourseSchedule = {
+    /**
+     * The day of the schedule. See Day data types section.
+     */
+    day: CourseSectionScheduleDay;
+
+    /**
+     * The time of the schedule. See Time data types section.
+     */
+    time: CourseSectionScheduleTime;
+
+    /**
+     * Information about the venue. Can be `null`, which means there is no assigned venue.
+     */
+    venue: TimetableVenue | null;
+};
+```
+
+### (Analytics) Clashing Student
+
+```ts
+type IStudentAnalyticsClashingStudent = {
+    /**
+     * The matric number of the student.
+     */
+    matricNo: string;
+
+    /**
+     * The name of the student.
+     */
+    name: string;
+
+    /**
+     * The code of the course the student is enrolled in. See enrolled course codes data types section.
+     */
+    courseCode: TTMSCourseCode;
+
+    /**
+     * The clashes that the student has. See Clashing Student Schedule data types section.
+     */
+    clashes: IStudentAnalyticsScheduleClash[];
+};
+```
+
+### (Analytics) Clashing Student Schedule
+
+```ts
+type IStudentAnalyticsScheduleClash = {
+    /**
+     * The day of the schedule. See Day data type section.
+     */
+    day: CourseSectionScheduleDay;
+
+    /**
+     * The time of the schedule. See Time data type section.
+     */
+    time: CourseSectionScheduleTime;
+
+    /**
+     * The courses that clash in the given day and time. See Clashing Student Course data types section.
+     */
+    courses: IStudentAnalyticsScheduleClashCourse[];
+};
+```
+
+### (Analytics) Clashing Student Course
+
+```ts
+type IStudentAnalyticsScheduleClashCourse = {
+    /**
+     * The course. See Timetable Course data types section.
+     */
+    course: TimetableCourse;
+
+    /**
+     * The section of the course.
+     */
+    section: string;
+
+    /**
+     * Information about the venue. Can be `null`, which means there is no assigned venue.
+     */
+    venue: TimetableVenue | null;
+};
+```
+
+### (Analytics) Department
+
+```ts
+type IStudentAnalyticsDepartment = {
+    /**
+     * The code of the faculty. See faculty codes data types section.
+     */
+    code: TTMSFacultyCode;
+
+    /**
+     * The amount of students with active timetables in the academic session and semester.
+     */
+    totalStudents: number;
+
+    /**
+     * The amount of students with clashing timetables in the academic session and semester.
+     */
+    totalClashes: number;
+
+    /**
+     * The amount of students with back-to-back timetables in the academic session and semester.
+     */
+    totalBackToBack: number;
 };
 ```
 

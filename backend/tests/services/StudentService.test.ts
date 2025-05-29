@@ -1,13 +1,16 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { IStudent } from "../../src/database/schema";
 import { FailedOperationResult, StudentService } from "../../src/services";
-import { mockStudentRepository } from "../mocks";
+import { mockCourseRepository, mockStudentRepository } from "../mocks";
 
 describe("StudentService (unit)", () => {
     let service: StudentService;
 
     beforeEach(() => {
-        service = new StudentService(mockStudentRepository);
+        service = new StudentService(
+            mockStudentRepository,
+            mockCourseRepository
+        );
     });
 
     it("[getByMatricNo] should get student by matric number from repository", async () => {
@@ -75,7 +78,7 @@ describe("StudentService (unit)", () => {
 
     describe("search", () => {
         it("Should return error if query is less than 3 characters", async () => {
-            const result = await service.search("AB", 10, 0);
+            const result = await service.search("2024/2025", 1, "AB", 10, 0);
             const failedResult = result as FailedOperationResult;
 
             expect(result.isSuccessful()).toBe(false);
@@ -94,7 +97,13 @@ describe("StudentService (unit)", () => {
         });
 
         it("Should return empty result for an invalid matric number", async () => {
-            const result = await service.search("A1234567", 10, 0);
+            const result = await service.search(
+                "2024/2025",
+                1,
+                "A1234567",
+                10,
+                0
+            );
 
             expect(result.isSuccessful()).toBe(true);
             expect(result.failed()).toBe(false);
@@ -107,12 +116,20 @@ describe("StudentService (unit)", () => {
         });
 
         it("Should search by matric number", async () => {
-            const result = await service.search("A12FS5678", 10, 0);
+            const result = await service.search(
+                "2024/2025",
+                1,
+                "A12FS5678",
+                10,
+                0
+            );
 
             expect(result.isSuccessful()).toBe(true);
             expect(result.failed()).toBe(false);
 
             expect(mockStudentRepository.searchByMatricNo).toHaveBeenCalledWith(
+                "2024/2025",
+                1,
                 "A12FS5678",
                 10,
                 0
@@ -122,12 +139,14 @@ describe("StudentService (unit)", () => {
         });
 
         it("Should search by name", async () => {
-            const result = await service.search("Jane", 10, 0);
+            const result = await service.search("2024/2025", 1, "Jane", 10, 0);
 
             expect(result.isSuccessful()).toBe(true);
             expect(result.failed()).toBe(false);
 
             expect(mockStudentRepository.searchByName).toHaveBeenCalledWith(
+                "2024/2025",
+                1,
                 "Jane",
                 10,
                 0
@@ -139,12 +158,14 @@ describe("StudentService (unit)", () => {
         });
 
         it("Should search by matric number with default limit and offset", async () => {
-            const result = await service.search("A12FS5678");
+            const result = await service.search("2024/2025", 1, "A12FS5678");
 
             expect(result.isSuccessful()).toBe(true);
             expect(result.failed()).toBe(false);
 
             expect(mockStudentRepository.searchByMatricNo).toHaveBeenCalledWith(
+                "2024/2025",
+                1,
                 "A12FS5678",
                 10,
                 0

@@ -18,10 +18,13 @@ function createQueryMock(): QueryMock {
  */
 export const mockDb = {
     select: vi.fn(),
+    selectDistinct: vi.fn(),
     limit: vi.fn(),
     from: vi.fn(),
     where: vi.fn(),
     offset: vi.fn(),
+    orderBy: vi.fn(),
+    as: vi.fn(),
     execute: vi.fn(),
     query: {
         courses: createQueryMock(),

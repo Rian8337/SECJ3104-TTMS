@@ -7,7 +7,7 @@ import {
 import { StudentRepository } from "../../src/repositories";
 import { ITimetable } from "../../src/types";
 import { mockDb } from "../mocks";
-import { sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 
 describe("StudentRepository (unit)", () => {
     let repository: StudentRepository;
@@ -149,7 +149,7 @@ describe("StudentRepository (unit)", () => {
     describe("searchByMatricNo", () => {
         it("Should throw an error if limit is lower than 1", async () => {
             await expect(async () =>
-                repository.searchByMatricNo("123456", 0)
+                repository.searchByMatricNo("2024/2025", 1, "123456", 0)
             ).rejects.toThrow("Limit must be greater than 0");
 
             expect(mockDb.select).not.toHaveBeenCalled();
@@ -157,49 +157,126 @@ describe("StudentRepository (unit)", () => {
 
         it("Should throw an error if offset is lower than 0", async () => {
             await expect(async () =>
-                repository.searchByMatricNo("123456", 10, -1)
+                repository.searchByMatricNo("2024/2025", 1, "123456", 10, -1)
             ).rejects.toThrow("Offset must be greater than or equal to 0");
 
             expect(mockDb.select).not.toHaveBeenCalled();
         });
 
-        it("Should query database", async () => {
+        it("Should only query database once if there are no registered students", async () => {
+            mockDb.selectDistinct.mockReturnValueOnce({
+                from: mockDb.from.mockReturnValueOnce({
+                    where: mockDb.where.mockResolvedValueOnce([]),
+                }),
+            });
+
+            await repository.searchByMatricNo("2024/2025", 1, "123456", 10, 0);
+
+            expect(mockDb.selectDistinct).toHaveBeenCalledExactlyOnceWith({
+                matricNo: studentRegisteredCourses.matricNo,
+            });
+
+            expect(mockDb.from).toHaveBeenCalledExactlyOnceWith(
+                studentRegisteredCourses
+            );
+            expect(mockDb.from).toHaveBeenCalledAfter(mockDb.selectDistinct);
+
+            expect(mockDb.where).toHaveBeenCalledExactlyOnceWith(
+                and(
+                    eq(studentRegisteredCourses.session, "2024/2025"),
+                    eq(studentRegisteredCourses.semester, 1)
+                )
+            );
+            expect(mockDb.where).toHaveBeenCalledAfter(mockDb.from);
+        });
+
+        it("Should query database with search term", async () => {
+            mockDb.selectDistinct.mockReturnValueOnce({
+                from: mockDb.from.mockReturnValueOnce({
+                    where: mockDb.where.mockResolvedValueOnce([
+                        { matricNo: "123456" },
+                    ]),
+                }),
+            });
+
+            mockDb.select.mockReturnValueOnce({
+                from: mockDb.from.mockReturnValueOnce({
+                    as: mockDb.as,
+                }),
+            });
+
             mockDb.select.mockReturnValueOnce({
                 from: mockDb.from.mockReturnValueOnce({
                     where: mockDb.where.mockReturnValueOnce({
-                        limit: mockDb.limit.mockReturnValueOnce({
-                            offset: mockDb.offset.mockResolvedValueOnce([]),
+                        orderBy: mockDb.orderBy.mockReturnValueOnce({
+                            execute: mockDb.execute.mockResolvedValueOnce([
+                                {
+                                    matricNo: "123456",
+                                    name: "Test name",
+                                    courseCode: "SECVH",
+                                    relevance: 1,
+                                },
+                            ]),
                         }),
                     }),
                 }),
             });
 
-            const matricNo = "123456";
+            await repository.searchByMatricNo("2024/2025", 1, "123456", 10, 0);
 
-            await repository.searchByMatricNo(matricNo, 10, 0);
+            expect(mockDb.selectDistinct).toHaveBeenCalled();
+            expect(mockDb.selectDistinct).toHaveBeenCalledWith({
+                matricNo: studentRegisteredCourses.matricNo,
+            });
 
-            expect(mockDb.select).toHaveBeenCalled();
-
-            expect(mockDb.from).toHaveBeenCalledWith(students);
-            expect(mockDb.from).toHaveBeenCalledAfter(mockDb.select);
-
-            expect(mockDb.where).toHaveBeenCalledWith(
-                sql`MATCH(${students.matricNo}) AGAINST(${"+" + matricNo} IN BOOLEAN MODE)`
+            expect(mockDb.from).toHaveBeenCalledTimes(3);
+            expect(mockDb.from).toHaveBeenNthCalledWith(
+                1,
+                studentRegisteredCourses
             );
-            expect(mockDb.where).toHaveBeenCalledAfter(mockDb.from);
+            expect(mockDb.from).toHaveBeenNthCalledWith(2, students);
 
-            expect(mockDb.limit).toHaveBeenCalledWith(10);
-            expect(mockDb.limit).toHaveBeenCalledAfter(mockDb.where);
+            expect(mockDb.as).toHaveBeenCalledWith("sub");
+            expect(mockDb.as).toHaveBeenCalledAfter(mockDb.from);
 
-            expect(mockDb.offset).toHaveBeenCalledWith(0);
-            expect(mockDb.offset).toHaveBeenCalledAfter(mockDb.limit);
+            expect(mockDb.where).toHaveBeenNthCalledWith(
+                1,
+                and(
+                    eq(studentRegisteredCourses.session, "2024/2025"),
+                    eq(studentRegisteredCourses.semester, 1)
+                )
+            );
+            expect(mockDb.where).toHaveBeenNthCalledWith(
+                2,
+                sql`sub.relevance > 0`
+            );
+
+            expect(mockDb.orderBy).toHaveBeenCalledWith(
+                sql`sub.relevance DESC`
+            );
+            expect(mockDb.orderBy).toHaveBeenCalledAfter(mockDb.where);
+
+            expect(mockDb.execute).toHaveBeenCalledWith({
+                matricNo: "+123456*",
+            });
+            expect(mockDb.execute).toHaveBeenCalledAfter(mockDb.orderBy);
+
+            expect(mockDb.select).toHaveBeenCalledWith({
+                matricNo: students.matricNo,
+                name: students.name,
+                courseCode: students.courseCode,
+                relevance:
+                    sql`MATCH(${students.matricNo}) AGAINST(${sql.placeholder("matricNo")} IN BOOLEAN MODE)`.as(
+                        "relevance"
+                    ),
+            });
         });
     });
 
     describe("searchByName", () => {
         it("Should throw an error if limit is lower than 1", async () => {
             await expect(async () =>
-                repository.searchByName("John Doe", 0)
+                repository.searchByName("2024/2025", 1, "John Doe", 0)
             ).rejects.toThrow("Limit must be greater than 0");
 
             expect(mockDb.select).not.toHaveBeenCalled();
@@ -207,22 +284,66 @@ describe("StudentRepository (unit)", () => {
 
         it("Should throw an error if offset is lower than 0", async () => {
             await expect(async () =>
-                repository.searchByName("John Doe", 10, -1)
+                repository.searchByName("2024/2025", 1, "John Doe", 10, -1)
             ).rejects.toThrow("Offset must be greater than or equal to 0");
 
             expect(mockDb.select).not.toHaveBeenCalled();
         });
 
-        it("Should query database", async () => {
+        it("Should only query database once if there are no registered students", async () => {
+            mockDb.selectDistinct.mockReturnValueOnce({
+                from: mockDb.from.mockReturnValueOnce({
+                    where: mockDb.where.mockResolvedValueOnce([]),
+                }),
+            });
+
+            await repository.searchByMatricNo("2024/2025", 1, "123456", 10, 0);
+
+            expect(mockDb.selectDistinct).toHaveBeenCalledExactlyOnceWith({
+                matricNo: studentRegisteredCourses.matricNo,
+            });
+
+            expect(mockDb.from).toHaveBeenCalledExactlyOnceWith(
+                studentRegisteredCourses
+            );
+            expect(mockDb.from).toHaveBeenCalledAfter(mockDb.selectDistinct);
+
+            expect(mockDb.where).toHaveBeenCalledExactlyOnceWith(
+                and(
+                    eq(studentRegisteredCourses.session, "2024/2025"),
+                    eq(studentRegisteredCourses.semester, 1)
+                )
+            );
+            expect(mockDb.where).toHaveBeenCalledAfter(mockDb.from);
+        });
+
+        it("Should query database with search term", async () => {
+            mockDb.selectDistinct.mockReturnValueOnce({
+                from: mockDb.from.mockReturnValueOnce({
+                    where: mockDb.where.mockResolvedValueOnce([
+                        { matricNo: "123456" },
+                    ]),
+                }),
+            });
+
+            mockDb.select.mockReturnValueOnce({
+                from: mockDb.from.mockReturnValueOnce({
+                    as: mockDb.as,
+                }),
+            });
+
             mockDb.select.mockReturnValueOnce({
                 from: mockDb.from.mockReturnValueOnce({
                     where: mockDb.where.mockReturnValueOnce({
-                        limit: mockDb.limit.mockReturnValueOnce({
-                            offset: mockDb.offset.mockReturnValueOnce({
-                                execute: mockDb.execute.mockResolvedValueOnce(
-                                    []
-                                ),
-                            }),
+                        orderBy: mockDb.orderBy.mockReturnValueOnce({
+                            execute: mockDb.execute.mockResolvedValueOnce([
+                                {
+                                    matricNo: "123456",
+                                    name: "Test name",
+                                    courseCode: "SECVH",
+                                    relevance: 1,
+                                },
+                            ]),
                         }),
                     }),
                 }),
@@ -230,28 +351,54 @@ describe("StudentRepository (unit)", () => {
 
             const name = "John Doe";
 
-            await repository.searchByName(name, 10, 0);
+            await repository.searchByName("2024/2025", 1, name, 10, 0);
 
-            expect(mockDb.select).toHaveBeenCalled();
+            expect(mockDb.selectDistinct).toHaveBeenCalled();
+            expect(mockDb.selectDistinct).toHaveBeenCalledWith({
+                matricNo: studentRegisteredCourses.matricNo,
+            });
 
-            expect(mockDb.from).toHaveBeenCalledWith(students);
-            expect(mockDb.from).toHaveBeenCalledAfter(mockDb.select);
-
-            expect(mockDb.where).toHaveBeenCalledWith(
-                sql`MATCH(${students.name}) AGAINST(${sql.placeholder("name")} IN BOOLEAN MODE)`
+            expect(mockDb.from).toHaveBeenCalledTimes(3);
+            expect(mockDb.from).toHaveBeenNthCalledWith(
+                1,
+                studentRegisteredCourses
             );
-            expect(mockDb.where).toHaveBeenCalledAfter(mockDb.from);
+            expect(mockDb.from).toHaveBeenNthCalledWith(2, students);
 
-            expect(mockDb.limit).toHaveBeenCalledWith(10);
-            expect(mockDb.limit).toHaveBeenCalledAfter(mockDb.where);
+            expect(mockDb.as).toHaveBeenCalledWith("sub");
+            expect(mockDb.as).toHaveBeenCalledAfter(mockDb.from);
 
-            expect(mockDb.offset).toHaveBeenCalledWith(0);
-            expect(mockDb.offset).toHaveBeenCalledAfter(mockDb.limit);
+            expect(mockDb.where).toHaveBeenNthCalledWith(
+                1,
+                and(
+                    eq(studentRegisteredCourses.session, "2024/2025"),
+                    eq(studentRegisteredCourses.semester, 1)
+                )
+            );
+            expect(mockDb.where).toHaveBeenNthCalledWith(
+                2,
+                sql`sub.relevance > 0`
+            );
+
+            expect(mockDb.orderBy).toHaveBeenCalledWith(
+                sql`sub.relevance DESC`
+            );
+            expect(mockDb.orderBy).toHaveBeenCalledAfter(mockDb.where);
 
             expect(mockDb.execute).toHaveBeenCalledWith({
-                name: name.split(" ").join("+ ").trim(),
+                name: "+JOHN* +DOE*",
             });
-            expect(mockDb.execute).toHaveBeenCalledAfter(mockDb.offset);
+            expect(mockDb.execute).toHaveBeenCalledAfter(mockDb.orderBy);
+
+            expect(mockDb.select).toHaveBeenCalledWith({
+                matricNo: students.matricNo,
+                name: students.name,
+                courseCode: students.courseCode,
+                relevance:
+                    sql`MATCH(${students.name}) AGAINST(${sql.placeholder("name")} IN BOOLEAN MODE)`.as(
+                        "relevance"
+                    ),
+            });
         });
     });
 });

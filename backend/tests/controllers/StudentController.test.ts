@@ -233,8 +233,95 @@ describe("StudentController", () => {
     });
 
     describe("search", () => {
-        type Req = Partial<{ query: string; limit: string; offset: string }>;
+        type Req = Partial<{
+            session: string;
+            semester: string;
+            query: string;
+            limit: string;
+            offset: string;
+        }>;
+
         type Res = IStudentSearchEntry[] | { error: string };
+
+        it("Should return 400 if session is missing", async () => {
+            const mockRequest = createMockRequest<
+                "/search",
+                Res,
+                Record<string, unknown>,
+                Req
+            >({
+                query: { semester: "2023/2024", query: "C0000000" },
+            });
+
+            await controller.search(mockRequest, mockResponse);
+
+            expect(mockResponse.status).toHaveBeenCalledWith(400);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                error: "Academic session is required.",
+            });
+        });
+
+        it("Should return 400 if semester is missing", async () => {
+            const mockRequest = createMockRequest<
+                "/search",
+                Res,
+                Record<string, unknown>,
+                Req
+            >({
+                query: { session: "2023/2024", query: "C0000000" },
+            });
+
+            await controller.search(mockRequest, mockResponse);
+
+            expect(mockResponse.status).toHaveBeenCalledWith(400);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                error: "Semester is required.",
+            });
+        });
+
+        it("Should return 400 if session format is invalid", async () => {
+            const mockRequest = createMockRequest<
+                "/search",
+                Res,
+                Record<string, unknown>,
+                Req
+            >({
+                query: {
+                    session: "2023-2024",
+                    semester: "1",
+                    query: "test",
+                },
+            });
+
+            await controller.search(mockRequest, mockResponse);
+
+            expect(mockResponse.status).toHaveBeenCalledWith(400);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                error: "Invalid session format. Expected format: YYYY/YYYY.",
+            });
+        });
+
+        it("Should return 400 if semester is invalid", async () => {
+            const mockRequest = createMockRequest<
+                "/search",
+                Res,
+                Record<string, unknown>,
+                Req
+            >({
+                query: {
+                    session: "2023/2024",
+                    semester: "4",
+                    query: "test",
+                },
+            });
+
+            await controller.search(mockRequest, mockResponse);
+
+            expect(mockResponse.status).toHaveBeenCalledWith(400);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                error: "Invalid semester format. Expected format: 1, 2, or 3.",
+            });
+        });
 
         it("Should return 400 if query is missing", async () => {
             const mockRequest = createMockRequest<
@@ -242,7 +329,12 @@ describe("StudentController", () => {
                 Res,
                 Record<string, unknown>,
                 Req
-            >();
+            >({
+                query: {
+                    session: "2023/2024",
+                    semester: "1",
+                },
+            });
 
             await controller.search(mockRequest, mockResponse);
 
@@ -259,7 +351,12 @@ describe("StudentController", () => {
                 Record<string, unknown>,
                 Req
             >({
-                query: { query: "John", limit: "not-a-number" },
+                query: {
+                    session: "2023/2024",
+                    semester: "1",
+                    query: "John",
+                    limit: "not-a-number",
+                },
             });
 
             await controller.search(mockRequest, mockResponse);
@@ -277,7 +374,12 @@ describe("StudentController", () => {
                 Record<string, unknown>,
                 Req
             >({
-                query: { query: "John", limit: "-1" },
+                query: {
+                    session: "2023/2024",
+                    semester: "1",
+                    query: "John",
+                    limit: "-1",
+                },
             });
 
             await controller.search(mockRequest, mockResponse);
@@ -295,7 +397,12 @@ describe("StudentController", () => {
                 Record<string, unknown>,
                 Req
             >({
-                query: { query: "John", offset: "not-a-number" },
+                query: {
+                    session: "2023/2024",
+                    semester: "1",
+                    query: "John",
+                    offset: "not-a-number",
+                },
             });
 
             await controller.search(mockRequest, mockResponse);
@@ -313,7 +420,12 @@ describe("StudentController", () => {
                 Record<string, unknown>,
                 Req
             >({
-                query: { query: "John", offset: "-1" },
+                query: {
+                    session: "2023/2024",
+                    semester: "1",
+                    query: "John",
+                    offset: "-1",
+                },
             });
 
             await controller.search(mockRequest, mockResponse);
@@ -338,12 +450,20 @@ describe("StudentController", () => {
                 Record<string, unknown>,
                 Req
             >({
-                query: { query: "John", limit: "10", offset: "0" },
+                query: {
+                    session: "2023/2024",
+                    semester: "1",
+                    query: "John",
+                    limit: "10",
+                    offset: "0",
+                },
             });
 
             await controller.search(mockRequest, mockResponse);
 
             expect(mockStudentService.search).toHaveBeenCalledWith(
+                "2023/2024",
+                1,
                 "John",
                 10,
                 0
@@ -360,8 +480,12 @@ describe("StudentController", () => {
 
         it("Should return search results if operation is successful", async () => {
             const mockSearchResults: IStudentSearchEntry[] = [
-                { matricNo: "C0000001", name: "John Doe" },
-                { matricNo: "C0000002", name: "Jane Smith" },
+                { matricNo: "C0000001", name: "John Doe", courseCode: "SECJH" },
+                {
+                    matricNo: "C0000002",
+                    name: "Jane Smith",
+                    courseCode: "SECVH",
+                },
             ];
 
             const result =
@@ -375,12 +499,20 @@ describe("StudentController", () => {
                 Record<string, unknown>,
                 Req
             >({
-                query: { query: "John", limit: "10", offset: "0" },
+                query: {
+                    session: "2023/2024",
+                    semester: "1",
+                    query: "John",
+                    limit: "10",
+                    offset: "0",
+                },
             });
 
             await controller.search(mockRequest, mockResponse);
 
             expect(mockStudentService.search).toHaveBeenCalledWith(
+                "2023/2024",
+                1,
                 "John",
                 10,
                 0
@@ -404,12 +536,20 @@ describe("StudentController", () => {
                 Record<string, unknown>,
                 Req
             >({
-                query: { query: "John", limit: "10", offset: "0" },
+                query: {
+                    session: "2023/2024",
+                    semester: "1",
+                    query: "John",
+                    limit: "10",
+                    offset: "0",
+                },
             });
 
             await controller.search(mockRequest, mockResponse);
 
             expect(mockStudentService.search).toHaveBeenCalledWith(
+                "2023/2024",
+                1,
                 "John",
                 10,
                 0

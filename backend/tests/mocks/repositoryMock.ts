@@ -19,6 +19,7 @@ import { dependencyTokens } from "../../src/dependencies/tokens";
  */
 export const mockCourseRepository: Mocked<ICourseRepository> = {
     getCourseByCode: vi.fn(),
+    getSchedulesForAnalytics: vi.fn(),
 };
 
 /**
@@ -58,6 +59,7 @@ export const mockStudentRepository: Mocked<IStudentRepository> = {
     getTimetable: vi.fn(),
     searchByMatricNo: vi.fn(),
     searchByName: vi.fn(),
+    getRegisteredStudents: vi.fn(),
 };
 
 /**

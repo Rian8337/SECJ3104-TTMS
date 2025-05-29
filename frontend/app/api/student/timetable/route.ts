@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
@@ -15,22 +14,9 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Get the session cookie
-    const cookieStore = await cookies()
-    const sessionCookie = cookieStore.get('session')
-
-    if (!sessionCookie) {
-      return NextResponse.json(
-        { error: 'Not authenticated' },
-        { status: 401 }
-      )
-    }
-
     const response = await fetch(
       `${process.env.BACKEND_URL}/student/timetable?session=${session}&semester=${semester}&matric_no=${matric_no}`,
-      {
-        credentials: 'include'
-      }
+      { credentials: 'include' }
     )
 
     const data = await response.json()

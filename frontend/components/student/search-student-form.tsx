@@ -358,13 +358,13 @@ export function SearchStudentForm() {
               className="cursor-pointer hover:bg-gray-50"
               onClick={() => handleSelectStudent(student)}
             >
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="font-medium">{student.name}</h3>
-                    <p className="text-sm text-muted-foreground">{student.matricNo}</p>
+              <CardContent className="p-4 border-2 border-gray-200 rounded-md">
+                <div className="flex flex-col gap-2">
+                  <h4 className="text-xs font-semibold">{student.name}</h4>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-500">{student.matricNo}</span>
+                    <span className="text-sm text-gray-500">{student.courseCode}</span>
                   </div>
-                  <Badge variant="outline">{student.courseCode}</Badge>
                 </div>
               </CardContent>
             </Card>
@@ -375,10 +375,10 @@ export function SearchStudentForm() {
       {selectedStudent && (
         <div className="space-y-4">
           <div className="p-4 flex flex-col gap-2 border-2 border-blue-500 rounded-md text-blue-500">
-            <h4 className="text-xs font-semibold ">{`${selectedStudent.name}'s timetable`}</h4>
+            <h4 className="text-xs font-semibold">{`${selectedStudent.name}'s timetable`}</h4>
             <div className="flex items-center justify-between">
               <span className="text-sm text-blue-400">{selectedStudent.matricNo}</span>
-              <span className="px-2 py-1 border border-blue-500 rounded-md text-sm">{selectedStudent.courseCode}</span>
+              <span className="text-sm text-blue-400">{selectedStudent.courseCode}</span>
             </div>
           </div>
 

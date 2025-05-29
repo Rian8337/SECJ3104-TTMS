@@ -17,16 +17,24 @@ interface StudentInfo {
   facultyCode?: string
 }
 
+interface LecturerInfo {
+  name: string
+  workerNo: string
+  facultyCode?: string
+}
+
 interface MobileLayoutProps {
   children: React.ReactNode
   userType: "student" | "lecturer"
   studentInfo?: StudentInfo | null
+  lecturerInfo?: LecturerInfo | null
 }
 
-export function MobileLayout({ children, userType, studentInfo: initialStudentInfo }: MobileLayoutProps) {
+export function MobileLayout({ children, userType, studentInfo: initialStudentInfo, lecturerInfo: initialLecturerInfo }: MobileLayoutProps) {
   const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(initialStudentInfo || null)
+  const [lecturerInfo, setLecturerInfo] = useState<LecturerInfo | null>(initialLecturerInfo || null)
 
   useEffect(() => {
     if (userType === "student" && !studentInfo) {
@@ -44,8 +52,23 @@ export function MobileLayout({ children, userType, studentInfo: initialStudentIn
         localStorage.removeItem('studentInfo')
         router.push('/')
       }
+    } else if (userType === "lecturer" && !lecturerInfo) {
+      const storedInfo = localStorage.getItem('lecturerInfo')
+      if (!storedInfo) {
+        router.push('/')
+        return
+      }
+
+      try {
+        const info = JSON.parse(storedInfo)
+        setLecturerInfo(info)
+      } catch (err) {
+        console.error('Error parsing lecturer info:', err)
+        localStorage.removeItem('lecturerInfo')
+        router.push('/')
+      }
     }
-  }, [userType, studentInfo, router])
+  }, [userType, studentInfo, lecturerInfo, router])
 
   const handleLogout = async () => {
     try {
@@ -58,14 +81,17 @@ export function MobileLayout({ children, userType, studentInfo: initialStudentIn
         console.error('Logout failed:', response.status)
       }
 
-      localStorage.removeItem('studentInfo')
+      localStorage.removeItem(userType === 'student' ? 'studentInfo' : 'lecturerInfo')
       router.push("/")
     } catch (error) {
       console.error('Error during logout:', error)
-      localStorage.removeItem('studentInfo')
+      localStorage.removeItem(userType === 'student' ? 'studentInfo' : 'lecturerInfo')
       router.push("/")
     }
   }
+
+  const userInfo = userType === 'student' ? studentInfo : lecturerInfo
+  const userInitials = userInfo?.name?.split(' ').map(n => n[0]).join('') || ''
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50">
@@ -99,9 +125,11 @@ export function MobileLayout({ children, userType, studentInfo: initialStudentIn
                       </Avatar>
                     )}
                     <div>
-                      <div className="font-medium">{userType === "student" ? studentInfo?.name || "Loading..." : "Dr. Ahmad Rizal"}</div>
+                      <div className="font-medium">{userInfo?.name || "Loading..."}</div>
                       <div className="text-xs text-muted-foreground">
-                        {userType === "student" ? studentInfo?.matricNo || "Loading..." : "Faculty of Computing"}
+                        {userType === "student" 
+                          ? (userInfo as StudentInfo)?.matricNo 
+                          : (userInfo as LecturerInfo)?.workerNo || "Loading..."}
                       </div>
                     </div>
                   </div>
@@ -111,42 +139,36 @@ export function MobileLayout({ children, userType, studentInfo: initialStudentIn
                   <NavItem
                     icon={Calendar}
                     label="Dashboard"
-                    href={`/${userType}/dashboard`}
+                    href={`/${userType}/dashboard?tab=my-timetable`}
                     onClick={() => setIsMenuOpen(false)}
                   />
 
                   <NavItem
                     icon={Search}
                     label="Search"
-                    href={`/${userType}/dashboard?tab=search-timetable`}
+                    href={`/${userType}/dashboard?tab=${userType === "student" ? "search-timetable" : "search-student"}`}
                     onClick={() => setIsMenuOpen(false)}
                   />
 
                   {userType === "lecturer" && (
-                    <>
-                      <NavItem
-                        icon={AlertTriangle}
-                        label="Clashes"
-                        href="/lecturer/clashes"
-                        onClick={() => setIsMenuOpen(false)}
-                      />
-                      <NavItem
-                        icon={BookOpen}
-                        label="Analytics"
-                        href="/lecturer/analytics"
-                        onClick={() => setIsMenuOpen(false)}
-                      />
-                    </>
+                    <NavItem
+                      icon={BookOpen}
+                      label="Analytics"
+                      href="/lecturer/dashboard?tab=analytics"
+                      onClick={() => setIsMenuOpen(false)}
+                    />
                   )}
 
                   <Separator />
 
-                  <NavItem
-                    icon={User}
-                    label="Profile"
-                    href={`/${userType}/profile`}
-                    onClick={() => setIsMenuOpen(false)}
-                  />
+                  {userType === "student" && (
+                    <NavItem
+                      icon={User}
+                      label="Profile"
+                      href="/student/profile"
+                      onClick={() => setIsMenuOpen(false)}
+                    />
+                  )}
 
                   <NavItem
                     icon={LogOut}

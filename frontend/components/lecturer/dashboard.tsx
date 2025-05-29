@@ -9,7 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertTriangle } from "lucide-react"
 import { ClashesView } from "@/components/lecturer/clashes-view"
 import { AnalyticsDashboard } from "@/components/lecturer/analytics-dashboard"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { API_BASE_URL } from "@/lib/config"
 import { DailyClassesView } from "@/components/lecturer/daily-classes-view"
 import { motion } from "framer-motion"
@@ -40,12 +40,21 @@ interface LecturerInfo {
 }
 
 export function LecturerDashboard() {
-  const [activeTab, setActiveTab] = useState("my-timetable")
+  const searchParams = useSearchParams()
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || "my-timetable")
   const [timetable, setTimetable] = useState<TimetableEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [lecturerInfo, setLecturerInfo] = useState<LecturerInfo | null>(null)
   const router = useRouter()
+
+  // Update activeTab when URL changes
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab) {
+      setActiveTab(tab)
+    }
+  }, [searchParams])
 
   // Get lecturer information from localStorage
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { ITimetable, ITimetableClash } from "@/types";
+import { ITimetable, ITimetableVenueClash } from "@/types";
 import { Request, Response } from "express";
 import { IController } from "./IController";
 
@@ -28,13 +28,13 @@ export interface ILecturerController extends IController {
      * @param req The request object.
      * @param res The response object.
      */
-    getClashingTimetable(
+    getVenueClash(
         req: Request<
-            "/clashing-timetable",
+            "/venue-clash",
             unknown,
             unknown,
             Partial<{ session: string; semester: string; worker_no: string }>
         >,
-        res: Response<ITimetableClash[] | { error: string }>
+        res: Response<ITimetableVenueClash[] | { error: string }>
     ): Promise<void>;
 }

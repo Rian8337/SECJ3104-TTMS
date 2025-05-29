@@ -1,20 +1,25 @@
 import { DrizzleDb } from "@/database";
 import {
+    courses,
+    courseSections,
     courseSectionSchedules,
     IStudent,
+    lecturers,
     studentRegisteredCourses,
     students,
+    venues,
 } from "@/database/schema";
 import { Repository } from "@/decorators/repository";
 import { dependencyTokens } from "@/dependencies/tokens";
 import {
+    IRawTimetable,
     IRegisteredStudent,
     IStudentSearchEntry,
-    ITimetable,
     TTMSSemester,
     TTMSSession,
 } from "@/types";
-import { and, eq, or, SQL, sql } from "drizzle-orm";
+import { and, asc, eq, SQL, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/mysql-core";
 import { inject } from "tsyringe";
 import { BaseRepository } from "./BaseRepository";
 import { IStudentRepository } from "./IStudentRepository";
@@ -45,54 +50,117 @@ export class StudentRepository
         matricNo: string,
         session: TTMSSession,
         semester: TTMSSemester
-    ): Promise<ITimetable[]> {
-        const registeredCourses = await this.db
-            .select({
-                courseCode: studentRegisteredCourses.courseCode,
-                section: studentRegisteredCourses.section,
-            })
-            .from(studentRegisteredCourses)
-            .where(
-                and(
-                    eq(
-                        studentRegisteredCourses.matricNo,
-                        matricNo.toUpperCase()
-                    ),
-                    eq(studentRegisteredCourses.session, session),
-                    eq(studentRegisteredCourses.semester, semester)
-                )
-            );
+    ): Promise<IRawTimetable[]> {
+        const css = alias(courseSectionSchedules, "css");
+        const src = alias(studentRegisteredCourses, "src");
+        const c = alias(courses, "c");
+        const cs = alias(courseSections, "cs");
+        const l = alias(lecturers, "l");
+        const v = alias(venues, "v");
 
-        if (registeredCourses.length === 0) {
-            return [];
-        }
-
-        return this.db.query.courseSectionSchedules.findMany({
-            columns: {
-                day: true,
-                time: true,
-            },
-            with: {
-                courseSection: {
-                    columns: { section: true },
-                    with: {
-                        course: { columns: { code: true, name: true } },
-                        lecturer: true,
-                    },
-                },
-                venue: { columns: { shortName: true } },
-            },
-            where: or(
-                ...registeredCourses.map((c) =>
+        console.log(
+            this.db
+                .select({
+                    scheduleDay: css.day,
+                    scheduleTime: css.time,
+                    venueShortName: v.shortName,
+                    courseCode: src.courseCode,
+                    section: src.section,
+                    courseName: c.name,
+                    lecturerNo: cs.lecturerNo,
+                    lecturerName: l.name,
+                })
+                .from(css)
+                // Join to obtain the section of the course section.
+                .innerJoin(
+                    cs,
                     and(
-                        eq(courseSectionSchedules.session, session),
-                        eq(courseSectionSchedules.semester, semester),
-                        eq(courseSectionSchedules.courseCode, c.courseCode),
-                        eq(courseSectionSchedules.section, c.section)
+                        eq(css.session, cs.session),
+                        eq(css.semester, cs.semester),
+                        eq(css.courseCode, cs.courseCode),
+                        eq(css.section, cs.section)
                     )
                 )
-            ),
-        });
+                // Join to obtain the name of the course.
+                .innerJoin(c, eq(cs.courseCode, c.code))
+                // Join to obtain the courses registered by the student.
+                .innerJoin(
+                    src,
+                    and(
+                        eq(src.session, css.session),
+                        eq(src.semester, css.semester),
+                        eq(src.courseCode, css.courseCode),
+                        eq(src.section, css.section)
+                    )
+                )
+                // Left join to obtain the lecturer details, if any.
+                .leftJoin(l, eq(cs.lecturerNo, l.workerNo))
+                // Left join to obtain the venue details, if any.
+                .leftJoin(v, eq(css.venueCode, v.code))
+                // Filter by the student's matric number, session, and semester.
+                .where(
+                    and(
+                        eq(src.matricNo, matricNo.toUpperCase()),
+                        eq(css.session, session),
+                        eq(css.semester, semester)
+                    )
+                )
+                // Order by day and time.
+                .orderBy(asc(css.day), asc(css.time))
+                .toSQL().sql
+        );
+
+        return (
+            this.db
+                .select({
+                    scheduleDay: css.day,
+                    scheduleTime: css.time,
+                    venueShortName: v.shortName,
+                    courseCode: src.courseCode,
+                    section: src.section,
+                    courseName: c.name,
+                    lecturerNo: cs.lecturerNo,
+                    lecturerName: l.name,
+                })
+                .from(css)
+                // Join to obtain the section of the course section.
+                .innerJoin(
+                    cs,
+                    and(
+                        eq(css.session, cs.session),
+                        eq(css.semester, cs.semester),
+                        eq(css.courseCode, cs.courseCode),
+                        eq(css.section, cs.section)
+                    )
+                )
+                // Join to obtain the name of the course.
+                .innerJoin(c, eq(cs.courseCode, c.code))
+                // Join to obtain the courses registered by the student.
+                .innerJoin(
+                    src,
+                    and(
+                        eq(src.session, css.session),
+                        eq(src.semester, css.semester),
+                        eq(src.courseCode, css.courseCode),
+                        eq(src.section, css.section)
+                    )
+                )
+                // Left join to obtain the lecturer details, if any.
+                .leftJoin(l, eq(cs.lecturerNo, l.workerNo))
+                // Left join to obtain the venue details, if any.
+                .leftJoin(v, eq(css.venueCode, v.code))
+                // Filter by the student's matric number, session, and semester.
+                .where(
+                    and(
+                        eq(src.matricNo, matricNo.toUpperCase()),
+                        eq(css.session, session),
+                        eq(css.semester, semester)
+                    )
+                )
+                // Order by day and time.
+                .orderBy(asc(css.day), asc(css.time))
+                .execute()
+        );
     }
 
     searchByMatricNo(

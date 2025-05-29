@@ -4,9 +4,35 @@ import {
     ILecturer,
     IVenue,
 } from "@/database/schema";
+import { CourseSectionScheduleDay, CourseSectionScheduleTime } from "./ttms";
 
-interface IBaseTimetable extends Pick<ICourseSectionSchedule, "day" | "time"> {
-    readonly venue: Pick<IVenue, "shortName"> | null;
+/**
+ * Raw result of a timetable from the database.
+ */
+export interface IRawTimetable {
+    readonly scheduleDay: CourseSectionScheduleDay;
+    readonly scheduleTime: CourseSectionScheduleTime;
+    readonly venueShortName: string | null;
+    readonly courseCode: string;
+    readonly section: string;
+    readonly courseName: string;
+    readonly lecturerNo: number | null;
+    readonly lecturerName: string | null;
+}
+
+/**
+ * Raw result of a venue clash in a timetable from the database.
+ */
+export interface IRawVenueClashTimetable {
+    readonly lecturerNo: number | null;
+    readonly lecturerName: string | null;
+    readonly courseCode: string;
+    readonly courseName: string;
+    readonly section: string;
+    readonly scheduleDay: CourseSectionScheduleDay;
+    readonly scheduleTime: CourseSectionScheduleTime;
+    // TODO: this should not return null. See: https://github.com/drizzle-team/drizzle-orm/issues/2956
+    readonly scheduleVenue: string | null;
 }
 
 /**
@@ -21,13 +47,17 @@ export interface ITimetableCourseSection {
 /**
  * Represents a timetable.
  */
-export interface ITimetable extends IBaseTimetable {
+export interface ITimetable
+    extends Pick<ICourseSectionSchedule, "day" | "time"> {
     readonly courseSection: ITimetableCourseSection;
+    readonly venue: Pick<IVenue, "shortName"> | null;
 }
 
 /**
- * Represents a timetable clash.
+ * Represents a timetable venue clash.
  */
-export interface ITimetableClash extends IBaseTimetable {
+export interface ITimetableVenueClash
+    extends Pick<ICourseSectionSchedule, "day" | "time"> {
+    readonly venue: Pick<IVenue, "shortName"> | null;
     readonly courseSections: ITimetableCourseSection[];
 }

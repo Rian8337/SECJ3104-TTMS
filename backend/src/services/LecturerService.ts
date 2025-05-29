@@ -4,10 +4,11 @@ import { dependencyTokens } from "@/dependencies/tokens";
 import { ILecturerRepository } from "@/repositories";
 import {
     ITimetable,
-    ITimetableClash,
+    ITimetableVenueClash,
     TTMSSemester,
     TTMSSession,
 } from "@/types";
+import { convertRawTimetableToTimetable } from "@/utils";
 import { inject } from "tsyringe";
 import { BaseService } from "./BaseService";
 import { ILecturerService } from "./ILecturerService";
@@ -40,27 +41,29 @@ export class LecturerService extends BaseService implements ILecturerService {
             return this.createFailedResponse("Lecturer not found", 404);
         }
 
-        const res = await this.lecturerRepository.getTimetable(
+        const rawTimetables = await this.lecturerRepository.getTimetable(
             workerNo,
             session,
             semester
         );
 
-        return this.createSuccessfulResponse(res);
+        return this.createSuccessfulResponse(
+            convertRawTimetableToTimetable(rawTimetables)
+        );
     }
 
-    async getClashingTimetable(
+    async getVenueClashes(
         workerNo: number,
         session: TTMSSession,
         semester: TTMSSemester
-    ): Promise<OperationResult<ITimetableClash[]>> {
+    ): Promise<OperationResult<ITimetableVenueClash[]>> {
         const lecturer = await this.lecturerRepository.getByWorkerNo(workerNo);
 
         if (!lecturer) {
             return this.createFailedResponse("Lecturer not found", 404);
         }
 
-        const timetables = await this.lecturerRepository.getClashingTimetable(
+        const timetables = await this.lecturerRepository.getVenueClashes(
             workerNo,
             session,
             semester
@@ -70,25 +73,39 @@ export class LecturerService extends BaseService implements ILecturerService {
             return this.createSuccessfulResponse([]);
         }
 
-        const clashes: ITimetableClash[] = [];
+        const clashes = new Map<string, ITimetableVenueClash>();
 
         for (const timetable of timetables) {
-            const clash = clashes.find(
-                (c) => c.day === timetable.day && c.time === timetable.time
-            );
+            const key = `${timetable.scheduleDay.toString()}-${timetable.scheduleTime.toString()}-${timetable.scheduleVenue!}`;
 
-            if (clash) {
-                clash.courseSections.push(timetable.courseSection);
-            } else {
-                clashes.push({
-                    day: timetable.day,
-                    time: timetable.time,
-                    venue: timetable.venue,
-                    courseSections: [timetable.courseSection],
+            if (!clashes.has(key)) {
+                clashes.set(key, {
+                    day: timetable.scheduleDay,
+                    time: timetable.scheduleTime,
+                    venue: { shortName: timetable.scheduleVenue! },
+                    courseSections: [],
                 });
             }
+
+            const clash = clashes.get(key)!;
+
+            clash.courseSections.push({
+                section: timetable.section,
+                course: {
+                    code: timetable.courseCode,
+                    name: timetable.courseName,
+                },
+                lecturer:
+                    timetable.lecturerNo !== null &&
+                    timetable.lecturerName !== null
+                        ? {
+                              workerNo: timetable.lecturerNo,
+                              name: timetable.lecturerName,
+                          }
+                        : null,
+            });
         }
 
-        return this.createSuccessfulResponse(clashes);
+        return this.createSuccessfulResponse(Array.from(clashes.values()));
     }
 }

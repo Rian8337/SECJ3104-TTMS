@@ -78,15 +78,15 @@ For all endpoints, unless otherwise specified, non-2xx responses will return the
 }
 ```
 
-| Name                                                                  | Description                                                   |
-| --------------------------------------------------------------------- | ------------------------------------------------------------- |
-| [POST `/auth/login`](#post-authlogin)                                 | Logs a user into the server                                   |
-| [POST `/auth/logout`](#post-authlogout)                               | Logs a user out                                               |
-| [GET `/student/timetable`](#get-studenttimetable)                     | Obtains a student's timetable                                 |
-| [GET `/student/search`](#get-studentsearch)                           | Searches for students                                         |
-| [GET `/student/analytics`](#get-studentanalytics)                     | Obtains student analytics                                     |
-| [GET `/lecturer/timetable`](#get-lecturertimetable)                   | Obtains a lecturer's timetable                                |
-| [GET `/lecturer/clashing-timetable`](#get-lecturerclashing-timetable) | Obtains the timetables that clash with a lecturer's timetable |
+| Name                                                    | Description                                                                                          |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| [POST `/auth/login`](#post-authlogin)                   | Logs a user into the server                                                                          |
+| [POST `/auth/logout`](#post-authlogout)                 | Logs a user out                                                                                      |
+| [GET `/student/timetable`](#get-studenttimetable)       | Obtains a student's timetable                                                                        |
+| [GET `/student/search`](#get-studentsearch)             | Searches for students                                                                                |
+| [GET `/student/analytics`](#get-studentanalytics)       | Obtains student analytics                                                                            |
+| [GET `/lecturer/timetable`](#get-lecturertimetable)     | Obtains a lecturer's timetable                                                                       |
+| [GET `/lecturer/venue-clash`](#get-lecturervenue-clash) | Obtains the timetables of other lecturers that clash with the lecturer's timetable in terms of venue |
 
 ## POST `/auth/login`
 
@@ -184,19 +184,19 @@ This endpoint is restricted to a student or lecturer, in which they must authent
 
 A list of [`Timetable`](#timetable) objects.
 
-## GET `/lecturer/clashing-timetable`
+## GET `/lecturer/venue-clash`
 
-Obtains the timetables that clash with a lecturer's timetable.
+Obtains the timetables of other lecturers that clash with the lecturer's timetable in terms of venue.
 
 This endpoint is restricted to a lecturer, in which they must authenticate through their respective login endpoints first.
 
 ### Query Parameters
 
-| Name        | Required | Default | Description                                                          | Example    |
-| ----------- | -------- | ------- | -------------------------------------------------------------------- | ---------- |
-| `session`   | ✅       | N/A     | The academic session to retrieve the timetable for                   | 2024/2025  |
-| `semester`  | ✅       | N/A     | The academic semester to retrieve the timetable for                  | 1, 2, or 3 |
-| `worker_no` | ✅       | N/A     | The worker number of the lecturer whose timetable is to be retrieved | N/A        |
+| Name        | Required | Default | Description                                                      | Example    |
+| ----------- | -------- | ------- | ---------------------------------------------------------------- | ---------- |
+| `session`   | ✅       | N/A     | The academic session to retrieve the timetable for               | 2024/2025  |
+| `semester`  | ✅       | N/A     | The academic semester to retrieve the timetable for              | 1, 2, or 3 |
+| `worker_no` | ✅       | N/A     | The worker number of the lecturer whose clashes is to be checked | N/A        |
 
 ### Response
 

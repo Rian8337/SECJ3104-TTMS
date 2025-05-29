@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
@@ -14,43 +14,84 @@ import { API_BASE_URL } from "@/lib/config"
 interface StudentInfo {
   name: string
   matricNo: string
+  facultyCode?: string
+}
+
+interface LecturerInfo {
+  name: string
+  workerNo: string
+  facultyCode?: string
 }
 
 interface MobileLayoutProps {
   children: React.ReactNode
   userType: "student" | "lecturer"
   studentInfo?: StudentInfo | null
+  lecturerInfo?: LecturerInfo | null
 }
 
-export function MobileLayout({ children, userType, studentInfo }: MobileLayoutProps) {
+export function MobileLayout({ children, userType, studentInfo: initialStudentInfo, lecturerInfo: initialLecturerInfo }: MobileLayoutProps) {
   const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(initialStudentInfo || null)
+  const [lecturerInfo, setLecturerInfo] = useState<LecturerInfo | null>(initialLecturerInfo || null)
+
+  useEffect(() => {
+    if (userType === "student" && !studentInfo) {
+      const storedInfo = localStorage.getItem('studentInfo')
+      if (!storedInfo) {
+        router.push('/')
+        return
+      }
+
+      try {
+        const info = JSON.parse(storedInfo)
+        setStudentInfo(info)
+      } catch (err) {
+        console.error('Error parsing student info:', err)
+        localStorage.removeItem('studentInfo')
+        router.push('/')
+      }
+    } else if (userType === "lecturer" && !lecturerInfo) {
+      const storedInfo = localStorage.getItem('lecturerInfo')
+      if (!storedInfo) {
+        router.push('/')
+        return
+      }
+
+      try {
+        const info = JSON.parse(storedInfo)
+        setLecturerInfo(info)
+      } catch (err) {
+        console.error('Error parsing lecturer info:', err)
+        localStorage.removeItem('lecturerInfo')
+        router.push('/')
+      }
+    }
+  }, [userType, studentInfo, lecturerInfo, router])
 
   const handleLogout = async () => {
-    console.log('Attempting logout...')
     try {
-      const response = await fetch(`${API_BASE_URL}/student/logout`, {
+      const response = await fetch(`${API_BASE_URL}/auth/logout`, {
         method: 'POST',
         credentials: 'include',
       })
 
       if (!response.ok) {
         console.error('Logout failed:', response.status)
-        // Even if API call fails, clear local storage and redirect
       }
 
-      console.log('Logout successful, clearing credentials and redirecting.')
-      localStorage.removeItem('matricNo')
-      localStorage.removeItem('password')
+      localStorage.removeItem(userType === 'student' ? 'studentInfo' : 'lecturerInfo')
       router.push("/")
     } catch (error) {
       console.error('Error during logout:', error)
-      // Even if error occurs, clear local storage and redirect
-      localStorage.removeItem('matricNo')
-      localStorage.removeItem('password')
+      localStorage.removeItem(userType === 'student' ? 'studentInfo' : 'lecturerInfo')
       router.push("/")
     }
   }
+
+  const userInfo = userType === 'student' ? studentInfo : lecturerInfo
+  const userInitials = userInfo?.name?.split(' ').map(n => n[0]).join('') || ''
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50">
@@ -69,16 +110,26 @@ export function MobileLayout({ children, userType, studentInfo }: MobileLayoutPr
                 </SheetHeader>
                 <div className="flex flex-col gap-1 mt-6">
                   <div className="flex items-center p-2">
-                    <Avatar className="h-10 w-10 mr-3">
-                      <AvatarImage src="/diverse-students-studying.png" alt="User" />
-                      <AvatarFallback className="bg-red-100 text-red-800">
-                        {userType === "student" ? "SS" : "AR"}
-                      </AvatarFallback>
-                    </Avatar>
+                    {userType === "lecturer" ? (
+                      <img src="/lecturer.png" alt="Lecturer" style={{ objectFit: 'contain' }} className="h-10 w-10 mr-3" />
+                    ) : studentInfo ? (
+                      <Avatar className="h-10 w-10 mr-3">
+                        <AvatarImage src="/diverse-students-studying.png" alt={studentInfo.name} style={{ objectFit: 'contain' }} />
+                        <AvatarFallback className="bg-red-100 text-red-800">
+                          {studentInfo.name.split(' ').map(n => n[0]).join('') || "SS"}
+                        </AvatarFallback>
+                      </Avatar>
+                    ) : (
+                      <Avatar className="h-10 w-10 mr-3">
+                        <AvatarFallback className="bg-red-100 text-red-800">SS</AvatarFallback>
+                      </Avatar>
+                    )}
                     <div>
-                      <div className="font-medium">{userType === "student" ? studentInfo?.name || "Student" : "Dr. Ahmad Rizal"}</div>
+                      <div className="font-medium">{userInfo?.name || "Loading..."}</div>
                       <div className="text-xs text-muted-foreground">
-                        {userType === "student" ? studentInfo?.matricNo || "N/A" : "Faculty of Computing"}
+                        {userType === "student" 
+                          ? (userInfo as StudentInfo)?.matricNo 
+                          : (userInfo as LecturerInfo)?.workerNo || "Loading..."}
                       </div>
                     </div>
                   </div>
@@ -88,42 +139,36 @@ export function MobileLayout({ children, userType, studentInfo }: MobileLayoutPr
                   <NavItem
                     icon={Calendar}
                     label="Dashboard"
-                    href={`/${userType}/dashboard`}
+                    href={`/${userType}/dashboard?tab=my-timetable`}
                     onClick={() => setIsMenuOpen(false)}
                   />
 
                   <NavItem
                     icon={Search}
-                    label="Search Student"
-                    href={`/${userType}/dashboard?tab=search-student`}
+                    label="Search"
+                    href={`/${userType}/dashboard?tab=${userType === "student" ? "search-timetable" : "search-student"}`}
                     onClick={() => setIsMenuOpen(false)}
                   />
 
                   {userType === "lecturer" && (
-                    <>
-                      <NavItem
-                        icon={AlertTriangle}
-                        label="Clashes"
-                        href="/lecturer/clashes"
-                        onClick={() => setIsMenuOpen(false)}
-                      />
-                      <NavItem
-                        icon={BookOpen}
-                        label="Analytics"
-                        href="/lecturer/analytics"
-                        onClick={() => setIsMenuOpen(false)}
-                      />
-                    </>
+                    <NavItem
+                      icon={BookOpen}
+                      label="Analytics"
+                      href="/lecturer/dashboard?tab=analytics"
+                      onClick={() => setIsMenuOpen(false)}
+                    />
                   )}
 
                   <Separator />
 
-                  <NavItem
-                    icon={User}
-                    label="Profile"
-                    href={`/${userType}/profile`}
-                    onClick={() => setIsMenuOpen(false)}
-                  />
+                  {userType === "student" && (
+                    <NavItem
+                      icon={User}
+                      label="Profile"
+                      href="/student/profile"
+                      onClick={() => setIsMenuOpen(false)}
+                    />
+                  )}
 
                   <NavItem
                     icon={LogOut}
@@ -140,10 +185,18 @@ export function MobileLayout({ children, userType, studentInfo }: MobileLayoutPr
               UTM TMS | {userType === "student" ? "Student Portal" : "Lecturer Portal"}
             </h1>
           </div>
-          <Avatar className="h-8 w-8 border-2 border-white/20">
-            <AvatarImage src="/diverse-students-studying.png" alt="User" />
-            <AvatarFallback className="bg-red-100 text-red-800">{userType === "student" ? "SS" : "AR"}</AvatarFallback>
-          </Avatar>
+          {userType === "lecturer" ? (
+            <img src="/lecturer.png" alt="Lecturer" style={{ objectFit: 'contain' }} className="h-10 w-10 ml-2" />
+          ) : studentInfo ? (
+            <Avatar className="h-10 w-10 ml-2">
+              <AvatarImage src="/diverse-students-studying.png" alt={studentInfo.name} style={{ objectFit: 'contain' }} />
+              <AvatarFallback className="bg-red-100 text-red-800">{studentInfo.name.split(' ').map(n => n[0]).join('') || "SS"}</AvatarFallback>
+            </Avatar>
+          ) : (
+            <Avatar className="h-10 w-10 ml-2">
+              <AvatarFallback className="bg-red-100 text-red-800">SS</AvatarFallback>
+            </Avatar>
+          )}
         </div>
       </header>
 

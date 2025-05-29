@@ -5,5 +5,8 @@
   "description": "Timetable management system for SECJ3104 Applications Development",
   "keywords": [],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "framer-motion": "^12.15.0"
+  }
 }

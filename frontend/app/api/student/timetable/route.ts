@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // Get the session cookie
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const sessionCookie = cookieStore.get('session')
 
     if (!sessionCookie) {
@@ -29,10 +29,7 @@ export async function GET(request: NextRequest) {
     const response = await fetch(
       `${process.env.BACKEND_URL}/student/timetable?session=${session}&semester=${semester}&matric_no=${matric_no}`,
       {
-        headers: {
-          'Cookie': `session=${sessionCookie.value}`
-        },
-        credentials: 'include',
+        credentials: 'include'
       }
     )
 

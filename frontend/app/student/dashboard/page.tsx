@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation"
 interface StudentInfo {
   name: string
   matricNo: string
+  facultyCode: string
 }
 
 export default function StudentDashboardPage() {
@@ -16,45 +17,23 @@ export default function StudentDashboardPage() {
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
-  // Fetch student information
+  // Get student information from localStorage
   useEffect(() => {
-    const fetchStudentInfo = async () => {
-      try {
-        console.log('Fetching student info...')
-        const response = await fetch(`${API_BASE_URL}/student/login`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            login: localStorage.getItem('matricNo'),
-            password: localStorage.getItem('password')
-          })
-        })
-        
-        if (!response.ok) {
-          if (response.status === 401) {
-            console.log('Not authenticated, redirecting to login...')
-            router.push('/')
-            return
-          }
-          throw new Error('Failed to fetch student information')
-        }
-        
-        const data = await response.json()
-        console.log('Student info received:', data)
-        setStudentInfo({
-          name: data.name,
-          matricNo: data.matricNo
-        })
-      } catch (err) {
-        console.error('Error fetching student info:', err)
-        setError(err instanceof Error ? err.message : 'Failed to fetch student information')
-      }
+    const storedInfo = localStorage.getItem('studentInfo')
+    if (!storedInfo) {
+      router.push('/')
+      return
     }
 
-    fetchStudentInfo()
+    try {
+      const info = JSON.parse(storedInfo)
+      setStudentInfo(info)
+    } catch (err) {
+      console.error('Error parsing student info:', err)
+      setError('Failed to load student information')
+      localStorage.removeItem('studentInfo')
+      router.push('/')
+    }
   }, [router])
 
   if (!studentInfo) {

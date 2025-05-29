@@ -4,7 +4,7 @@ import { cookies } from 'next/headers'
 export async function GET(request: NextRequest) {
   try {
     // Get the session cookie
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const sessionCookie = cookieStore.get('session')
 
     if (!sessionCookie) {
@@ -26,9 +26,14 @@ export async function GET(request: NextRequest) {
     )
 
     if (!response.ok) {
-      const data = await response.json()
+      let errorData
+      try {
+        errorData = await response.json()
+      } catch (e) {
+        errorData = { error: 'Failed to validate session' }
+      }
       return NextResponse.json(
-        { error: data.error || 'Failed to validate session' },
+        { error: errorData.error || 'Failed to validate session' },
         { status: response.status }
       )
     }

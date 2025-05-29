@@ -9,7 +9,11 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertTriangle } from "lucide-react"
 import { ClashesView } from "@/components/lecturer/clashes-view"
 import { AnalyticsDashboard } from "@/components/lecturer/analytics-dashboard"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
+import { API_BASE_URL } from "@/lib/config"
+import { DailyClassesView } from "@/components/lecturer/daily-classes-view"
+import { motion } from "framer-motion"
+import { formatTimetableData } from "@/lib/timetable-utils"
 
 interface TimetableEntry {
   id: string
@@ -19,57 +23,74 @@ interface TimetableEntry {
   endTime: string
   venue: string
   lecturer: string
+  courseCode: string
+  section: string
+  courseSection: {
+    lecturer?: {
+      name: string
+      workerNo: string | number
+    }
+  }
 }
 
 interface LecturerInfo {
   name: string
-  workerNo: number
+  workerNo: string
+  facultyCode?: string
 }
 
 export function LecturerDashboard() {
-  const [activeTab, setActiveTab] = useState("my-timetable")
+  const searchParams = useSearchParams()
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || "my-timetable")
   const [timetable, setTimetable] = useState<TimetableEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [lecturerInfo, setLecturerInfo] = useState<LecturerInfo | null>(null)
   const router = useRouter()
 
-  // Fetch lecturer information
+  // Update activeTab when URL changes
   useEffect(() => {
-    const fetchLecturerInfo = async () => {
-      try {
-        const response = await fetch('/api/lecturer/info', {
-          credentials: 'include'
-        })
-        
-        if (!response.ok) {
-          if (response.status === 401) {
-            // Redirect to login if not authenticated
-            router.push('/')
-            return
-          }
-          throw new Error('Failed to fetch lecturer information')
-        }
-        
-        const data = await response.json()
-        setLecturerInfo(data)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch lecturer information')
-      }
+    const tab = searchParams.get('tab')
+    if (tab) {
+      setActiveTab(tab)
+    }
+  }, [searchParams])
+
+  // Get lecturer information from localStorage
+  useEffect(() => {
+    console.log('Fetching lecturer info from localStorage')
+    const storedInfo = localStorage.getItem('lecturerInfo')
+    if (!storedInfo) {
+      console.log('No lecturer info found in localStorage')
+      router.push('/')
+      return
     }
 
-    fetchLecturerInfo()
+    try {
+      const info = JSON.parse(storedInfo)
+      console.log('Parsed lecturer info:', info)
+      setLecturerInfo(info)
+    } catch (err) {
+      console.error('Error parsing lecturer info:', err)
+      setError('Failed to load lecturer information')
+      localStorage.removeItem('lecturerInfo')
+      router.push('/')
+    }
   }, [router])
 
   // Fetch timetable data
   useEffect(() => {
     const fetchTimetable = async () => {
-      if (!lecturerInfo?.workerNo) return
+      if (!lecturerInfo?.workerNo) {
+        console.log('No worker number available, skipping timetable fetch')
+        return
+      }
 
       try {
+        console.log('Fetching timetable for worker:', lecturerInfo.workerNo)
         setLoading(true)
         const response = await fetch(
-          `/api/lecturer/timetable?session=2023/2024&semester=2&worker_no=${lecturerInfo.workerNo}`,
+          `${API_BASE_URL}/lecturer/timetable?worker_no=${lecturerInfo.workerNo}&session=2024/2025&semester=2`,
           {
             credentials: 'include'
           }
@@ -80,18 +101,14 @@ export function LecturerDashboard() {
         }
 
         const data = await response.json()
-        // Transform the data to match the expected format
-        const formattedTimetable = data.map((entry: any) => ({
-          id: `${entry.courseSection.course.code}-${entry.courseSection.section}`,
-          course: `${entry.courseSection.course.code} - ${entry.courseSection.course.name}`,
-          day: entry.day,
-          startTime: entry.time.split(' - ')[0],
-          endTime: entry.time.split(' - ')[1],
-          venue: entry.venue?.shortName || 'TBA',
-          lecturer: entry.courseSection.lecturer?.name || 'TBA'
-        }))
+        console.log('Received timetable data:', data)
+
+        // Use the shared formatTimetableData function
+        const formattedTimetable = formatTimetableData(data)
+        console.log('Formatted timetable:', formattedTimetable)
         setTimetable(formattedTimetable)
       } catch (err) {
+        console.error('Error fetching timetable:', err)
         setError(err instanceof Error ? err.message : 'Failed to fetch timetable')
       } finally {
         setLoading(false)
@@ -113,19 +130,30 @@ export function LecturerDashboard() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-6"
+    >
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+        className="flex items-center justify-between"
+      >
         <div>
-          <h2 className="text-2xl font-bold">Welcome, {lecturerInfo.name}</h2>
-          <p className="text-muted-foreground">Lecturer Dashboard</p>
+          <div className="space-y-1">
+            <h2 className="text-2xl font-bold font-cursive">Welcome,</h2>
+            <h3 className="text-2xl font-cursive">{lecturerInfo.name}</h3>
+          </div>
         </div>
-      </div>
+      </motion.div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="my-timetable">My Timetable</TabsTrigger>
           <TabsTrigger value="search-student">Search Student</TabsTrigger>
-          <TabsTrigger value="clashes">Clashes</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
@@ -144,7 +172,7 @@ export function LecturerDashboard() {
               <div className="text-muted-foreground">Please wait while we fetch your schedule</div>
             </div>
           ) : (
-            <WeeklyTimetable classes={timetable} showClashes={true} />
+            <DailyClassesView classes={timetable} />
           )}
         </TabsContent>
 
@@ -152,14 +180,23 @@ export function LecturerDashboard() {
           <SearchStudentForm />
         </TabsContent>
 
-        <TabsContent value="clashes">
-          <ClashesView />
-        </TabsContent>
-
         <TabsContent value="analytics">
-          <AnalyticsDashboard />
+          <Tabs defaultValue="analytics-dashboard" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="analytics-dashboard">Analytics</TabsTrigger>
+              <TabsTrigger value="clashes">Clashes</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="analytics-dashboard">
+              <AnalyticsDashboard />
+            </TabsContent>
+            
+            <TabsContent value="clashes">
+              <ClashesView />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
       </Tabs>
-    </div>
+    </motion.div>
   )
 }

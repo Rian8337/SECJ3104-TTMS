@@ -137,15 +137,17 @@ This endpoint is restricted to a student or lecturer, in which they must authent
 
 ### Query Parameters
 
-| Name     | Required | Default | Description                                                                             | Example |
-| -------- | -------- | ------- | --------------------------------------------------------------------------------------- | ------- |
-| `query`  | ✅       | N/A     | The query to search for. Can be a student's name or matric number                       | N/A     |
-| `limit`  | ❌       | 10      | The maximum number of students to return. Defaults to 10                                | 5       |
-| `offset` | ❌       | 0       | The number of students to skip before starting to collect the result set. Defaults to 0 | 5       |
+| Name       | Required | Default | Description                                                                                  | Example   |
+| ---------- | -------- | ------- | -------------------------------------------------------------------------------------------- | --------- |
+| `session`  | ✅       | N/A     | The academic session to search students in                                                   | 2024/2025 |
+| `semester` | ✅       | N/A     | The academic semester to search students in                                                  | 1, 2, 3   |
+| `query`    | ✅       | N/A     | The query to search for. Can be a student's name or matric number                            | N/A       |
+| `limit`    | ❌       | 10      | The maximum number of students to return. Must be at least 1                                 | 5         |
+| `offset`   | ❌       | 0       | The number of students to skip before starting to collect the result set. Must be at least 0 | 5         |
 
 ### Response
 
-A list of [`Student`](#student) objects that fulfill the search criteria.
+A list of [`StudentSearchEntry`](#student-search) objects that fulfill the search criteria.
 
 ## GET `/student/analytics`
 
@@ -250,6 +252,29 @@ type ILecturer = {
      * The worker number of the lecturer.
      */
     workerNo: number;
+};
+```
+
+## Search
+
+### Student Search
+
+```ts
+type IStudentSearchEntry = {
+    /**
+     * The matric number of the student.
+     */
+    matricNo: string;
+
+    /**
+     * The name of the student.
+     */
+    name: string;
+
+    /**
+     * The code of the course the student is enrolled in. See enrolled course codes data types section.
+     */
+    courseCode: TTMSCourseCode;
 };
 ```
 

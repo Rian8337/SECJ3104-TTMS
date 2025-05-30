@@ -123,9 +123,12 @@ export function SearchStudentForm() {
     setSearchError(null) // Clear previous errors
 
     try {
-      const response = await fetch(`${API_BASE_URL}/student/search?query=${encodeURIComponent(searchQuery)}`, {
-        credentials: 'include'
-      })
+      const response = await fetch(
+        `${API_BASE_URL}/student/search?query=${encodeURIComponent(searchQuery)}&session=2024/2025&semester=2`,
+        {
+          credentials: 'include'
+        }
+      )
 
       if (!response.ok) {
         const errorData = await response.json()

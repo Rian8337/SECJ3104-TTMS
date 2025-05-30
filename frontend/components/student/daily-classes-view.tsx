@@ -5,7 +5,7 @@ import { ClassItem } from "@/types/timetable"
 
 interface DailyClassesViewProps {
   classes: ClassItem[]
-  onLecturerClick?: (workerNo: string) => void
+  onLecturerClick?: (workerNo: string, name: string) => void
 }
 
 export function DailyClassesView({ classes, onLecturerClick }: DailyClassesViewProps) {

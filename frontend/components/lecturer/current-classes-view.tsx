@@ -41,7 +41,7 @@ export function CurrentClassesView() {
         const lecturerInfo = JSON.parse(storedInfo)
         
         const response = await fetch(
-          `${API_BASE_URL}/lecturer/timetable?session=2024/2025&semester=1&worker_no=${lecturerInfo.workerNo}`,
+          `${API_BASE_URL}/lecturer/timetable?session=2024/2025&semester=2&worker_no=${lecturerInfo.workerNo}`,
           {
             credentials: 'include'
           }

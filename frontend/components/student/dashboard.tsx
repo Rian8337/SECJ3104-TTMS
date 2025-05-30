@@ -50,6 +50,7 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
   const [lecturerTimetable, setLecturerTimetable] = useState<TimetableEntry[]>([])
   const [lecturerLoading, setLecturerLoading] = useState(false)
   const [lecturerError, setLecturerError] = useState<string | null>(null)
+  const [lecturerName, setLecturerName] = useState<string>("")
   const router = useRouter()
 
   // Update activeTab when URL changes
@@ -113,10 +114,11 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
   )
 
   // Add new function to fetch lecturer timetable
-  const fetchLecturerTimetable = async (workerNo: string) => {
+  const fetchLecturerTimetable = async (workerNo: string, name: string) => {
     try {
       setLecturerLoading(true)
       setLecturerError(null)
+      setLecturerName(name)
       const response = await fetch(
         `${process.env.BACKEND_URL}/lecturer/timetable?worker_no=${encodeURIComponent(workerNo)}&session=2024/2025&semester=2`,
         {
@@ -141,9 +143,9 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
   }
 
   // Add function to handle lecturer name click
-  const handleLecturerClick = (workerNo: string) => {
+  const handleLecturerClick = (workerNo: string, name: string) => {
     setShowLecturerTimetable(true)
-    fetchLecturerTimetable(workerNo)
+    fetchLecturerTimetable(workerNo, name)
   }
 
   if (!studentInfo) {
@@ -219,8 +221,8 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
                   />
                   Return
                 </button>
-
                 </div>
+                <h2 className="text-l font-semibold text-blue-700 text-center">{lecturerName}'s Timetable</h2>
                 {lecturerLoading ? (
                   <div className="text-center py-4">Loading lecturer timetable...</div>
                 ) : lecturerError ? (

@@ -8,6 +8,7 @@ import { Clock, MapPin, Users } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { API_BASE_URL } from "@/lib/config"
+import { dayMap, timeMap, formatTime } from "@/lib/timetable-utils"
 
 interface TimetableCourseSection {
   course: {
@@ -53,15 +54,16 @@ export function ClashesView() {
   const [showLecturerClashDetails, setShowLecturerClashDetails] = useState(false)
   const [showVenueClashDetails, setShowVenueClashDetails] = useState(false)
   const [selectedClash, setSelectedClash] = useState<Clash | null>(null)
-  const [timetable, setTimetable] = useState<ClashTimetable[]>([])
+  const [venueClashes, setVenueClashes] = useState<Clash[]>([])
+  const [lecturerClashes, setLecturerClashes] = useState<Clash[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  console.log('Current state:', { activeTab, loading, error, timetableLength: timetable.length })
+  console.log('Current state:', { activeTab, loading, error, venueClashesLength: venueClashes.length, lecturerClashesLength: lecturerClashes.length })
 
   useEffect(() => {
     console.log('ClashesView useEffect triggered')
-    const fetchTimetable = async () => {
+    const fetchClashes = async () => {
       try {
         setLoading(true)
         const storedInfo = localStorage.getItem('lecturerInfo')
@@ -74,113 +76,67 @@ export function ClashesView() {
         const lecturerInfo = JSON.parse(storedInfo)
         console.log('Parsed lecturer info:', lecturerInfo)
         
-        const url = `${API_BASE_URL}/lecturer/clashing-timetable?session=2024/2025&semester=2&worker_no=${lecturerInfo.workerNo}`
-        console.log('Fetching from URL:', url)
+        // Fetch venue clashes
+        const venueClashUrl = `${API_BASE_URL}/lecturer/venue-clash?session=2024/2025&semester=2&worker_no=${lecturerInfo.workerNo}`
+        console.log('Fetching venue clashes from URL:', venueClashUrl)
         
-        const response = await fetch(url, {
+        const venueResponse = await fetch(venueClashUrl, {
           credentials: 'include'
         })
         
-        if (!response.ok) {
-          console.error('Response not OK:', response.status, response.statusText)
-          throw new Error('Failed to fetch clashing timetables')
+        if (!venueResponse.ok) {
+          console.error('Venue response not OK:', venueResponse.status, venueResponse.statusText)
+          throw new Error('Failed to fetch venue clashes')
         }
 
-        const data = await response.json()
-        console.log('Received timetable data:', data)
-        setTimetable(data)
+        const venueData = await venueResponse.json()
+        console.log('Received venue clash data:', venueData)
+        
+        // Validate and transform venue clash data
+        if (!Array.isArray(venueData)) {
+          console.error('Invalid venue data format:', venueData)
+          setVenueClashes([])
+          return
+        }
+        
+        // Transform venue clash data into the expected format
+        const transformedVenueClashes = venueData.map((clash: any) => ({
+          id: `venue-${clash.day}-${clash.venue?.shortName || 'unknown'}`,
+          day: dayMap[clash.day] || 'Unknown',
+          type: 'venue' as const,
+          classes: Array.isArray(clash.courseSections) ? clash.courseSections.map((section: any) => ({
+            id: `${section.course.code}-${section.section}`,
+            day: dayMap[clash.day] || 'Unknown',
+            time: timeMap[clash.time] || 'Time not specified',
+            venue: clash.venue || null,
+            courseSections: [{
+              course: {
+                code: section.course.code || 'Unknown',
+                name: section.course.name || 'Unknown Course'
+              },
+              section: section.section || 'Unknown',
+              lecturer: section.lecturer || null
+            }],
+            lecturer: section.lecturer || null
+          })) : []
+        }))
+        
+        setVenueClashes(transformedVenueClashes)
+
+        // TODO: Implement lecturer clash fetching when the API is available
+        setLecturerClashes([])
       } catch (err) {
-        console.error('Error in fetchTimetable:', err)
+        console.error('Error in fetchClashes:', err)
         setError(err instanceof Error ? err.message : 'Failed to fetch data')
+        setVenueClashes([])
+        setLecturerClashes([])
       } finally {
         setLoading(false)
       }
     }
 
-    fetchTimetable()
+    fetchClashes()
   }, [])
-
-  // Detect lecturer clashes
-  const lecturerClashes = timetable.reduce<Clash[]>((clashes, class1) => {
-    console.log('Processing class for lecturer clashes:', class1)
-    const dayClashes = timetable.filter(
-      (class2) =>
-        class1.day === class2.day &&
-        class1.lecturer?.workerNo === class2.lecturer?.workerNo &&
-        ((class1.time.split(' - ')[0] >= class2.time.split(' - ')[0] && 
-          class1.time.split(' - ')[0] < class2.time.split(' - ')[1]) ||
-         (class1.time.split(' - ')[1] > class2.time.split(' - ')[0] && 
-          class1.time.split(' - ')[1] <= class2.time.split(' - ')[1]) ||
-         (class1.time.split(' - ')[0] <= class2.time.split(' - ')[0] && 
-          class1.time.split(' - ')[1] >= class2.time.split(' - ')[1]))
-    )
-    console.log('Found day clashes for lecturer:', dayClashes)
-
-    if (dayClashes.length > 0) {
-      const existingClash = clashes.find(
-        (clash) =>
-          clash.day === class1.day &&
-          clash.type === 'lecturer' &&
-          clash.classes.some((c) => c.lecturer?.workerNo === class1.lecturer?.workerNo)
-      )
-
-      if (!existingClash) {
-        const newClash = {
-          id: `lecturer-${class1.day}-${class1.lecturer?.workerNo}`,
-          day: class1.day,
-          type: 'lecturer' as const,
-          classes: [class1, ...dayClashes],
-        }
-        console.log('Adding new lecturer clash:', newClash)
-        clashes.push(newClash)
-      }
-    }
-
-    return clashes
-  }, [])
-
-  console.log('Final lecturer clashes:', lecturerClashes)
-
-  // Detect venue clashes
-  const venueClashes = timetable.reduce<Clash[]>((clashes, class1) => {
-    console.log('Processing class for venue clashes:', class1)
-    const dayClashes = timetable.filter(
-      (class2) =>
-        class1.day === class2.day &&
-        class1.venue?.shortName === class2.venue?.shortName &&
-        ((class1.time.split(' - ')[0] >= class2.time.split(' - ')[0] && 
-          class1.time.split(' - ')[0] < class2.time.split(' - ')[1]) ||
-         (class1.time.split(' - ')[1] > class2.time.split(' - ')[0] && 
-          class1.time.split(' - ')[1] <= class2.time.split(' - ')[1]) ||
-         (class1.time.split(' - ')[0] <= class2.time.split(' - ')[0] && 
-          class1.time.split(' - ')[1] >= class2.time.split(' - ')[1]))
-    )
-    console.log('Found day clashes for venue:', dayClashes)
-
-    if (dayClashes.length > 0) {
-      const existingClash = clashes.find(
-        (clash) =>
-          clash.day === class1.day &&
-          clash.type === 'venue' &&
-          clash.classes.some((c) => c.venue?.shortName === class1.venue?.shortName)
-      )
-
-      if (!existingClash) {
-        const newClash = {
-          id: `venue-${class1.day}-${class1.venue?.shortName}`,
-          day: class1.day,
-          type: 'venue' as const,
-          classes: [class1, ...dayClashes],
-        }
-        console.log('Adding new venue clash:', newClash)
-        clashes.push(newClash)
-      }
-    }
-
-    return clashes
-  }, [])
-
-  console.log('Final venue clashes:', venueClashes)
 
   const handleLecturerClashClick = (clash: Clash) => {
     setSelectedClash(clash)
@@ -190,6 +146,11 @@ export function ClashesView() {
   const handleVenueClashClick = (clash: Clash) => {
     setSelectedClash(clash)
     setShowVenueClashDetails(true)
+  }
+
+  const formatTimeSlot = (timeSlot: string) => {
+    const [startTime, endTime] = timeSlot.split(' - ')
+    return `${formatTime(startTime)} - ${formatTime(endTime)}`
   }
 
   if (loading) {
@@ -213,7 +174,7 @@ export function ClashesView() {
   return (
     <div className="space-y-4">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-      <TabsList className="border #000000 w-full">
+        <TabsList className="border #000000 w-full">
           <TabsTrigger value="lecturer">Lecturer Clashes</TabsTrigger>
           <TabsTrigger value="venue">Venue Clashes</TabsTrigger>
         </TabsList>
@@ -227,20 +188,48 @@ export function ClashesView() {
             </Card>
           ) : (
             lecturerClashes.map((clash) => (
-              <Card
-                key={clash.id}
-                className="cursor-pointer hover:bg-slate-50"
-                onClick={() => handleLecturerClashClick(clash)}
-              >
-                <CardContent className="p-4">
+              <Card key={clash.id} className="border-red-200">
+                <CardHeader className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-medium">{clash.day}</div>
+                      <div className="font-medium text-lg">{clash.day}</div>
                       <div className="text-sm text-muted-foreground">
                         {clash.classes.length} conflicting classes
                       </div>
                     </div>
-                    <Badge variant="destructive">Clash</Badge>
+                    <Badge variant="destructive">Lecturer Clash</Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4 pt-0">
+                  <div className="space-y-3">
+                    {clash.classes.map((classItem) => (
+                      <div key={classItem.id} className="p-3 bg-red-50 rounded-lg border border-red-100">
+                        <div className="flex flex-col">
+                          <div>
+                            <h3 className="font-medium">{classItem.courseSections[0].course.name}</h3>
+                            <div className="text-sm text-muted-foreground">
+                              {classItem.courseSections[0].course.code} - Section {classItem.courseSections[0].section}
+                            </div>
+                          </div>
+                          <div className="text-sm text-muted-foreground mt-2">
+                            <div className="flex items-center">
+                              <Clock className="h-4 w-4 mr-1" />
+                              {formatTimeSlot(classItem.time)}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center">
+                            <MapPin className="h-4 w-4 mr-1" />
+                            <span>{classItem.venue?.shortName || 'TBA'}</span>
+                          </div>
+                          <div className="flex items-center">
+                            <Users className="h-4 w-4 mr-1" />
+                            <span>{classItem.lecturer?.name || 'TBA'}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
@@ -257,20 +246,50 @@ export function ClashesView() {
             </Card>
           ) : (
             venueClashes.map((clash) => (
-              <Card
-                key={clash.id}
-                className="cursor-pointer hover:bg-slate-50"
-                onClick={() => handleVenueClashClick(clash)}
-              >
-                <CardContent className="p-4">
+              <Card key={clash.id} className="border-blue-200">
+                <CardHeader className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-medium">{clash.day}</div>
+                      <div className="font-medium text-lg">{clash.day}</div>
                       <div className="text-sm text-muted-foreground">
                         {clash.classes.length} conflicting classes
                       </div>
                     </div>
-                    <Badge variant="destructive">Clash</Badge>
+                    <Badge variant="destructive">Venue Clash</Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4 pt-0">
+                  <div className="mb-3 p-2 bg-blue-50 rounded-lg border border-blue-100">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-blue-600" />
+                      <span className="font-medium">{clash.classes[0]?.venue?.shortName || 'Unknown Venue'}</span>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    {clash.classes.map((classItem) => (
+                      <div key={classItem.id} className="p-3 bg-blue-50 rounded-lg border border-blue-100">
+                        <div className="flex flex-col">
+                          <div>
+                            <h3 className="font-medium">{classItem.courseSections[0].course.name}</h3>
+                            <div className="text-sm text-muted-foreground">
+                              {classItem.courseSections[0].course.code} - Section {classItem.courseSections[0].section}
+                            </div>
+                          </div>
+                          <div className="text-sm text-muted-foreground mt-2">
+                            <div className="flex items-center">
+                              <Clock className="h-4 w-4 mr-1" />
+                              {formatTimeSlot(classItem.time)}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center">
+                            <Users className="h-4 w-4 mr-1" />
+                            <span>{classItem.lecturer?.name || 'TBA'}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
@@ -303,7 +322,7 @@ export function ClashesView() {
                       <div className="text-xs p-1 rounded bg-muted flex justify-between">
                         <div className="flex items-center">
                           <Clock className="h-3 w-3 mr-1" />
-                          <span>{classItem.time.split(' - ')[0]} - {classItem.time.split(' - ')[1]}</span>
+                          <span>{classItem.time}</span>
                         </div>
                         <div className="flex items-center">
                           <MapPin className="h-3 w-3 mr-1" />
@@ -343,7 +362,7 @@ export function ClashesView() {
                       <div className="text-xs p-1 rounded bg-muted flex justify-between">
                         <div className="flex items-center">
                           <Clock className="h-3 w-3 mr-1" />
-                          <span>{classItem.time.split(' - ')[0]} - {classItem.time.split(' - ')[1]}</span>
+                          <span>{classItem.time}</span>
                         </div>
                         <div className="flex items-center">
                           <Users className="h-3 w-3 mr-1" />

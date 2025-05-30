@@ -1,3 +1,4 @@
+import { ILecturer } from "@/database/schema";
 import { Controller } from "@/decorators/controller";
 import { Roles } from "@/decorators/roles";
 import { Get } from "@/decorators/routes";
@@ -8,7 +9,6 @@ import { Request, Response } from "express";
 import { inject } from "tsyringe";
 import { BaseController } from "./BaseController";
 import { ILecturerController } from "./ILecturerController";
-import { ILecturer } from "@/database/schema";
 
 /**
  * A controller that is responsible for handling lecturer-related operations.

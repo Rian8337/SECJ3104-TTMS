@@ -1,13 +1,13 @@
+import { ILecturer, IStudent } from "@/database/schema";
 import { Controller } from "@/decorators/controller";
-import { BaseController } from "./BaseController";
-import { IAuthController } from "./IAuthController";
-import { IStudent, ILecturer } from "@/database/schema";
-import { Request, Response } from "express";
+import { Roles } from "@/decorators/roles";
 import { Post } from "@/decorators/routes";
-import { inject } from "tsyringe";
 import { dependencyTokens } from "@/dependencies/tokens";
 import { IAuthService } from "@/services";
-import { Roles } from "@/decorators/roles";
+import { Request, Response } from "express";
+import { inject } from "tsyringe";
+import { BaseController } from "./BaseController";
+import { IAuthController } from "./IAuthController";
 
 /**
  * A controller that is responsible for handling authentication-related operations.

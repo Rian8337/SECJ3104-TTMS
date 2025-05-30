@@ -1,8 +1,8 @@
 import { OperationResult } from "@/services";
+import { TTMSSemester, TTMSSession } from "@/types";
+import { validateAcademicSession, validateSemester } from "@/utils";
 import { Request, Response } from "express";
 import { IController } from "./IController";
-import { TTMSSession, TTMSSemester } from "@/types";
-import { validateAcademicSession, validateSemester } from "@/utils";
 
 /**
  * The base class for all controllers.

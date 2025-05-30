@@ -1,13 +1,13 @@
-import { IAnalytics, UserRole } from "@/types";
-import { Request, Response } from "express";
-import { BaseController } from "./BaseController";
-import { IAnalyticsController } from "./IAnalyticsController";
 import { Controller } from "@/decorators/controller";
-import { Get } from "@/decorators/routes";
 import { Roles } from "@/decorators/roles";
-import { inject } from "tsyringe";
+import { Get } from "@/decorators/routes";
 import { dependencyTokens } from "@/dependencies/tokens";
 import { IAnalyticsService } from "@/services";
+import { IAnalytics, UserRole } from "@/types";
+import { Request, Response } from "express";
+import { inject } from "tsyringe";
+import { BaseController } from "./BaseController";
+import { IAnalyticsController } from "./IAnalyticsController";
 
 /**
  * A controller that is responsible for handling analytics-related operations.

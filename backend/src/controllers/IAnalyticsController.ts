@@ -1,6 +1,6 @@
+import { IAnalytics } from "@/types";
 import { Request, Response } from "express";
 import { IController } from "./IController";
-import { IAnalytics } from "@/types";
 
 /**
  * A controller that is responsible for handling analytics-related operations.

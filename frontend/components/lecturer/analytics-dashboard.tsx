@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertTriangle, Clock, Users, AlertCircle, Building2, BarChart2, PieChart } from "lucide-react"
-import { Progress } from "@/components/ui/progress"
 import { ChartContainer } from "@/components/ui/chart"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, LineChart as RechartsLineChart, Line } from "recharts"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -27,10 +26,6 @@ interface Student {
 interface Department {
   name: string
   students: Student[]
-}
-
-interface DepartmentDetails {
-  [key: string]: Department
 }
 
 interface VenueClash {
@@ -218,24 +213,6 @@ export function AnalyticsDashboard() {
     )
   }
 
-  // Calculate total back-to-back classes
-  const totalBackToBackClasses = analyticsData.backToBackStudents.reduce(
-    (total, student) => total + student.schedules.length,
-    0
-  )
-
-  // Calculate total clashes
-  const totalClashes = analyticsData.clashingStudents.reduce(
-    (total, student) => total + student.clashes.length,
-    0
-  )
-
-  // Calculate total students
-  const totalStudents = analyticsData.departments.reduce(
-    (total, dept) => total + dept.totalStudents,
-    0
-  )
-
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
@@ -246,7 +223,7 @@ export function AnalyticsDashboard() {
           <CardContent className="p-3 pt-0">
             <div className="flex items-center">
               <Clock className="h-5 w-5 mr-2 text-amber-500" />
-              <div className="text-2xl font-bold">{totalBackToBackClasses}</div>
+              <div className="text-2xl font-bold">{analyticsData.backToBackStudents.length}</div>
             </div>
             <p className="text-xs text-muted-foreground mt-1">Students with 5+ hours back-to-back</p>
           </CardContent>
@@ -259,7 +236,7 @@ export function AnalyticsDashboard() {
           <CardContent className="p-3 pt-0">
             <div className="flex items-center">
               <AlertTriangle className="h-5 w-5 mr-2 text-destructive" />
-              <div className="text-2xl font-bold">{totalClashes}</div>
+              <div className="text-2xl font-bold">{analyticsData.clashingStudents.length}</div>
             </div>
             <p className="text-xs text-muted-foreground mt-1">Students with timetable clashes</p>
           </CardContent>
@@ -463,7 +440,7 @@ export function AnalyticsDashboard() {
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>Attention Required</AlertTitle>
         <AlertDescription>
-          {totalClashes} students have timetable clashes that need to be resolved before the semester begins.
+          {analyticsData.clashingStudents.length} students have timetable clashes that need to be resolved before the semester begins.
         </AlertDescription>
       </Alert>
 

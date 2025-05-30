@@ -1,5 +1,5 @@
 import { ILecturer } from "@/database/schema";
-import { ITimetable, ITimetableVenueClash } from "@/types";
+import { ITimetable, IVenueClashTimetable } from "@/types";
 import { Request, Response } from "express";
 import { IController } from "./IController";
 
@@ -36,7 +36,7 @@ export interface ILecturerController extends IController {
             unknown,
             Partial<{ session: string; semester: string; worker_no: string }>
         >,
-        res: Response<ITimetableVenueClash[] | { error: string }>
+        res: Response<IVenueClashTimetable[] | { error: string }>
     ): Promise<void>;
 
     /**

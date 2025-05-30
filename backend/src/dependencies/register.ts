@@ -7,6 +7,7 @@ import {
     VenueRepository,
 } from "@/repositories";
 import {
+    AnalyticsService,
     AuthService,
     LecturerService,
     StudentService,
@@ -21,6 +22,7 @@ const classes = [
     SessionRepository,
     StudentRepository,
     VenueRepository,
+    AnalyticsService,
     AuthService,
     LecturerService,
     StudentService,

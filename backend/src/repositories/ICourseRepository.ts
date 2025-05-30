@@ -1,5 +1,5 @@
 import { ICourse } from "@/database/schema";
-import { IStudentAnalyticsCourse, TTMSSemester, TTMSSession } from "@/types";
+import { IAnalyticsCourse, TTMSSemester, TTMSSession } from "@/types";
 
 /**
  * A repository that is responsible for handling course-related operations.
@@ -23,5 +23,5 @@ export interface ICourseRepository {
     getSchedulesForAnalytics(
         session: TTMSSession,
         semester: TTMSSemester
-    ): Promise<IStudentAnalyticsCourse[]>;
+    ): Promise<IAnalyticsCourse[]>;
 }

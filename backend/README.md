@@ -84,10 +84,10 @@ For all endpoints, unless otherwise specified, non-2xx responses will return the
 | [POST `/auth/logout`](#post-authlogout)                 | Logs a user out                                                                                      |
 | [GET `/student/timetable`](#get-studenttimetable)       | Obtains a student's timetable                                                                        |
 | [GET `/student/search`](#get-studentsearch)             | Searches for students                                                                                |
-| [GET `/student/analytics`](#get-studentanalytics)       | Obtains student analytics                                                                            |
 | [GET `/lecturer/timetable`](#get-lecturertimetable)     | Obtains a lecturer's timetable                                                                       |
 | [GET `/lecturer/venue-clash`](#get-lecturervenue-clash) | Obtains the timetables of other lecturers that clash with the lecturer's timetable in terms of venue |
 | [GET `/lecturer/search`](#get-lecturersearch)           | Searches for lecturers                                                                               |
+| [GET `/analytics/generate`](#get-analyticsgenerate)     | Obtains analytics of an academic session and semester                                                |
 
 ## POST `/auth/login`
 
@@ -150,23 +150,6 @@ This endpoint is restricted to a student or lecturer, in which they must authent
 
 A list of [`StudentSearchEntry`](#student-search) objects that fulfill the search criteria.
 
-## GET `/student/analytics`
-
-Obtains student analytics in an academic session and semester.
-
-This endpoint is restricted to a lecturer, in which they must authenticate first.
-
-### Query Parameters
-
-| Name       | Required | Default | Description                                         | Example    |
-| ---------- | -------- | ------- | --------------------------------------------------- | ---------- |
-| `session`  | ✅       | N/A     | The academic session to retrieve the analytics for  | 2024/2025  |
-| `semester` | ✅       | N/A     | The academic semester to retrieve the analytics for | 1, 2, or 3 |
-
-### Response
-
-An [`Analytics`](#analytics) object.
-
 ## GET `/lecturer/timetable`
 
 Obtains a lecturer's timetable.
@@ -187,7 +170,7 @@ A list of [`Timetable`](#timetable) objects.
 
 ## GET `/lecturer/venue-clash`
 
-Obtains the timetables of other lecturers that clash with the lecturer's timetable in terms of venue.
+Obtains timetables with venue clashes.
 
 This endpoint is restricted to a lecturer, in which they must authenticate through their respective login endpoints first.
 
@@ -197,7 +180,7 @@ This endpoint is restricted to a lecturer, in which they must authenticate throu
 | ----------- | -------- | ------- | ---------------------------------------------------------------- | ---------- |
 | `session`   | ✅       | N/A     | The academic session to retrieve the timetable for               | 2024/2025  |
 | `semester`  | ✅       | N/A     | The academic semester to retrieve the timetable for              | 1, 2, or 3 |
-| `worker_no` | ✅       | N/A     | The worker number of the lecturer whose clashes is to be checked | N/A        |
+| `worker_no` | ✅       | N/A     | The worker number of the lecturer whose clashes is to be checked | 1000       |
 
 ### Response
 
@@ -222,6 +205,23 @@ This endpoint is restricted to a student or lecturer, in which they must authent
 ### Response
 
 A list of [`Lecturer`](#lecturer) objects that fulfill the search criteria.
+
+## GET `/analytics/generate`
+
+Obtains analytics of an academic session and semester.
+
+This endpoint is restricted to a lecturer, in which they must authenticate first.
+
+### Query Parameters
+
+| Name       | Required | Default | Description                                         | Example    |
+| ---------- | -------- | ------- | --------------------------------------------------- | ---------- |
+| `session`  | ✅       | N/A     | The academic session to retrieve the analytics for  | 2024/2025  |
+| `semester` | ✅       | N/A     | The academic semester to retrieve the analytics for | 1, 2, or 3 |
+
+### Response
+
+An [`Analytics`](#analytics) object.
 
 # Data Types
 
@@ -352,6 +352,8 @@ type ClashTimetable = {
 
     /**
      * Information about the venue. Can be `null`, which means there is no assigned venue.
+     *
+     * See Timetable venue data type section.
      */
     venue: TimetableVenue | null;
 
@@ -433,7 +435,7 @@ type TimetableLecturer = {
 ## Analytics
 
 ```ts
-type IStudentAnalytics = {
+type Analytics = {
     /**
      * The amount of students that are active in the academic session and semester.
      */
@@ -446,7 +448,7 @@ type IStudentAnalytics = {
      *
      * See Back-to-back Student data types section.
      */
-    backToBackStudents: IStudentAnalyticsBackToBackStudent[];
+    backToBackStudents: AnalyticsBackToBackStudent[];
 
     /**
      * Students with clashing classes in the academic session and semester.
@@ -455,21 +457,28 @@ type IStudentAnalytics = {
      *
      * See Clashing Student data types section.
      */
-    clashingStudents: IStudentAnalyticsClashingStudent[];
+    clashingStudents: AnalyticsClashingStudent[];
 
     /**
-     * Analytics about departments.
+     * Analytics about student departments.
      *
-     * See Department data types section.
+     * See Student Department data types section.
      */
-    departments: IStudentAnalyticsDepartment[];
+    departments: AnalyticsStudentDepartment[];
+
+    /**
+     * Venue clashes in the academic session and semester.
+     *
+     * See Venue Clash data types section.
+     */
+    venueClashes: AnalyticsVenueClash[];
 };
 ```
 
 ### (Analytics) Back-to-back Student
 
 ```ts
-type IStudentAnalyticsBackToBackStudent = {
+type AnalyticsBackToBackStudent = {
     /**
      * The matric number of the student.
      */
@@ -490,14 +499,14 @@ type IStudentAnalyticsBackToBackStudent = {
      *
      * Each array item in the nested array contains schedules that are back-to-back.
      */
-    schedules: IStudentAnalyticsCourseSchedule[][];
+    schedules: AnalyticsCourseSchedule[][];
 };
 ```
 
 ### (Analytics) Back-to-back Course Schedule
 
 ```ts
-type IStudentAnalyticsCourseSchedule = {
+type AnalyticsCourseSchedule = {
     /**
      * The day of the schedule. See Day data types section.
      */
@@ -510,6 +519,8 @@ type IStudentAnalyticsCourseSchedule = {
 
     /**
      * Information about the venue. Can be `null`, which means there is no assigned venue.
+     *
+     * See Timetable venue data type section.
      */
     venue: TimetableVenue | null;
 };
@@ -518,7 +529,7 @@ type IStudentAnalyticsCourseSchedule = {
 ### (Analytics) Clashing Student
 
 ```ts
-type IStudentAnalyticsClashingStudent = {
+type AnalyticsClashingStudent = {
     /**
      * The matric number of the student.
      */
@@ -537,14 +548,14 @@ type IStudentAnalyticsClashingStudent = {
     /**
      * The clashes that the student has. See Clashing Student Schedule data types section.
      */
-    clashes: IStudentAnalyticsScheduleClash[];
+    clashes: AnalyticsScheduleClash[];
 };
 ```
 
 ### (Analytics) Clashing Student Schedule
 
 ```ts
-type IStudentAnalyticsScheduleClash = {
+type AnalyticsScheduleClash = {
     /**
      * The day of the schedule. See Day data type section.
      */
@@ -558,14 +569,14 @@ type IStudentAnalyticsScheduleClash = {
     /**
      * The courses that clash in the given day and time. See Clashing Student Course data types section.
      */
-    courses: IStudentAnalyticsScheduleClashCourse[];
+    courses: AnalyticsScheduleClashCourse[];
 };
 ```
 
 ### (Analytics) Clashing Student Course
 
 ```ts
-type IStudentAnalyticsScheduleClashCourse = {
+type AnalyticsScheduleClashCourse = {
     /**
      * The course. See Timetable Course data types section.
      */
@@ -578,15 +589,17 @@ type IStudentAnalyticsScheduleClashCourse = {
 
     /**
      * Information about the venue. Can be `null`, which means there is no assigned venue.
+     *
+     * See Timetable venue data type section.
      */
     venue: TimetableVenue | null;
 };
 ```
 
-### (Analytics) Department
+### (Analytics) Student Department
 
 ```ts
-type IStudentAnalyticsDepartment = {
+type AnalyticsStudentDepartment = {
     /**
      * The code of the faculty. See faculty codes data types section.
      */
@@ -606,6 +619,34 @@ type IStudentAnalyticsDepartment = {
      * The amount of students with back-to-back timetables in the academic session and semester.
      */
     totalBackToBack: number;
+};
+```
+
+### (Analytics) Venue Clash
+
+```ts
+type AnalyticsVenueClash = {
+    /**
+     * The day of the schedule. See Day data types section.
+     */
+    day: CourseSectionScheduleDay;
+
+    /**
+     * The time of the schedule. See Time data types section.
+     */
+    time: CourseSectionScheduleTime;
+
+    /**
+     * Information about the venue. Can be `null`, which means there is no assigned venue.
+     *
+     * See Timetable venue data type section.
+     */
+    venue: TimetableVenue | null;
+
+    /**
+     * Course sections that clash. See Timetable course section data types section.
+     */
+    courseSections: TimetableCourseSection[];
 };
 ```
 

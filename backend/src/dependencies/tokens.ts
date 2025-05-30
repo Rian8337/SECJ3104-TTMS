@@ -13,6 +13,7 @@ export const dependencyTokens = {
     venueRepository: Symbol.for("IVenueRepository"),
 
     // Services
+    analyticsService: Symbol.for("IAnalyticsService"),
     authService: Symbol.for("IAuthService"),
     lecturerService: Symbol.for("ILecturerService"),
     studentService: Symbol.for("IStudentService"),

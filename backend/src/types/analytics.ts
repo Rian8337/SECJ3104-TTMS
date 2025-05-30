@@ -6,21 +6,23 @@ import {
     IVenue,
 } from "@/database/schema";
 import { TTMSCourseCode } from "./ttms";
+import { IVenueClashTimetable } from "./timetable";
 
 /**
- * Represents analytics data for students in an academic session and semester.
+ * Represents analytics data in an academic session and semester.
  */
-export interface IStudentAnalytics {
+export interface IAnalytics {
     readonly activeStudents: number;
-    readonly backToBackStudents: IStudentAnalyticsBackToBackStudent[];
-    readonly clashingStudents: IStudentAnalyticsClashingStudent[];
-    readonly departments: IStudentAnalyticsDepartment[];
+    readonly backToBackStudents: IAnalyticsBackToBackStudent[];
+    readonly clashingStudents: IAnalyticsClashingStudent[];
+    readonly departments: IAnalyticsStudentDepartment[];
+    readonly venueClashes: IVenueClashTimetable[];
 }
 
 /**
- * Represent a department in student analytics.
+ * Represent a student department analytics.
  */
-export interface IStudentAnalyticsDepartment {
+export interface IAnalyticsStudentDepartment {
     readonly code: TTMSCourseCode;
     totalStudents: number;
     totalClashes: number;
@@ -28,9 +30,9 @@ export interface IStudentAnalyticsDepartment {
 }
 
 /**
- * Base type for student analytics that includes basic student information.
+ * Base type for a student in analytics that includes basic student information.
  */
-export type IBaseStudentAnalyticsStudent = Pick<
+export type IBaseAnalyticsStudent = Pick<
     IStudent,
     "matricNo" | "name" | "courseCode"
 >;
@@ -38,40 +40,37 @@ export type IBaseStudentAnalyticsStudent = Pick<
 /**
  * Represents a student with back-to-back schedules in analytics.
  */
-export interface IStudentAnalyticsBackToBackStudent
-    extends IBaseStudentAnalyticsStudent {
-    readonly schedules: IStudentAnalyticsCourseSchedule[][];
+export interface IAnalyticsBackToBackStudent extends IBaseAnalyticsStudent {
+    readonly schedules: IAnalyticsCourseSchedule[][];
 }
 
 /**
  * Represents a student with clashing schedules in analytics.
  */
-export interface IStudentAnalyticsClashingStudent
-    extends IBaseStudentAnalyticsStudent {
-    readonly clashes: IStudentAnalyticsScheduleClash[];
+export interface IAnalyticsClashingStudent extends IBaseAnalyticsStudent {
+    readonly clashes: IAnalyticsScheduleClash[];
 }
 
 /**
  * Represents a course with its sections and schedules for analytics purposes.
  */
-export interface IStudentAnalyticsCourse
-    extends Pick<ICourseSection, "section"> {
+export interface IAnalyticsCourse extends Pick<ICourseSection, "section"> {
     readonly course: Pick<ICourse, "code" | "name">;
-    readonly schedules: IStudentAnalyticsCourseSchedule[];
+    readonly schedules: IAnalyticsCourseSchedule[];
 }
 
 /**
  * Represents a group of clashing courses for a student in analytics.
  */
-export interface IStudentAnalyticsScheduleClash
+export interface IAnalyticsScheduleClash
     extends Pick<ICourseSectionSchedule, "day" | "time"> {
-    readonly courses: IStudentAnalyticsScheduleClashCourse[];
+    readonly courses: IAnalyticsScheduleClashCourse[];
 }
 
 /**
  * Represents a clashing course for a student in analytics.
  */
-export interface IStudentAnalyticsScheduleClashCourse {
+export interface IAnalyticsScheduleClashCourse {
     readonly course: Pick<ICourse, "code" | "name">;
     readonly section: string;
     readonly venue: Pick<IVenue, "shortName"> | null;
@@ -80,7 +79,7 @@ export interface IStudentAnalyticsScheduleClashCourse {
 /**
  * Represents a course schedule for a student in analytics.
  */
-export interface IStudentAnalyticsCourseSchedule
+export interface IAnalyticsCourseSchedule
     extends Pick<ICourseSectionSchedule, "day" | "time"> {
     readonly venue: Pick<IVenue, "shortName"> | null;
 }

@@ -3,7 +3,7 @@ import { Roles } from "@/decorators/roles";
 import { Get } from "@/decorators/routes";
 import { dependencyTokens } from "@/dependencies/tokens";
 import { ILecturerService } from "@/services";
-import { ITimetable, ITimetableVenueClash, UserRole } from "@/types";
+import { ITimetable, IVenueClashTimetable, UserRole } from "@/types";
 import { Request, Response } from "express";
 import { inject } from "tsyringe";
 import { BaseController } from "./BaseController";
@@ -73,11 +73,11 @@ export class LecturerController
     async getVenueClash(
         req: Request<
             "/venue-clash",
-            ITimetableVenueClash[] | { error: string },
+            IVenueClashTimetable[] | { error: string },
             unknown,
             Partial<{ session: string; semester: string; worker_no: string }>
         >,
-        res: Response<ITimetableVenueClash[] | { error: string }>
+        res: Response<IVenueClashTimetable[] | { error: string }>
     ): Promise<void> {
         const validatedSessionAndSemester = this.validateSessionSemester(
             req,
@@ -98,9 +98,9 @@ export class LecturerController
 
         try {
             const result = await this.lecturerService.getVenueClashes(
-                workerNo,
                 session,
-                semester
+                semester,
+                workerNo
             );
 
             this.respondWithOperationResult(res, result);

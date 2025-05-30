@@ -68,7 +68,7 @@ export class LecturerController
     }
 
     @Get("/venue-clash")
-    // @Roles(UserRole.lecturer)
+    @Roles(UserRole.lecturer)
     async getVenueClash(
         req: Request<
             "/venue-clash",

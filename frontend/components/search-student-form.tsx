@@ -10,7 +10,7 @@ import { API_BASE_URL } from "@/lib/config"
 import { TimetableView } from "@/components/timetable-view"
 import { ClassItem } from "@/types/timetable"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { formatTimetableData } from "@/lib/timetable-utils"
+import { formatTimetableData, getCurrentDay, type Weekday } from "@/lib/timetable-utils"
 
 interface StudentSearchResult {
   matricNo: string
@@ -87,7 +87,7 @@ export function SearchStudentForm() {
   const [selectedStudent, setSelectedStudent] = useState<StudentSearchResult | null>(null)
   const [selectedLecturer, setSelectedLecturer] = useState<LecturerSearchResult | null>(null)
   const [isSearching, setIsSearching] = useState(false)
-  const [selectedDay, setSelectedDay] = useState("Monday")
+  const [selectedDay, setSelectedDay] = useState<Weekday>(getCurrentDay())
   const [timetable, setTimetable] = useState<ClassItem[]>([])
   const [loadingTimetable, setLoadingTimetable] = useState(false)
   const [searchError, setSearchError] = useState<string | null>(null)
@@ -116,22 +116,6 @@ export function SearchStudentForm() {
 
     return () => clearInterval(interval)
   }, [activeTab])
-
-  // Weekdays
-  const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
-
-  // Get current day of the week (0 = Sunday, 1 = Monday, etc.)
-  const getCurrentDay = () => {
-    const dayIndex = new Date().getDay()
-    // If it's weekend (0 or 6), default to Monday (0)
-    if (dayIndex === 0 || dayIndex === 6) return "Monday"
-    return weekdays[dayIndex - 1]
-  }
-
-  // Set initial selected day to current day
-  useEffect(() => {
-    setSelectedDay(getCurrentDay())
-  }, [])
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -333,7 +317,7 @@ export function SearchStudentForm() {
           )}
 
           {selectedStudent && (
-            <div className="space-y-4 border-2 border-[#9A231B] rounded-md p-4">
+            <div className="space-y-4 border-2  rounded-md p-4">
               <div className="flex flex-col gap-2 text-[#9A231B]">
                 <h4 className="text-xs font-semibold">{`${selectedStudent.name}'s timetable`}</h4>
                 <div className="flex items-center justify-between">

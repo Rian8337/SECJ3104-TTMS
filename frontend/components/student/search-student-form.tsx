@@ -124,7 +124,7 @@ export function SearchStudentForm() {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/student/search?query=${encodeURIComponent(searchQuery)}&session=2024/2025&semester=2`,
+        `${API_BASE_URL}/student/search?query=${encodeURIComponent(searchQuery.trim())}&session=2024/2025&semester=2`,
         {
           credentials: 'include'
         }
@@ -371,14 +371,16 @@ export function SearchStudentForm() {
       )}
 
       {selectedStudent && (
-        <div className="space-y-4">
-          <div className="p-4 flex flex-col gap-2 border-2 border-blue-500 rounded-md text-blue-500">
+        <div className="space-y-4 border-2 border-[#9A231B] rounded-md p-4">
+          <div className="flex flex-col gap-2 text-[#9A231B]">
             <h4 className="text-xs font-semibold">{`${selectedStudent.name}'s timetable`}</h4>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-blue-400">{selectedStudent.matricNo}</span>
-              <span className="text-sm text-blue-400">{selectedStudent.courseCode}</span>
+              <span className="text-sm text-[#9A231B]">{selectedStudent.matricNo}</span>
+              <span className="text-sm text-[#9A231B]">{selectedStudent.courseCode}</span>
             </div>
           </div>
+
+          <hr className="border-t border-[#9A231B]/20" />
 
           {loadingTimetable ? (
             <div className="text-center py-4">Loading timetable...</div>

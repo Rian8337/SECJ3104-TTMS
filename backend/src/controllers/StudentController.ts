@@ -30,7 +30,7 @@ export class StudentController
     }
 
     @Get("/timetable")
-    // @Roles(UserRole.student, UserRole.lecturer)
+    @Roles(UserRole.student, UserRole.lecturer)
     async getTimetable(
         req: Request<
             "/timetable",

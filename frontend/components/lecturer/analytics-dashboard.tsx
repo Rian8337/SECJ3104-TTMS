@@ -61,6 +61,11 @@ interface AnalyticsData {
     schedules: {
       day: number
       time: number
+      section: string
+      course: {
+        code: string
+        name: string
+      }
       venue: { shortName: string } | null
     }[][]
   }[]
@@ -472,30 +477,38 @@ export function AnalyticsDashboard() {
               {analyticsData.backToBackStudents.map((student) => (
                 <Card key={student.matricNo}>
                   <CardHeader className="p-3">
-                    <CardTitle className="text-sm flex justify-between items-center">
+                    <CardTitle className="text-sm">
                       <span>{student.name}</span>
-                      <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">
-                        {student.schedules[0].length} hrs
-                      </Badge>
                     </CardTitle>
                     <div className="text-xs text-muted-foreground">
                       {student.matricNo} • {student.courseCode}
                     </div>
                   </CardHeader>
-                  <CardContent className="p-3 pt-0">
-                    <div className="text-xs font-medium mb-1">{formatDay(student.schedules[0][0].day)}</div>
-                    <div className="space-y-1">
-                      {student.schedules[0].map((schedule, index) => (
-                        <div key={index} className="text-xs p-1 rounded bg-muted flex justify-between">
-                          <div>Class {index + 1}</div>
-                          <div className="text-muted-foreground">
-                            {formatTimeSlot(schedule.time)}
-                            {schedule.venue && ` • ${schedule.venue.shortName}`}
-                          </div>
+                  {student.schedules.map((schedule) => (
+                    <>
+                      <CardHeader className="p-3">
+                        <CardTitle className="text-xs flex justify-between items-center">
+                          <span>{formatDay(schedule[0].day)}</span>
+                          <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">
+                            {schedule.length} hrs
+                          </Badge>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-3 pt-0">
+                        <div className="space-y-1">
+                          {schedule.map((s, index) => (
+                            <div key={`${student.matricNo}-${s.course.code}-${s.section}-${s.day}-${s.time}`} className="text-xs p-1 rounded bg-muted flex justify-between">
+                              <div>{s.course.name}</div>
+                              <div className="text-muted-foreground">
+                                {formatTimeSlot(s.time)}
+                                {s.venue && ` • ${s.venue.shortName}`}
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
+                      </CardContent>
+                    </>
+                  ))}
                 </Card>
               ))}
             </div>

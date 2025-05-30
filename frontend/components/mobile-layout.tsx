@@ -154,7 +154,7 @@ export function MobileLayout({ children, userType, studentInfo: initialStudentIn
                     <NavItem
                       icon={BookOpen}
                       label="Analytics"
-                      href="/lecturer/dashboard?tab=analytics"
+                      href={`/${userType}/dashboard?tab=analytics&subtab=analytics-dashboard`}
                       onClick={() => setIsMenuOpen(false)}
                     />
                   )}
@@ -217,15 +217,27 @@ interface NavItemProps {
 }
 
 function NavItem({ icon: Icon, label, href, onClick }: NavItemProps) {
+  const router = useRouter()
+  
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (onClick) {
+      onClick()
+    }
+    if (href) {
+      router.push(href)
+    }
+  }
+
   const content = (
-    <div className="flex items-center py-2 px-3 rounded-md hover:bg-muted cursor-pointer" onClick={onClick}>
+    <div className="flex items-center py-2 px-3 rounded-md hover:bg-muted cursor-pointer" onClick={handleClick}>
       <Icon className="h-4 w-4 mr-3" />
       <span>{label}</span>
     </div>
   )
 
   if (href) {
-    return <Link href={href}>{content}</Link>
+    return <Link href={href} onClick={handleClick}>{content}</Link>
   }
 
   return content

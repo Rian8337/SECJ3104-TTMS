@@ -117,6 +117,8 @@ export function AnalyticsDashboard() {
   const [visualizationType, setVisualizationType] = useState<VisualizationType>('pie')
   const [showPieDetails, setShowPieDetails] = useState(false)
   const [selectedPieData, setSelectedPieData] = useState<PieChartData | null>(null)
+  const [backToBackPage, setBackToBackPage] = useState(1)
+  const studentsPerPage = 10
 
   useEffect(() => {
     const fetchAnalytics = async () => {
@@ -273,11 +275,11 @@ export function AnalyticsDashboard() {
               <Users className="h-5 w-5 mr-2 text-primary" />
               <div className="text-2xl font-bold">{analyticsData.activeStudents}</div>
             </div>
-            <div className="text-sm text-muted-foreground">
+            {/* <div className="text-sm text-muted-foreground">
                 {Math.round((analyticsData.activeStudents / totalStudents) * 100)}%
-              </div>
+              </div> */}
             </div>
-            <Progress value={(analyticsData.activeStudents / totalStudents) * 100} className="h-2" />
+            {/* <Progress value={(analyticsData.activeStudents / totalStudents) * 100} className="h-2" /> */}
           <p className="text-xs text-muted-foreground mt-1">Students with active timetables</p>
         </CardContent>
       </Card>
@@ -474,7 +476,9 @@ export function AnalyticsDashboard() {
           </DialogHeader>
           <ScrollArea className="max-h-[60vh]">
             <div className="space-y-4">
-              {analyticsData.backToBackStudents.map((student) => (
+              {analyticsData.backToBackStudents
+                .slice((backToBackPage - 1) * studentsPerPage, backToBackPage * studentsPerPage)
+                .map((student) => (
                 <Card key={student.matricNo}>
                   <CardHeader className="p-3">
                     <CardTitle className="text-sm">
@@ -498,10 +502,10 @@ export function AnalyticsDashboard() {
                         <div className="space-y-1">
                           {schedule.map((s, index) => (
                             <div key={`${student.matricNo}-${s.course.code}-${s.section}-${s.day}-${s.time}`} className="text-xs p-1 rounded bg-muted flex justify-between">
-                              <div>{s.course.name}</div>
-                              <div className="text-muted-foreground">
+                              <div className="w-[70%] break-words">{s.course.name}</div>
+                              <div className="text-muted-foreground w-[30%] text-right shrink-0">
                                 {formatTimeSlot(s.time)}
-                                {s.venue && ` • ${s.venue.shortName}`}
+                                {/* {s.venue && ` • ${s.venue.shortName}`} */}
                               </div>
                             </div>
                           ))}
@@ -513,6 +517,27 @@ export function AnalyticsDashboard() {
               ))}
             </div>
           </ScrollArea>
+          <div className="flex items-center justify-between mt-4">
+            <div className="text-sm text-muted-foreground">
+              Showing {Math.min((backToBackPage - 1) * studentsPerPage + 1, analyticsData.backToBackStudents.length)} to {Math.min(backToBackPage * studentsPerPage, analyticsData.backToBackStudents.length)} of {analyticsData.backToBackStudents.length} students
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setBackToBackPage(prev => Math.max(1, prev - 1))}
+                disabled={backToBackPage === 1}
+                className="px-3 py-1 text-sm rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => setBackToBackPage(prev => Math.min(Math.ceil(analyticsData.backToBackStudents.length / studentsPerPage), prev + 1))}
+                disabled={backToBackPage >= Math.ceil(analyticsData.backToBackStudents.length / studentsPerPage)}
+                className="px-3 py-1 text-sm rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 

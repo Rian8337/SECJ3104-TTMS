@@ -18,7 +18,7 @@ import {
     TTMSSemester,
     TTMSSession,
 } from "@/types";
-import { and, asc, desc, eq, exists, gt, SQL, sql } from "drizzle-orm";
+import { and, asc, desc, eq, exists, gt, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
 import { inject } from "tsyringe";
 import { BaseRepository } from "./BaseRepository";
@@ -125,16 +125,41 @@ export class StudentRepository
             throw new RangeError("Offset must be greater than or equal to 0");
         }
 
-        const matchExpr = sql<number>`MATCH(${students.matricNo}) AGAINST(${sql.placeholder("matricNo")} IN BOOLEAN MODE)`;
-
-        return this.getSearchResult(
-            session,
-            semester,
-            matchExpr,
-            { matricNo: `+${matricNo.trim().toUpperCase()}*` },
-            limit,
-            offset
-        );
+        return this.db
+            .select({
+                matricNo: students.matricNo,
+                name: students.name,
+                courseCode: students.courseCode,
+            })
+            .from(students)
+            .where(
+                and(
+                    eq(students.matricNo, matricNo.toUpperCase()),
+                    exists(
+                        this.db
+                            .select({ exists: sql`1` })
+                            .from(studentRegisteredCourses)
+                            .where(
+                                and(
+                                    eq(
+                                        studentRegisteredCourses.matricNo,
+                                        students.matricNo
+                                    ),
+                                    eq(
+                                        studentRegisteredCourses.session,
+                                        session
+                                    ),
+                                    eq(
+                                        studentRegisteredCourses.semester,
+                                        semester
+                                    )
+                                )
+                            )
+                    )
+                )
+            )
+            .limit(limit)
+            .offset(offset);
     }
 
     searchByName(
@@ -152,60 +177,15 @@ export class StudentRepository
             throw new RangeError("Offset must be greater than or equal to 0");
         }
 
-        const matchExpr = sql<number>`MATCH(${students.name}) AGAINST(${sql.placeholder("name")} IN BOOLEAN MODE)`;
-
-        return this.getSearchResult(
-            session,
-            semester,
-            matchExpr,
-            {
-                name: name
-                    .trim()
-                    .split(/\s+/g)
-                    .map((s) => `+${s}*`)
-                    .join(" ")
-                    .toUpperCase(),
-            },
-            limit,
-            offset
-        );
-    }
-
-    getRegisteredStudents(
-        session: TTMSSession,
-        semester: TTMSSemester
-    ): Promise<IRegisteredStudent[]> {
-        return this.db.query.studentRegisteredCourses.findMany({
-            columns: {
-                courseCode: true,
-                section: true,
-            },
-            with: {
-                student: {
-                    columns: { matricNo: true, name: true, courseCode: true },
-                },
-            },
-            where: and(
-                eq(studentRegisteredCourses.session, session),
-                eq(studentRegisteredCourses.semester, semester)
-            ),
-        });
-    }
-
-    private getSearchResult(
-        session: TTMSSession,
-        semester: TTMSSemester,
-        matchExpr: SQL<number>,
-        placeholders: Record<string, unknown>,
-        limit: number,
-        offset: number
-    ): Promise<IStudentSearchEntry[]> {
         const sub = this.db
             .select({
                 matricNo: students.matricNo,
                 name: students.name,
                 courseCode: students.courseCode,
-                relevance: matchExpr.as("relevance"),
+                relevance:
+                    sql<number>`MATCH(${students.name}) AGAINST(${sql.placeholder("name")} IN BOOLEAN MODE)`.as(
+                        "relevance"
+                    ),
             })
             .from(students)
             .as("sub");
@@ -246,6 +226,34 @@ export class StudentRepository
             .orderBy(desc(sub.relevance))
             .limit(limit)
             .offset(offset)
-            .execute(placeholders);
+            .execute({
+                name: name
+                    .trim()
+                    .split(/\s+/g)
+                    .map((s) => `+${s}*`)
+                    .join(" ")
+                    .toUpperCase(),
+            });
+    }
+
+    getRegisteredStudents(
+        session: TTMSSession,
+        semester: TTMSSemester
+    ): Promise<IRegisteredStudent[]> {
+        return this.db.query.studentRegisteredCourses.findMany({
+            columns: {
+                courseCode: true,
+                section: true,
+            },
+            with: {
+                student: {
+                    columns: { matricNo: true, name: true, courseCode: true },
+                },
+            },
+            where: and(
+                eq(studentRegisteredCourses.session, session),
+                eq(studentRegisteredCourses.semester, semester)
+            ),
+        });
     }
 }

@@ -419,7 +419,7 @@ export function SearchStudentForm() {
           )}
 
           {selectedLecturer && (
-            <div className="space-y-4 border-2 border-[#9A231B] rounded-md p-4">
+            <div className="space-y-4 border-2  rounded-md p-4">
               <div className="flex flex-col gap-2 text-[#9A231B]">
                 <h4 className="text-xs font-semibold">{`${selectedLecturer.name}'s timetable`}</h4>
                 <div className="flex items-center justify-between">

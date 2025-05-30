@@ -117,24 +117,26 @@ export class AnalyticsService extends BaseService implements IAnalyticsService {
                 clashes: [],
             };
 
-            const dayTimeMap = new Map<string, IAnalyticsScheduleClash[]>();
+            // Obtain all schedules of the student.
+            const studentSchedules = registeredStudent
+                .map((rs) => {
+                    const studentCourse = schedulesMap
+                        .get(rs.courseCode)
+                        ?.get(rs.section);
 
-            const lastSchedules: IAnalyticsCourseSchedule[] = [];
-
-            for (const registered of registeredStudent) {
-                const studentCourse = schedulesMap
-                    .get(registered.courseCode)
-                    ?.get(registered.section);
-
-                if (!studentCourse) {
-                    // No schedules found for this course section.
-                    continue;
-                }
-
-                const courseSchedules = studentCourse.schedules;
-
-                // Sort schedules by day and time, with day being a priority.
-                courseSchedules.sort((a, b) => {
+                    return (
+                        studentCourse?.schedules.map((schedule) => ({
+                            day: schedule.day,
+                            time: schedule.time,
+                            venue: schedule.venue,
+                            course: studentCourse.course,
+                            section: rs.section,
+                        })) ?? []
+                    );
+                })
+                .flat()
+                .sort((a, b) => {
+                    // Sort schedules by day and time, with day being a priority.
                     if (a.day !== b.day) {
                         return a.day - b.day;
                     }
@@ -142,85 +144,86 @@ export class AnalyticsService extends BaseService implements IAnalyticsService {
                     return a.time - b.time;
                 });
 
-                // Check if the student has back-to-back or clashing classes.
-                // A student has back-to-back classes if they have classes for 5 consecutive hours or more.
-                // A student has clashing classes if they have classes that overlap in time on the same day.
-                for (let i = 0; i < courseSchedules.length; i++) {
-                    const schedule = courseSchedules[i];
+            const dayTimeMap = new Map<string, IAnalyticsScheduleClash[]>();
+            const lastSchedules: IAnalyticsCourseSchedule[] = [];
 
-                    // To check for back-to-back classes, check if the current schedule is consecutive
-                    // with the last one.
-                    if (i > 0) {
-                        const lastSchedule = courseSchedules[i - 1];
+            // Check if the student has back-to-back or clashing classes.
+            // A student has back-to-back classes if they have classes for 5 consecutive hours or more.
+            // A student has clashing classes if they have classes that overlap in time on the same day.
+            for (let i = 0; i < studentSchedules.length; ++i) {
+                const schedule = studentSchedules[i];
 
-                        if (
-                            lastSchedule.day !== schedule.day ||
-                            (lastSchedule.time as number) !== schedule.time + 1
-                        ) {
-                            // The current schedule is not consecutive with the last one.
-                            // We need to reset the last schedules if they are not consecutive, but before
-                            // that, we check if the last schedules have 5 or more consecutive hours.
-                            if (lastSchedules.length >= 5) {
-                                backToBackAnalyticsStudent.schedules.push(
-                                    lastSchedules.slice()
-                                );
-                            }
+                // To check for back-to-back classes, check if the current schedule is consecutive
+                // with the last one.
+                if (i > 0) {
+                    const lastSchedule = studentSchedules[i - 1];
 
-                            lastSchedules.length = 0;
+                    if (
+                        lastSchedule.day !== schedule.day ||
+                        lastSchedule.time + 1 !== (schedule.time as number)
+                    ) {
+                        // The current schedule is not consecutive with the last one.
+                        // We need to reset the last schedules if they are not consecutive, but before
+                        // that, we check if the last schedules have 5 or more consecutive hours.
+                        if (lastSchedules.length >= 5) {
+                            backToBackAnalyticsStudent.schedules.push(
+                                lastSchedules.slice()
+                            );
                         }
+
+                        lastSchedules.length = 0;
                     }
+                }
 
-                    lastSchedules.push(schedule);
+                lastSchedules.push(schedule);
 
-                    // Now we check for clashing classes.
-                    const key = `${schedule.day.toString()}-${schedule.time.toString()}`;
+                // Now we check for clashing classes.
+                const key = `${schedule.day.toString()}-${schedule.time.toString()}`;
 
-                    if (!dayTimeMap.has(key)) {
-                        dayTimeMap.set(key, []);
-                    }
+                if (!dayTimeMap.has(key)) {
+                    dayTimeMap.set(key, []);
+                }
 
-                    const dayTimeSchedules = dayTimeMap.get(key)!;
+                const dayTimeSchedules = dayTimeMap.get(key)!;
 
-                    dayTimeSchedules.push({
-                        day: schedule.day,
-                        time: schedule.time,
-                        courses: [
-                            {
-                                course: studentCourse.course,
-                                section: registered.section,
-                                venue: schedule.venue,
-                            },
-                        ],
-                    });
+                dayTimeSchedules.push({
+                    day: schedule.day,
+                    time: schedule.time,
+                    courses: [
+                        {
+                            course: schedule.course,
+                            section: schedule.section,
+                            venue: schedule.venue,
+                        },
+                    ],
+                });
 
-                    // If there are more than one schedules for the same day and time, we have a clash.
-                    if (dayTimeSchedules.length > 1) {
-                        const lastClash =
-                            clashingAnalyticsStudent.clashes.at(-1);
+                // If there are more than one schedules for the same day and time, we have a clash.
+                if (dayTimeSchedules.length > 1) {
+                    const lastClash = clashingAnalyticsStudent.clashes.at(-1);
 
-                        if (
-                            lastClash?.day === schedule.day &&
-                            lastClash.time === schedule.time
-                        ) {
-                            // If the last clash is for the same day and time, we can just add to it.
-                            lastClash.courses.push({
-                                course: studentCourse.course,
-                                section: registered.section,
-                                venue: schedule.venue,
-                            });
-                        } else {
-                            clashingAnalyticsStudent.clashes.push({
-                                day: schedule.day,
-                                time: schedule.time,
-                                courses: dayTimeSchedules.flatMap((ds) =>
-                                    ds.courses.map((c) => ({
-                                        course: c.course,
-                                        section: c.section,
-                                        venue: c.venue,
-                                    }))
-                                ),
-                            });
-                        }
+                    if (
+                        lastClash?.day === schedule.day &&
+                        lastClash.time === schedule.time
+                    ) {
+                        // If the last clash is for the same day and time, we can just add to it.
+                        lastClash.courses.push({
+                            course: schedule.course,
+                            section: schedule.section,
+                            venue: schedule.venue,
+                        });
+                    } else {
+                        clashingAnalyticsStudent.clashes.push({
+                            day: schedule.day,
+                            time: schedule.time,
+                            courses: dayTimeSchedules.flatMap((ds) =>
+                                ds.courses.map((c) => ({
+                                    course: c.course,
+                                    section: c.section,
+                                    venue: c.venue,
+                                }))
+                            ),
+                        });
                     }
                 }
             }

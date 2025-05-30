@@ -18,7 +18,7 @@ import {
     TTMSSemester,
     TTMSSession,
 } from "@/types";
-import { and, asc, eq, SQL, sql } from "drizzle-orm";
+import { and, asc, desc, eq, exists, gt, SQL, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
 import { inject } from "tsyringe";
 import { BaseRepository } from "./BaseRepository";
@@ -36,17 +36,16 @@ export class StudentRepository
         super(db);
     }
 
-    async getByMatricNo(matricNo: string): Promise<IStudent | null> {
-        const res = await this.db
+    getByMatricNo(matricNo: string): Promise<IStudent | null> {
+        return this.db
             .select()
             .from(students)
             .where(eq(students.matricNo, matricNo.toUpperCase()))
-            .limit(1);
-
-        return res.at(0) ?? null;
+            .limit(1)
+            .then((res) => res.at(0) ?? null);
     }
 
-    async getTimetable(
+    getTimetable(
         matricNo: string,
         session: TTMSSession,
         semester: TTMSSemester
@@ -57,58 +56,6 @@ export class StudentRepository
         const cs = alias(courseSections, "cs");
         const l = alias(lecturers, "l");
         const v = alias(venues, "v");
-
-        console.log(
-            this.db
-                .select({
-                    scheduleDay: css.day,
-                    scheduleTime: css.time,
-                    venueShortName: v.shortName,
-                    courseCode: src.courseCode,
-                    section: src.section,
-                    courseName: c.name,
-                    lecturerNo: cs.lecturerNo,
-                    lecturerName: l.name,
-                })
-                .from(css)
-                // Join to obtain the section of the course section.
-                .innerJoin(
-                    cs,
-                    and(
-                        eq(css.session, cs.session),
-                        eq(css.semester, cs.semester),
-                        eq(css.courseCode, cs.courseCode),
-                        eq(css.section, cs.section)
-                    )
-                )
-                // Join to obtain the name of the course.
-                .innerJoin(c, eq(cs.courseCode, c.code))
-                // Join to obtain the courses registered by the student.
-                .innerJoin(
-                    src,
-                    and(
-                        eq(src.session, css.session),
-                        eq(src.semester, css.semester),
-                        eq(src.courseCode, css.courseCode),
-                        eq(src.section, css.section)
-                    )
-                )
-                // Left join to obtain the lecturer details, if any.
-                .leftJoin(l, eq(cs.lecturerNo, l.workerNo))
-                // Left join to obtain the venue details, if any.
-                .leftJoin(v, eq(css.venueCode, v.code))
-                // Filter by the student's matric number, session, and semester.
-                .where(
-                    and(
-                        eq(src.matricNo, matricNo.toUpperCase()),
-                        eq(css.session, session),
-                        eq(css.semester, semester)
-                    )
-                )
-                // Order by day and time.
-                .orderBy(asc(css.day), asc(css.time))
-                .toSQL().sql
-        );
 
         return (
             this.db
@@ -245,7 +192,7 @@ export class StudentRepository
         });
     }
 
-    private async getSearchResult(
+    private getSearchResult(
         session: TTMSSession,
         semester: TTMSSemester,
         matchExpr: SQL<number>,
@@ -253,52 +200,52 @@ export class StudentRepository
         limit: number,
         offset: number
     ): Promise<IStudentSearchEntry[]> {
-        const registeredStudents = await this.db
-            .selectDistinct({ matricNo: studentRegisteredCourses.matricNo })
-            .from(studentRegisteredCourses)
+        const sub = this.db
+            .select({
+                matricNo: students.matricNo,
+                name: students.name,
+                courseCode: students.courseCode,
+                relevance: matchExpr.as("relevance"),
+            })
+            .from(students)
+            .as("sub");
+
+        return this.db
+            .select({
+                matricNo: sub.matricNo,
+                name: sub.name,
+                courseCode: sub.courseCode,
+            })
+            .from(sub)
             .where(
                 and(
-                    eq(studentRegisteredCourses.session, session),
-                    eq(studentRegisteredCourses.semester, semester)
+                    gt(sub.relevance, 0),
+                    exists(
+                        this.db
+                            .select({ exists: sql`1` })
+                            .from(studentRegisteredCourses)
+                            .where(
+                                and(
+                                    eq(
+                                        studentRegisteredCourses.matricNo,
+                                        sub.matricNo
+                                    ),
+                                    eq(
+                                        studentRegisteredCourses.session,
+                                        session
+                                    ),
+                                    eq(
+                                        studentRegisteredCourses.semester,
+                                        semester
+                                    )
+                                )
+                            )
+                    )
                 )
-            );
-
-        if (registeredStudents.length === 0) {
-            return [];
-        }
-
-        const studentsMatch = await this.db
-            .select()
-            .from(
-                this.db
-                    .select({
-                        matricNo: students.matricNo,
-                        name: students.name,
-                        courseCode: students.courseCode,
-                        relevance: matchExpr.as("relevance"),
-                    })
-                    .from(students)
-                    .as("sub")
             )
-            .where(sql`sub.relevance > 0`)
-            .orderBy(sql`sub.relevance DESC`)
+            .orderBy(desc(sub.relevance))
+            .limit(limit)
+            .offset(offset)
             .execute(placeholders);
-
-        if (studentsMatch.length === 0) {
-            return [];
-        }
-
-        const registeredMatricNos = new Set(
-            registeredStudents.map((s) => s.matricNo)
-        );
-
-        return studentsMatch
-            .filter((s) => registeredMatricNos.has(s.matricNo))
-            .slice(offset, offset + limit)
-            .map((s) => ({
-                matricNo: s.matricNo,
-                name: s.name,
-                courseCode: s.courseCode,
-            }));
     }
 }

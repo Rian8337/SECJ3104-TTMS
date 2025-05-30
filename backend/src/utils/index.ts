@@ -1,3 +1,4 @@
 export * from "./crypto";
-export * from "./util";
+export * from "./timetable";
 export * from "./ttms";
+export * from "./util";

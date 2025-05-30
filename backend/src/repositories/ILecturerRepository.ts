@@ -1,5 +1,10 @@
 import { ILecturer } from "@/database/schema";
-import { ITimetable, TTMSSemester, TTMSSession } from "@/types";
+import {
+    IRawTimetable,
+    IRawVenueClashTimetable,
+    TTMSSemester,
+    TTMSSession,
+} from "@/types";
 
 /**
  * A repository that is responsible for handling lecturer-related operations.
@@ -25,21 +30,21 @@ export interface ILecturerRepository {
         workerNo: number,
         session: TTMSSession,
         semester: TTMSSemester
-    ): Promise<ITimetable[]>;
+    ): Promise<IRawTimetable[]>;
 
     /**
-     * Obtains the timetables that clash with a lecturer's timetable.
+     * Obtains the timetables that clash with venues in a lecturer's timetable.
      *
      * @param workerNo The worker number of the lecturer.
      * @param session The academic session to obtain the timetable for.
      * @param semester The academic semester to obtain the timetable for.
      * @returns The list of clashing timetables.
      */
-    getClashingTimetable(
+    getVenueClashes(
         workerNo: number,
         session: TTMSSession,
         semester: TTMSSemester
-    ): Promise<ITimetable[]>;
+    ): Promise<IRawVenueClashTimetable[]>;
 
     /**
      * Searches lecturers by their name.

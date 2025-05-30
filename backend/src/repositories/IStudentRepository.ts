@@ -1,8 +1,8 @@
 import { IStudent } from "@/database/schema";
 import {
+    IRawTimetable,
     IRegisteredStudent,
     IStudentSearchEntry,
-    ITimetable,
     TTMSSemester,
     TTMSSession,
 } from "@/types";
@@ -31,7 +31,7 @@ export interface IStudentRepository {
         matricNo: string,
         session: TTMSSession,
         semester: TTMSSemester
-    ): Promise<ITimetable[]>;
+    ): Promise<IRawTimetable[]>;
 
     /**
      * Searches students by their matric number.

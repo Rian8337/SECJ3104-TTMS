@@ -17,7 +17,7 @@ import {
     TTMSSemester,
     TTMSSession,
 } from "@/types";
-import { isValidMatricNumber } from "@/utils";
+import { convertRawTimetableToTimetable, isValidMatricNumber } from "@/utils";
 import { inject } from "tsyringe";
 import { BaseService } from "./BaseService";
 import { IStudentService } from "./IStudentService";
@@ -52,13 +52,15 @@ export class StudentService extends BaseService implements IStudentService {
             return this.createFailedResponse("Student not found", 404);
         }
 
-        const res = await this.studentRepository.getTimetable(
+        const rawTimetables = await this.studentRepository.getTimetable(
             student.matricNo,
             session,
             semester
         );
 
-        return this.createSuccessfulResponse(res);
+        return this.createSuccessfulResponse(
+            convertRawTimetableToTimetable(rawTimetables)
+        );
     }
 
     async search(

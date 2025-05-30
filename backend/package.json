@@ -35,7 +35,7 @@
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
-    "drizzle-orm": "^0.43.1",
+    "drizzle-orm": "^0.42.0",
     "express": "^5.1.0",
     "mysql2": "^3.14.1",
     "reflect-metadata": "^0.2.2",

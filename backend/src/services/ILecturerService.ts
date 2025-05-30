@@ -1,7 +1,7 @@
 import { ILecturer } from "@/database/schema";
 import {
     ITimetable,
-    ITimetableClash,
+    ITimetableVenueClash,
     TTMSSemester,
     TTMSSession,
 } from "@/types";
@@ -35,16 +35,16 @@ export interface ILecturerService extends IService {
     ): Promise<OperationResult<ITimetable[]>>;
 
     /**
-     * Obtains the timetables that clash with a lecturer's timetable.
+     * Obtains the timetables that clash with venues in a lecturer's timetable.
      *
      * @param workerNo The worker number of the lecturer.
      * @param session The academic session to obtain the timetable for.
      * @param semester The academic semester to obtain the timetable for.
      * @returns The list of clashing timetables.
      */
-    getClashingTimetable(
+    getVenueClashes(
         workerNo: number,
         session: TTMSSession,
         semester: TTMSSemester
-    ): Promise<OperationResult<ITimetableClash[]>>;
+    ): Promise<OperationResult<ITimetableVenueClash[]>>;
 }

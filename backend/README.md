@@ -87,6 +87,7 @@ For all endpoints, unless otherwise specified, non-2xx responses will return the
 | [GET `/student/analytics`](#get-studentanalytics)       | Obtains student analytics                                                                            |
 | [GET `/lecturer/timetable`](#get-lecturertimetable)     | Obtains a lecturer's timetable                                                                       |
 | [GET `/lecturer/venue-clash`](#get-lecturervenue-clash) | Obtains the timetables of other lecturers that clash with the lecturer's timetable in terms of venue |
+| [GET `/lecturer/search`](#get-lecturersearch)           | Searches for lecturers                                                                               |
 
 ## POST `/auth/login`
 
@@ -201,6 +202,26 @@ This endpoint is restricted to a lecturer, in which they must authenticate throu
 ### Response
 
 A list of [`ClashTimetable`](#clash-timetable) objects.
+
+## GET `/lecturer/search`
+
+Searches for lecturers.
+
+This endpoint is restricted to a student or lecturer, in which they must authenticate through their respective login endpoints first.
+
+### Query Parameters
+
+| Name       | Required | Default | Description                                                                                   | Example   |
+| ---------- | -------- | ------- | --------------------------------------------------------------------------------------------- | --------- |
+| `session`  | ✅       | N/A     | The academic session to search lecturers in                                                   | 2024/2025 |
+| `semester` | ✅       | N/A     | The academic semester to search lecturers in                                                  | 1, 2, 3   |
+| `query`    | ✅       | N/A     | The name of the lecturer to search for                                                        | N/A       |
+| `limit`    | ❌       | 10      | The maximum number of lecturers to return. Must be at least 1                                 | 5         |
+| `offset`   | ❌       | 0       | The number of lecturers to skip before starting to collect the result set. Must be at least 0 | 5         |
+
+### Response
+
+A list of [`Lecturer`](#lecturer) objects that fulfill the search criteria.
 
 # Data Types
 

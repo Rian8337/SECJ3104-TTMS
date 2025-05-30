@@ -14,7 +14,18 @@ import {
     TTMSSemester,
     TTMSSession,
 } from "@/types";
-import { and, asc, eq, isNotNull, ne, or, sql } from "drizzle-orm";
+import {
+    and,
+    asc,
+    desc,
+    eq,
+    exists,
+    gt,
+    isNotNull,
+    ne,
+    or,
+    sql,
+} from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
 import { inject } from "tsyringe";
 import { BaseRepository } from "./BaseRepository";
@@ -186,7 +197,13 @@ export class LecturerRepository
         );
     }
 
-    searchByName(name: string, limit = 10, offset = 0): Promise<ILecturer[]> {
+    searchByName(
+        session: TTMSSession,
+        semester: TTMSSemester,
+        name: string,
+        limit = 10,
+        offset = 0
+    ): Promise<ILecturer[]> {
         if (limit < 1) {
             throw new Error("Limit must be at least 1");
         }
@@ -195,14 +212,51 @@ export class LecturerRepository
             throw new Error("Offset must be at least 0");
         }
 
-        return this.db
-            .select()
+        const sub = this.db
+            .select({
+                workerNo: lecturers.workerNo,
+                name: lecturers.name,
+                relevance:
+                    sql<number>`MATCH(${lecturers.name}) AGAINST(${sql.placeholder("name")} IN BOOLEAN MODE)`.as(
+                        "relevance"
+                    ),
+            })
             .from(lecturers)
+            .as("sub");
+
+        return this.db
+            .select({
+                workerNo: sub.workerNo,
+                name: sub.name,
+            })
+            .from(sub)
             .where(
-                sql`MATCH(${lecturers.name}) AGAINST(${sql.placeholder("name")} IN BOOLEAN MODE)`
+                and(
+                    gt(sub.relevance, 0),
+                    exists(
+                        this.db
+                            .select({ exists: sql`1` })
+                            .from(courseSections)
+                            .where(
+                                and(
+                                    eq(courseSections.session, session),
+                                    eq(courseSections.semester, semester),
+                                    eq(courseSections.lecturerNo, sub.workerNo)
+                                )
+                            )
+                    )
+                )
             )
+            .orderBy(desc(sub.relevance))
             .limit(limit)
             .offset(offset)
-            .execute({ name: name.split(" ").join("+ ").trim() });
+            .execute({
+                name: name
+                    .trim()
+                    .split(/\s+/g)
+                    .map((s) => `+${s}*`)
+                    .join(" ")
+                    .toUpperCase(),
+            });
     }
 }

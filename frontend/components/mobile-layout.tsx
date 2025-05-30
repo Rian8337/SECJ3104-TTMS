@@ -146,7 +146,7 @@ export function MobileLayout({ children, userType, studentInfo: initialStudentIn
                   <NavItem
                     icon={Search}
                     label="Search"
-                    href={`/${userType}/dashboard?tab=${userType === "student" ? "search-timetable" : "search-student"}`}
+                    href={`/${userType}/dashboard?tab=${userType === "student" ? "search-timetable" : "search"}`}
                     onClick={() => setIsMenuOpen(false)}
                   />
 

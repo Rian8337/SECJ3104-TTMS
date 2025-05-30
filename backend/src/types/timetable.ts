@@ -54,9 +54,9 @@ export interface ITimetable
 }
 
 /**
- * Represents a timetable venue clash.
+ * Represents a venue clash in a timetable.
  */
-export interface ITimetableVenueClash
+export interface IVenueClashTimetable
     extends Pick<ICourseSectionSchedule, "day" | "time"> {
     readonly venue: Pick<IVenue, "shortName"> | null;
     readonly courseSections: ITimetableCourseSection[];

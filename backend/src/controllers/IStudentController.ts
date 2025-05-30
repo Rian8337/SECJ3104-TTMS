@@ -1,4 +1,4 @@
-import { IStudentAnalytics, IStudentSearchEntry, ITimetable } from "@/types";
+import { IStudentSearchEntry, ITimetable } from "@/types";
 import { Request, Response } from "express";
 import { IController } from "./IController";
 
@@ -23,22 +23,6 @@ export interface IStudentController extends IController {
     ): Promise<void>;
 
     /**
-     * Obtains student analytics in an academic session and semester.
-     *
-     * @param req The request object.
-     * @param res The response object.
-     */
-    getAnalytics(
-        req: Request<
-            "/analytics",
-            IStudentAnalytics | { error: string },
-            unknown,
-            Partial<{ session: string; semester: string }>
-        >,
-        res: Response<IStudentAnalytics | { error: string }>
-    ): Promise<void>;
-
-    /**
      * Searches for students by their matriculation number or name.
      *
      * @param req The request object.
@@ -47,7 +31,7 @@ export interface IStudentController extends IController {
     search(
         req: Request<
             "/search",
-            unknown,
+            IStudentSearchEntry[] | { error: string },
             unknown,
             Partial<{
                 session: string;

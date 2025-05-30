@@ -2,7 +2,7 @@ import { DrizzleDb } from "@/database";
 import { courses, courseSections, ICourse } from "@/database/schema";
 import { Repository } from "@/decorators/repository";
 import { dependencyTokens } from "@/dependencies/tokens";
-import { IStudentAnalyticsCourse, TTMSSemester, TTMSSession } from "@/types";
+import { IAnalyticsCourse, TTMSSemester, TTMSSession } from "@/types";
 import { and, eq } from "drizzle-orm";
 import { inject } from "tsyringe";
 import { BaseRepository } from "./BaseRepository";
@@ -33,7 +33,7 @@ export class CourseRepository
     async getSchedulesForAnalytics(
         session: TTMSSession,
         semester: TTMSSemester
-    ): Promise<IStudentAnalyticsCourse[]> {
+    ): Promise<IAnalyticsCourse[]> {
         return this.db.query.courseSections.findMany({
             columns: { section: true },
             with: {

@@ -1,4 +1,6 @@
+export * from "./AnalyticsService";
 export * from "./AuthService";
+export * from "./IAnalyticsService";
 export * from "./IAuthService";
 export * from "./ILecturerService";
 export * from "./IStudentService";

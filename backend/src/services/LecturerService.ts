@@ -1,14 +1,17 @@
 import { ILecturer } from "@/database/schema";
 import { Service } from "@/decorators/service";
 import { dependencyTokens } from "@/dependencies/tokens";
-import { ILecturerRepository } from "@/repositories";
+import { ILecturerRepository, IVenueRepository } from "@/repositories";
 import {
     ITimetable,
-    ITimetableVenueClash,
+    IVenueClashTimetable,
     TTMSSemester,
     TTMSSession,
 } from "@/types";
-import { convertRawTimetableToTimetable } from "@/utils";
+import {
+    convertRawTimetableToTimetable,
+    convertRawVenueClashTimetableToVenueClashTimetable,
+} from "@/utils";
 import { inject } from "tsyringe";
 import { BaseService } from "./BaseService";
 import { ILecturerService } from "./ILecturerService";
@@ -21,7 +24,9 @@ import { OperationResult } from "./OperationResult";
 export class LecturerService extends BaseService implements ILecturerService {
     constructor(
         @inject(dependencyTokens.lecturerRepository)
-        private readonly lecturerRepository: ILecturerRepository
+        private readonly lecturerRepository: ILecturerRepository,
+        @inject(dependencyTokens.venueRepository)
+        private readonly venueRepository: IVenueRepository
     ) {
         super();
     }
@@ -53,60 +58,26 @@ export class LecturerService extends BaseService implements ILecturerService {
     }
 
     async getVenueClashes(
-        workerNo: number,
         session: TTMSSession,
-        semester: TTMSSemester
-    ): Promise<OperationResult<ITimetableVenueClash[]>> {
+        semester: TTMSSemester,
+        workerNo: number
+    ): Promise<OperationResult<IVenueClashTimetable[]>> {
         const lecturer = await this.lecturerRepository.getByWorkerNo(workerNo);
 
         if (!lecturer) {
             return this.createFailedResponse("Lecturer not found", 404);
         }
 
-        const timetables = await this.lecturerRepository.getVenueClashes(
-            workerNo,
+        const rawTimetables = await this.venueRepository.getVenueClashes(
             session,
-            semester
+            semester,
+            workerNo
         );
 
-        if (timetables.length === 0) {
-            return this.createSuccessfulResponse([]);
-        }
+        const timetables =
+            convertRawVenueClashTimetableToVenueClashTimetable(rawTimetables);
 
-        const clashes = new Map<string, ITimetableVenueClash>();
-
-        for (const timetable of timetables) {
-            const key = `${timetable.scheduleDay.toString()}-${timetable.scheduleTime.toString()}-${timetable.scheduleVenue!}`;
-
-            if (!clashes.has(key)) {
-                clashes.set(key, {
-                    day: timetable.scheduleDay,
-                    time: timetable.scheduleTime,
-                    venue: { shortName: timetable.scheduleVenue! },
-                    courseSections: [],
-                });
-            }
-
-            const clash = clashes.get(key)!;
-
-            clash.courseSections.push({
-                section: timetable.section,
-                course: {
-                    code: timetable.courseCode,
-                    name: timetable.courseName,
-                },
-                lecturer:
-                    timetable.lecturerNo !== null &&
-                    timetable.lecturerName !== null
-                        ? {
-                              workerNo: timetable.lecturerNo,
-                              name: timetable.lecturerName,
-                          }
-                        : null,
-            });
-        }
-
-        return this.createSuccessfulResponse(Array.from(clashes.values()));
+        return this.createSuccessfulResponse(timetables);
     }
 
     async search(

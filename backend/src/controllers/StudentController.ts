@@ -3,12 +3,7 @@ import { Roles } from "@/decorators/roles";
 import { Get } from "@/decorators/routes";
 import { dependencyTokens } from "@/dependencies/tokens";
 import { IStudentService } from "@/services";
-import {
-    IStudentAnalytics,
-    IStudentSearchEntry,
-    ITimetable,
-    UserRole,
-} from "@/types";
+import { IStudentSearchEntry, ITimetable, UserRole } from "@/types";
 import { Request, Response } from "express";
 import { inject } from "tsyringe";
 import { BaseController } from "./BaseController";
@@ -62,42 +57,6 @@ export class StudentController
         try {
             const result = await this.studentService.getTimetable(
                 matricNo,
-                session,
-                semester
-            );
-
-            this.respondWithOperationResult(res, result);
-        } catch (e) {
-            console.error(e);
-
-            res.status(500).json({ error: "Internal server error" });
-        }
-    }
-
-    @Get("/analytics")
-    @Roles(UserRole.lecturer)
-    async getAnalytics(
-        req: Request<
-            "/analytics",
-            IStudentAnalytics | { error: string },
-            unknown,
-            Partial<{ session: string; semester: string }>
-        >,
-        res: Response<IStudentAnalytics | { error: string }>
-    ): Promise<void> {
-        const validatedSessionAndSemester = this.validateSessionSemester(
-            req,
-            res
-        );
-
-        if (!validatedSessionAndSemester) {
-            return;
-        }
-
-        const { session, semester } = validatedSessionAndSemester;
-
-        try {
-            const result = await this.studentService.generateAnalytics(
                 session,
                 semester
             );

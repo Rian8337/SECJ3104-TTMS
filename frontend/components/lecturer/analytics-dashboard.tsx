@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Fragment } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertTriangle, Clock, Users, AlertCircle, Building2, BarChart2, PieChart } from "lucide-react"
@@ -465,8 +465,8 @@ export function AnalyticsDashboard() {
                       {student.matricNo} • {student.courseCode}
                     </div>
                   </CardHeader>
-                  {student.schedules.map((schedule) => (
-                    <>
+                  {student.schedules.map((schedule, index) => (
+                    <Fragment key={`${student.matricNo}-schedule${index}`}>
                       <CardHeader className="p-3">
                         <CardTitle className="text-xs flex justify-between items-center">
                           <span>{formatDay(schedule[0].day)}</span>
@@ -488,7 +488,7 @@ export function AnalyticsDashboard() {
                           ))}
                         </div>
                       </CardContent>
-                    </>
+                    </Fragment>
                   ))}
                 </Card>
               ))}

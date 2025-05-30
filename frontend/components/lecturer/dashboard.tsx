@@ -40,19 +40,45 @@ interface LecturerInfo {
 export function LecturerDashboard() {
   const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || "my-timetable")
+  const [activeSubTab, setActiveSubTab] = useState(searchParams.get('subtab') || "analytics-dashboard")
   const [timetable, setTimetable] = useState<TimetableEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [lecturerInfo, setLecturerInfo] = useState<LecturerInfo | null>(null)
   const router = useRouter()
 
-  // Update activeTab when URL changes
+  // Update activeTab and activeSubTab when URL changes
   useEffect(() => {
     const tab = searchParams.get('tab')
+    const subtab = searchParams.get('subtab')
+    
     if (tab) {
       setActiveTab(tab)
     }
+    
+    // Only update subtab if we're in the analytics tab
+    if (tab === 'analytics' && subtab) {
+      setActiveSubTab(subtab)
+    } else if (tab === 'analytics') {
+      setActiveSubTab('analytics-dashboard')
+    }
   }, [searchParams])
+
+  // Handle tab changes
+  const handleTabChange = (value: string) => {
+    setActiveTab(value)
+    if (value === 'analytics') {
+      router.push(`/lecturer/dashboard?tab=analytics&subtab=analytics-dashboard`)
+    } else {
+      router.push(`/lecturer/dashboard?tab=${value}`)
+    }
+  }
+
+  // Handle subtab changes
+  const handleSubTabChange = (value: string) => {
+    setActiveSubTab(value)
+    router.push(`/lecturer/dashboard?tab=analytics&subtab=${value}`)
+  }
 
   // Get lecturer information from localStorage
   useEffect(() => {
@@ -144,7 +170,7 @@ export function LecturerDashboard() {
         <h3 className="text-2xl font-cursive text-center mt-2">{lecturerInfo.name}</h3>
       </motion.div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
        <TabsList className="border #000000 w-full">
           <TabsTrigger value="my-timetable">My Timetable</TabsTrigger>
           <TabsTrigger value="search">Search</TabsTrigger>
@@ -175,8 +201,8 @@ export function LecturerDashboard() {
         </TabsContent>
 
         <TabsContent value="analytics">
-          <Tabs defaultValue="analytics-dashboard" className="space-y-4">
-          <TabsList className="border #000000 w-full" >
+          <Tabs value={activeSubTab} onValueChange={handleSubTabChange} className="space-y-4">
+            <TabsList className="border #000000 w-full" >
               <TabsTrigger value="analytics-dashboard">Analytics</TabsTrigger>
               <TabsTrigger value="clashes">Clashes</TabsTrigger>
             </TabsList>

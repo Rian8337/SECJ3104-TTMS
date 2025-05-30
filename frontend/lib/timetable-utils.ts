@@ -1,5 +1,9 @@
 import { ClassItem } from "@/types/timetable"
 
+// Constants
+export const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] as const
+export type Weekday = typeof WEEKDAYS[number]
+
 // Day mapping
 export const dayMap: { [key: number]: string } = {
   1: 'Sunday',
@@ -49,8 +53,47 @@ export interface TimetableEntry {
   }
 }
 
+// Get current day of the week (0 = Sunday, 1 = Monday, etc.)
+export const getCurrentDay = (): Weekday => {
+  const dayIndex = new Date().getDay()
+  // If it's weekend (0 or 6), default to Monday (0)
+  if (dayIndex === 0 || dayIndex === 6) return "Monday"
+  return WEEKDAYS[dayIndex - 1]
+}
+
+// Format time with AM/PM
+export const formatTime = (time: string): string => {
+  const [hours, minutes] = time.split(':').map(Number)
+  const period = hours >= 12 ? 'PM' : 'AM'
+  const displayHours = hours % 12 || 12
+  
+  // If minutes are 50 or more, round up to next hour
+  if (minutes >= 50) {
+    const nextHour = (hours + 1) % 24
+    const nextDisplayHour = nextHour % 12 || 12
+    const nextPeriod = nextHour >= 12 ? 'PM' : 'AM'
+    return `${nextDisplayHour} ${nextPeriod}`
+  }
+  
+  // If minutes are 0, just show the hour
+  if (minutes === 0) {
+    return `${displayHours} ${period}`
+  }
+  
+  // Otherwise show the time with minutes
+  return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`
+}
+
+// Calculate duration between two times
+export const calculateDuration = (startTime: string, endTime: string): number => {
+  const start = new Date(`2000-01-01T${startTime}`)
+  const end = new Date(`2000-01-01T${endTime}`)
+  const diffMinutes = (end.getTime() - start.getTime()) / (1000 * 60)
+  return Math.round(diffMinutes / 60)
+}
+
 export function formatTimetableData(data: any[]): TimetableEntry[] {
-  console.log('Raw data received:', JSON.stringify(data, null, 2))
+  // console.log('Raw data received:', JSON.stringify(data, null, 2))
   
   return data.map((entry: any) => {
     const timeRange = timeMap[entry.time]
@@ -63,15 +106,15 @@ export function formatTimetableData(data: any[]): TimetableEntry[] {
 
     // Ensure we have the lecturer data
     const lecturer = entry.courseSection?.lecturer
-    console.log('Raw lecturer data:', {
-      raw: entry.courseSection?.lecturer,
-      name: lecturer?.name,
-      workerNo: lecturer?.workerNo,
-      workerNoType: typeof lecturer?.workerNo
-    })
+    // console.log('Raw lecturer data:', {
+    //   raw: entry.courseSection?.lecturer,
+    //   name: lecturer?.name,
+    //   workerNo: lecturer?.workerNo,
+    //   workerNoType: typeof lecturer?.workerNo
+    // })
 
     if (!lecturer) {
-      console.error('No lecturer data found for entry:', entry)
+      console.log('No lecturer data found for entry:', entry)
     }
 
     // Create the formatted entry
@@ -94,11 +137,11 @@ export function formatTimetableData(data: any[]): TimetableEntry[] {
     }
 
     // Log the formatted entry for debugging
-    console.log('Formatted entry lecturer data:', {
-      name: formattedEntry.courseSection.lecturer?.name,
-      workerNo: formattedEntry.courseSection.lecturer?.workerNo,
-      workerNoType: typeof formattedEntry.courseSection.lecturer?.workerNo
-    })
+    // console.log('Formatted entry lecturer data:', {
+    //   name: formattedEntry.courseSection.lecturer?.name,
+    //   workerNo: formattedEntry.courseSection.lecturer?.workerNo,
+    //   workerNoType: typeof formattedEntry.courseSection.lecturer?.workerNo
+    // })
 
     return formattedEntry
   }).filter(Boolean) as TimetableEntry[]

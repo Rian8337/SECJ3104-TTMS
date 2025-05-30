@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { SearchStudentForm } from "@/components/student/search-student-form"
+import { SearchStudentForm } from "@/components/search-student-form"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertTriangle } from "lucide-react"
 import { ClashesView } from "@/components/lecturer/clashes-view"
@@ -138,20 +138,16 @@ export function LecturerDashboard() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.5 }}
-        className="flex items-center justify-between"
+        className="flex flex-col w-full mb-2"
       >
-        <div>
-          <div className="space-y-1">
-            <h2 className="text-2xl font-bold font-cursive">Welcome,</h2>
-            <h3 className="text-2xl font-cursive">{lecturerInfo.name}</h3>
-          </div>
-        </div>
+        <h2 className="text-2xl font-bold font-cursive">Welcome,</h2>
+        <h3 className="text-2xl font-cursive text-center mt-2">{lecturerInfo.name}</h3>
       </motion.div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+       <TabsList className="border #000000 w-full">
           <TabsTrigger value="my-timetable">My Timetable</TabsTrigger>
-          <TabsTrigger value="search-student">Search Student</TabsTrigger>
+          <TabsTrigger value="search">Search</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
@@ -174,13 +170,13 @@ export function LecturerDashboard() {
           )}
         </TabsContent>
 
-        <TabsContent value="search-student">
+        <TabsContent value="search">
           <SearchStudentForm />
         </TabsContent>
 
         <TabsContent value="analytics">
           <Tabs defaultValue="analytics-dashboard" className="space-y-4">
-            <TabsList>
+          <TabsList className="border #000000 w-full" >
               <TabsTrigger value="analytics-dashboard">Analytics</TabsTrigger>
               <TabsTrigger value="clashes">Clashes</TabsTrigger>
             </TabsList>

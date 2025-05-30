@@ -5,22 +5,28 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import React from "react"
 import { ClassItem } from "@/types/timetable"
-import { processClasses, hasClash, renderGapAndLunch, GapInfo } from "@/lib/timetable-utils"
+import { 
+  processClasses, 
+  hasClash, 
+  renderGapAndLunch, 
+  GapInfo, 
+  getCurrentDay, 
+  WEEKDAYS, 
+  type Weekday,
+  formatTime,
+  calculateDuration
+} from "@/lib/timetable-utils"
 import { useRouter } from "next/navigation"
 
 interface TimetableViewProps {
   classes: ClassItem[]
-  selectedDay?: string
-  onDaySelect?: (day: string) => void
+  selectedDay?: Weekday
+  onDaySelect?: (day: Weekday) => void
   showDaySelector?: boolean
   userType: "student" | "lecturer"
   onLecturerClick?: (workerNo: string, lecturerName: string) => void
   lecturerName?: string
 }
-
-// Constants
-const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] as const
-type Weekday = typeof WEEKDAYS[number]
 
 export function TimetableView({ 
   classes, 
@@ -32,39 +38,7 @@ export function TimetableView({
   lecturerName
 }: TimetableViewProps) {
   const router = useRouter()
-
-  // Get current day of the week (0 = Sunday, 1 = Monday, etc.)
-  const getCurrentDay = (): Weekday => {
-    const dayIndex = new Date().getDay()
-    // If it's weekend (0 or 6), default to Monday (0)
-    if (dayIndex === 0 || dayIndex === 6) return "Monday"
-    return WEEKDAYS[dayIndex - 1]
-  }
-
   const [selectedDay, setSelectedDay] = useState<Weekday>(propSelectedDay as Weekday || getCurrentDay())
-
-  // Helper function to format time with AM/PM
-  const formatTime = (time: string): string => {
-    const [hours, minutes] = time.split(':').map(Number)
-    const period = hours >= 12 ? 'PM' : 'AM'
-    const displayHours = hours % 12 || 12
-    
-    // If minutes are 50 or more, round up to next hour
-    if (minutes >= 50) {
-      const nextHour = (hours + 1) % 24
-      const nextDisplayHour = nextHour % 12 || 12
-      const nextPeriod = nextHour >= 12 ? 'PM' : 'AM'
-      return `${nextDisplayHour} ${nextPeriod}`
-    }
-    
-    // If minutes are 0, just show the hour
-    if (minutes === 0) {
-      return `${displayHours} ${period}`
-    }
-    
-    // Otherwise show the time with minutes
-    return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`
-  }
 
   const handleDaySelect = (day: Weekday) => {
     setSelectedDay(day)
@@ -115,8 +89,11 @@ export function TimetableView({
         {gapInfo.type === 'mixed' && (
           <>
             {gapInfo.gapBeforeLunch && (
-              <div className="inline-block bg-green-100 text-green-600 px-3 py-1 rounded text-xs font-medium border border-gray-200">
-                {`${gapInfo.gapBeforeLunch} hr ${userType === 'student' ? 'gap' : 'free'}`}
+              <div className="flex flex-col items-center gap-1">
+                <div className={`inline-block ${userType === 'lecturer' ? 'bg-green-100 text-green-600' : 'bg-green-100 text-green-600'} px-3 py-1 rounded text-xs font-medium border border-gray-200`}>
+                  {`${gapInfo.gapBeforeLunch} hr ${userType === 'student' ? 'gap' : 'free'}`}
+                </div>
+                <div className="text-xs text-green-600">+</div>
               </div>
             )}
             <div className="flex items-center w-full">
@@ -125,8 +102,11 @@ export function TimetableView({
               <div className="flex-grow border-t border-gray-200"></div>
             </div>
             {gapInfo.gapAfterLunch && (
-              <div className="inline-block bg-green-100 text-green-600 px-3 py-1 rounded text-xs font-medium border border-gray-200">
-                {`${gapInfo.gapAfterLunch} hr ${userType === 'student' ? 'gap' : 'free'}`}
+              <div className="flex flex-col items-center gap-1">
+                <div className="text-xs text-green-600">+</div>
+                <div className={`inline-block ${userType === 'lecturer' ? 'bg-green-100 text-green-600' : 'bg-green-100 text-green-600'} px-3 py-1 rounded text-xs font-medium border border-gray-200`}>
+                  {`${gapInfo.gapAfterLunch} hr ${userType === 'student' ? 'gap' : 'free'}`}
+                </div>
               </div>
             )}
           </>
@@ -139,14 +119,17 @@ export function TimetableView({
               <div className="flex-grow border-t border-gray-200"></div>
             </div>
             {gapInfo.gapAfterLunch && (
-              <div className="inline-block bg-green-100 text-green-600 px-3 py-1 rounded text-xs font-medium border border-gray-200">
-                {`${gapInfo.gapAfterLunch} hr ${userType === 'student' ? 'gap' : 'free'}`}
+              <div className="flex flex-col items-center gap-1">
+                <div className="text-xs text-green-600">+</div>
+                <div className={`inline-block ${userType === 'lecturer' ? 'bg-green-100 text-green-600' : 'bg-green-100 text-green-600'} px-3 py-1 rounded text-xs font-medium border border-gray-200`}>
+                  {`${gapInfo.gapAfterLunch} hr ${userType === 'student' ? 'gap' : 'free'}`}
+                </div>
               </div>
             )}
           </>
         )}
         {gapInfo.type === 'gap' && gapInfo.duration && (
-          <div className="inline-block bg-yellow-100 text-yellow-600 px-3 py-1 rounded text-xs font-medium border border-gray-200">
+          <div className={`inline-block ${userType === 'lecturer' ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'} px-3 py-1 rounded text-xs font-medium border border-gray-200`}>
             {`${gapInfo.duration} hr ${userType === 'student' ? 'gap' : 'free'}`}
           </div>
         )}
@@ -193,13 +176,7 @@ export function TimetableView({
                           <div className="relative flex-grow flex items-center justify-center w-full my-2">
                             <div className="absolute w-0.5 h-full bg-gray-200 left-1/2 transform -translate-x-1/2"></div>
                             <div className={`bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs font-medium border border-gray-200 z-10 ${userType === 'lecturer' ? 'scale-75 text-xs' : 'scale-100 text-s'}`}>
-                              {(() => {
-                                const start = new Date(`2000-01-01T${classItem.startTime}`)
-                                const end = new Date(`2000-01-01T${classItem.endTime}`)
-                                const diffMinutes = (end.getTime() - start.getTime()) / (1000 * 60)
-                                const hours = Math.round(diffMinutes / 60)
-                                return `${hours} hr`
-                              })()}
+                              {`${calculateDuration(classItem.startTime, classItem.endTime)} hr`}
                             </div>
                           </div>
                           <div className="font-bold text-xs text-gray-700">{formatTime(classItem.endTime)}</div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { SearchStudentForm } from "@/components/student/search-student-form"
+import { SearchStudentForm } from "@/components/search-student-form"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertTriangle } from "lucide-react"
 import { DailyClassesView } from "@/components/student/daily-classes-view"
@@ -50,6 +50,7 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
   const [lecturerTimetable, setLecturerTimetable] = useState<TimetableEntry[]>([])
   const [lecturerLoading, setLecturerLoading] = useState(false)
   const [lecturerError, setLecturerError] = useState<string | null>(null)
+  const [lecturerName, setLecturerName] = useState<string>("")
   const router = useRouter()
 
   // Update activeTab when URL changes
@@ -113,12 +114,13 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
   )
 
   // Add new function to fetch lecturer timetable
-  const fetchLecturerTimetable = async (workerNo: string) => {
+  const fetchLecturerTimetable = async (workerNo: string, name: string) => {
     try {
       setLecturerLoading(true)
       setLecturerError(null)
+      setLecturerName(name)
       const response = await fetch(
-        `/api/lecturer/timetable?worker_no=${encodeURIComponent(workerNo)}&session=2024/2025&semester=2`,
+        `${process.env.BACKEND_URL}/lecturer/timetable?worker_no=${encodeURIComponent(workerNo)}&session=2024/2025&semester=2`,
         {
           credentials: 'include'
         }
@@ -141,9 +143,9 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
   }
 
   // Add function to handle lecturer name click
-  const handleLecturerClick = (workerNo: string) => {
+  const handleLecturerClick = (workerNo: string, name: string) => {
     setShowLecturerTimetable(true)
-    fetchLecturerTimetable(workerNo)
+    fetchLecturerTimetable(workerNo, name)
   }
 
   if (!studentInfo) {
@@ -168,17 +170,14 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.5 }}
-        className="flex items-center justify-between mb-2"
+        className="flex flex-col w-full mb-2"
       >
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold font-cursive">Welcome,</h1> 
-          <h3 className="text-2xl font-cursive">{studentInfo.name}</h3> 
-        </div>
-        {/* <div className="text-sm text-muted-foreground">{studentInfo.matricNo}</div> */}
+        <h1 className="text-2xl font-bold font-cursive">Welcome,</h1> 
+        <h3 className="text-2xl font-cursive text-center mt-2">{studentInfo.name}</h3> 
       </motion.div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-2 border #000000">
           <TabsTrigger value="my-timetable">Dashboard</TabsTrigger>
           <TabsTrigger value="search-timetable">Search Timetable</TabsTrigger>
         </TabsList>
@@ -201,9 +200,9 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
           )}
 
           <div className="space-y-2">
-            <p className="text-sm text-muted-foreground text-center p-4">
+            {/* <p className="text-sm text-muted-foreground text-center p-4">
               {studentInfo.facultyCode ? `Faculty of ${studentInfo.facultyCode}` : ''}
-            </p>
+            </p> */}
             {showLecturerTimetable ? (
               <div className="space-y-4">
                 <div className="flex justify-center items-center">
@@ -219,8 +218,8 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
                   />
                   Return
                 </button>
-
                 </div>
+                <h2 className="text-l font-semibold text-blue-700 text-center">{lecturerName}'s Timetable</h2>
                 {lecturerLoading ? (
                   <div className="text-center py-4">Loading lecturer timetable...</div>
                 ) : lecturerError ? (

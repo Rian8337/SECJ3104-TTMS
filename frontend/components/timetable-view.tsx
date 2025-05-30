@@ -89,8 +89,11 @@ export function TimetableView({
         {gapInfo.type === 'mixed' && (
           <>
             {gapInfo.gapBeforeLunch && (
-              <div className="inline-block bg-green-100 text-green-600 px-3 py-1 rounded text-xs font-medium border border-gray-200">
-                {`${gapInfo.gapBeforeLunch} hr ${userType === 'student' ? 'gap' : 'free'}`}
+              <div className="flex flex-col items-center gap-1">
+                <div className="inline-block bg-green-100 text-green-600 px-3 py-1 rounded text-xs font-medium border border-gray-200">
+                  {`${gapInfo.gapBeforeLunch} hr ${userType === 'student' ? 'gap' : 'free'}`}
+                </div>
+                <div className="text-xs text-green-600">+</div>
               </div>
             )}
             <div className="flex items-center w-full">
@@ -99,8 +102,11 @@ export function TimetableView({
               <div className="flex-grow border-t border-gray-200"></div>
             </div>
             {gapInfo.gapAfterLunch && (
-              <div className="inline-block bg-green-100 text-green-600 px-3 py-1 rounded text-xs font-medium border border-gray-200">
-                {`${gapInfo.gapAfterLunch} hr ${userType === 'student' ? 'gap' : 'free'}`}
+              <div className="flex flex-col items-center gap-1">
+                <div className="text-xs text-green-600">+</div>
+                <div className="inline-block bg-green-100 text-green-600 px-3 py-1 rounded text-xs font-medium border border-gray-200">
+                  {`${gapInfo.gapAfterLunch} hr ${userType === 'student' ? 'gap' : 'free'}`}
+                </div>
               </div>
             )}
           </>
@@ -113,8 +119,11 @@ export function TimetableView({
               <div className="flex-grow border-t border-gray-200"></div>
             </div>
             {gapInfo.gapAfterLunch && (
-              <div className="inline-block bg-green-100 text-green-600 px-3 py-1 rounded text-xs font-medium border border-gray-200">
-                {`${gapInfo.gapAfterLunch} hr ${userType === 'student' ? 'gap' : 'free'}`}
+              <div className="flex flex-col items-center gap-1">
+                <div className="text-xs text-green-600">+</div>
+                <div className="inline-block bg-green-100 text-green-600 px-3 py-1 rounded text-xs font-medium border border-gray-200">
+                  {`${gapInfo.gapAfterLunch} hr ${userType === 'student' ? 'gap' : 'free'}`}
+                </div>
               </div>
             )}
           </>

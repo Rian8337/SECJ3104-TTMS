@@ -47,16 +47,20 @@ export interface ILecturerRepository {
     ): Promise<IRawVenueClashTimetable[]>;
 
     /**
-     * Searches lecturers by their name.
+     * Searches lecturer by their name.
      *
-     * This uses a full-text search to find lecturers whose names match the given name.
+     * This uses a full-text search to find lecturer whose names match the given name.
      *
+     * @param session The academic session to search in.
+     * @param semester The academic semester to search in.
      * @param name The name to search.
-     * @param limit The maximum number of lecturers to return. Defaults to 10.
-     * @param offset The number of lecturers to skip before starting to collect the result set. Defaults to 0.
-     * @returns The lecturers whose names match the given name.
+     * @param limit The maximum number of lecturer to return. Defaults to 10.
+     * @param offset The number of lecturer to skip before starting to collect the result set. Defaults to 0.
+     * @returns The lecturer whose names match the given name.
      */
     searchByName(
+        session: TTMSSession,
+        semester: TTMSSemester,
         name: string,
         limit?: number,
         offset?: number

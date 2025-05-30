@@ -1,3 +1,4 @@
+import { ILecturer } from "@/database/schema";
 import { ITimetable, ITimetableVenueClash } from "@/types";
 import { Request, Response } from "express";
 import { IController } from "./IController";
@@ -36,5 +37,27 @@ export interface ILecturerController extends IController {
             Partial<{ session: string; semester: string; worker_no: string }>
         >,
         res: Response<ITimetableVenueClash[] | { error: string }>
+    ): Promise<void>;
+
+    /**
+     * Searches for lecturers by their name.
+     *
+     * @param req The request object.
+     * @param res The response object.
+     */
+    search(
+        req: Request<
+            "/search",
+            unknown,
+            unknown,
+            Partial<{
+                session: string;
+                semester: string;
+                query: string;
+                limit: string;
+                offset: string;
+            }>
+        >,
+        res: Response<ILecturer[] | { error: string }>
     ): Promise<void>;
 }

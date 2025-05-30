@@ -108,4 +108,28 @@ export class LecturerService extends BaseService implements ILecturerService {
 
         return this.createSuccessfulResponse(Array.from(clashes.values()));
     }
+
+    async search(
+        session: TTMSSession,
+        semester: TTMSSemester,
+        query: string,
+        limit?: number,
+        offset?: number
+    ): Promise<OperationResult<ILecturer[]>> {
+        if (query.length < 3) {
+            return this.createFailedResponse(
+                "Query must be at least 3 characters long"
+            );
+        }
+
+        const res = await this.lecturerRepository.searchByName(
+            session,
+            semester,
+            query,
+            limit,
+            offset
+        );
+
+        return this.createSuccessfulResponse(res);
+    }
 }

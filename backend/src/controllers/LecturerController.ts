@@ -8,6 +8,7 @@ import { Request, Response } from "express";
 import { inject } from "tsyringe";
 import { BaseController } from "./BaseController";
 import { ILecturerController } from "./ILecturerController";
+import { ILecturer } from "@/database/schema";
 
 /**
  * A controller that is responsible for handling lecturer-related operations.
@@ -100,6 +101,67 @@ export class LecturerController
                 workerNo,
                 session,
                 semester
+            );
+
+            this.respondWithOperationResult(res, result);
+        } catch (e) {
+            console.error(e);
+
+            res.status(500).json({ error: "Internal server error" });
+        }
+    }
+
+    @Get("/search")
+    @Roles(UserRole.student, UserRole.lecturer)
+    async search(
+        req: Request<
+            "/search",
+            unknown,
+            unknown,
+            Partial<{
+                session: string;
+                semester: string;
+                query: string;
+                limit: string;
+                offset: string;
+            }>
+        >,
+        res: Response<ILecturer[] | { error: string }>
+    ) {
+        const validatedSessionAndSemester = this.validateSessionSemester(
+            req,
+            res
+        );
+
+        if (!validatedSessionAndSemester) {
+            return;
+        }
+
+        const { session, semester } = validatedSessionAndSemester;
+        const { query, limit, offset } = req.query;
+
+        if (!query) {
+            res.status(400).json({ error: "Query is required." });
+
+            return;
+        }
+
+        const parsedLimit = parseInt(limit ?? "10");
+        const parsedOffset = parseInt(offset ?? "0");
+
+        if (Number.isNaN(parsedLimit) || Number.isNaN(parsedOffset)) {
+            res.status(400).json({ error: "Invalid pagination parameters." });
+
+            return;
+        }
+
+        try {
+            const result = await this.lecturerService.search(
+                session,
+                semester,
+                query,
+                parsedLimit,
+                parsedOffset
             );
 
             this.respondWithOperationResult(res, result);

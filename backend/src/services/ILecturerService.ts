@@ -47,4 +47,22 @@ export interface ILecturerService extends IService {
         session: TTMSSession,
         semester: TTMSSemester
     ): Promise<OperationResult<ITimetableVenueClash[]>>;
+
+    /**
+     * Searches lecturers by their name.
+     *
+     * @param session The academic session to search in.
+     * @param semester The academic semester to search in.
+     * @param query The query to search.
+     * @param limit The maximum number of lecturers to return. Defaults to 10.
+     * @param offset The number of lecturers to skip before starting to collect the result set. Defaults to 0.
+     * @returns The lecturers whose names match the given query.
+     */
+    search(
+        session: TTMSSession,
+        semester: TTMSSemester,
+        query: string,
+        limit?: number,
+        offset?: number
+    ): Promise<OperationResult<ILecturer[]>>;
 }

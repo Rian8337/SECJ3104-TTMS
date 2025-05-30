@@ -213,7 +213,7 @@ export function ClashesView() {
   return (
     <div className="space-y-4">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
+      <TabsList className="border #000000 w-full">
           <TabsTrigger value="lecturer">Lecturer Clashes</TabsTrigger>
           <TabsTrigger value="venue">Venue Clashes</TabsTrigger>
         </TabsList>

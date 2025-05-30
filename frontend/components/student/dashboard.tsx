@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { SearchStudentForm } from "@/components/student/search-student-form"
+import { SearchStudentForm } from "@/components/search-student-form"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertTriangle } from "lucide-react"
 import { DailyClassesView } from "@/components/student/daily-classes-view"
@@ -177,7 +177,7 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
       </motion.div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-2 border #000000">
           <TabsTrigger value="my-timetable">Dashboard</TabsTrigger>
           <TabsTrigger value="search-timetable">Search Timetable</TabsTrigger>
         </TabsList>
@@ -200,9 +200,9 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
           )}
 
           <div className="space-y-2">
-            <p className="text-sm text-muted-foreground text-center p-4">
+            {/* <p className="text-sm text-muted-foreground text-center p-4">
               {studentInfo.facultyCode ? `Faculty of ${studentInfo.facultyCode}` : ''}
-            </p>
+            </p> */}
             {showLecturerTimetable ? (
               <div className="space-y-4">
                 <div className="flex justify-center items-center">

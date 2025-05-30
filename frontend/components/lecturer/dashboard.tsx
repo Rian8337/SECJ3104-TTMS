@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { SearchStudentForm } from "@/components/student/search-student-form"
+import { SearchStudentForm } from "@/components/search-student-form"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertTriangle } from "lucide-react"
 import { ClashesView } from "@/components/lecturer/clashes-view"
@@ -145,9 +145,9 @@ export function LecturerDashboard() {
       </motion.div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList>
+       <TabsList className="border #000000 w-full">
           <TabsTrigger value="my-timetable">My Timetable</TabsTrigger>
-          <TabsTrigger value="search-student">Search Student</TabsTrigger>
+          <TabsTrigger value="search">Search</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
@@ -170,13 +170,13 @@ export function LecturerDashboard() {
           )}
         </TabsContent>
 
-        <TabsContent value="search-student">
+        <TabsContent value="search">
           <SearchStudentForm />
         </TabsContent>
 
         <TabsContent value="analytics">
           <Tabs defaultValue="analytics-dashboard" className="space-y-4">
-            <TabsList>
+          <TabsList className="border #000000 w-full" >
               <TabsTrigger value="analytics-dashboard">Analytics</TabsTrigger>
               <TabsTrigger value="clashes">Clashes</TabsTrigger>
             </TabsList>

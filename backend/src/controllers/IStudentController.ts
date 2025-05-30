@@ -45,7 +45,18 @@ export interface IStudentController extends IController {
      * @param res The response object.
      */
     search(
-        req: Request<"/search", unknown, unknown, Partial<{ query: string }>>,
+        req: Request<
+            "/search",
+            unknown,
+            unknown,
+            Partial<{
+                session: string;
+                semester: string;
+                query: string;
+                limit: string;
+                offset: string;
+            }>
+        >,
         res: Response<IStudentSearchEntry[] | { error: string }>
     ): Promise<void>;
 }

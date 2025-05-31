@@ -119,7 +119,7 @@ export class AnalyticsService extends BaseService implements IAnalyticsService {
 
             // Obtain all schedules of the student.
             const studentSchedules = registeredStudent
-                .map((rs) => {
+                .flatMap((rs) => {
                     const studentCourse = schedulesMap
                         .get(rs.courseCode)
                         ?.get(rs.section);
@@ -134,7 +134,6 @@ export class AnalyticsService extends BaseService implements IAnalyticsService {
                         })) ?? []
                     );
                 })
-                .flat()
                 .sort((a, b) => {
                     // Sort schedules by day and time, with day being a priority.
                     if (a.day !== b.day) {

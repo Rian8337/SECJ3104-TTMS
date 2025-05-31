@@ -149,29 +149,26 @@ export class AnalyticsService extends BaseService implements IAnalyticsService {
             // Check if the student has back-to-back or clashing classes.
             // A student has back-to-back classes if they have classes for 5 consecutive hours or more.
             // A student has clashing classes if they have classes that overlap in time on the same day.
-            for (let i = 0; i < studentSchedules.length; ++i) {
-                const schedule = studentSchedules[i];
-
+            for (const schedule of studentSchedules) {
                 // To check for back-to-back classes, check if the current schedule is consecutive
                 // with the last one.
-                if (i > 0) {
-                    const lastSchedule = studentSchedules[i - 1];
+                const lastSchedule = lastSchedules.at(-1);
 
-                    if (
-                        lastSchedule.day !== schedule.day ||
-                        lastSchedule.time + 1 !== (schedule.time as number)
-                    ) {
-                        // The current schedule is not consecutive with the last one.
-                        // We need to reset the last schedules if they are not consecutive, but before
-                        // that, we check if the last schedules have 5 or more consecutive hours.
-                        if (lastSchedules.length >= 5) {
-                            backToBackAnalyticsStudent.schedules.push(
-                                lastSchedules.slice()
-                            );
-                        }
-
-                        lastSchedules.length = 0;
+                if (
+                    lastSchedule &&
+                    (lastSchedule.day !== schedule.day ||
+                        lastSchedule.time + 1 !== (schedule.time as number))
+                ) {
+                    // The current schedule is not consecutive with the last one.
+                    // We need to reset the last schedules if they are not consecutive, but before
+                    // that, we check if the last schedules have 5 or more consecutive hours.
+                    if (lastSchedules.length >= 5) {
+                        backToBackAnalyticsStudent.schedules.push(
+                            lastSchedules.slice()
+                        );
                     }
+
+                    lastSchedules.length = 0;
                 }
 
                 lastSchedules.push(schedule);

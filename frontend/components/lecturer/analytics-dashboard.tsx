@@ -1,17 +1,17 @@
 "use client"
 
-import { useState, useEffect, Fragment } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertTriangle, Clock, Users, AlertCircle, Building2, BarChart2, PieChart } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartContainer } from "@/components/ui/chart"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, LineChart as RechartsLineChart, Line } from "recharts"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Badge } from "@/components/ui/badge"
-import { API_BASE_URL } from "@/lib/config"
-import { dayMap, timeMap, formatTime } from "@/lib/timetable-utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { API_BASE_URL } from "@/lib/config"
+import { dayMap, formatTime, timeMap } from "@/lib/timetable-utils"
+import { AlertCircle, AlertTriangle, BarChart2, Building2, Clock, PieChart, Users } from "lucide-react"
+import { Fragment, useEffect, useState } from "react"
+import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart as RechartsPieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 
 // Add type definitions
 type DepartmentCode = 'SE' | 'DE' | 'CS' | 'AI'
@@ -21,11 +21,6 @@ interface Student {
   name: string
   hasClash: boolean
   hasBackToBack: boolean
-}
-
-interface Department {
-  name: string
-  students: Student[]
 }
 
 interface VenueClash {
@@ -100,6 +95,40 @@ interface PieChartData {
   departments?: string[]
 }
 
+const contentsPerPage = 10
+
+function Paging(props: {
+  data: unknown[]
+  page: number
+  setPage: React.Dispatch<React.SetStateAction<number>>
+}) {
+  const { data, page, setPage } = props
+
+  return (
+    <div className="flex items-center justify-between mt-4">
+      <div className="text-sm text-muted-foreground">
+        Showing {Math.min((page - 1) * contentsPerPage + 1, data.length)} to {Math.min(page * contentsPerPage, data.length)} of {data.length} entries
+      </div>
+      <div className="flex gap-2">
+        <button
+          onClick={() => setPage(prev => Math.max(1, prev - 1))}
+          disabled={page === 1}
+          className="px-3 py-1 text-sm rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Previous
+        </button>
+        <button
+          onClick={() => setPage(prev => Math.min(Math.ceil(data.length / contentsPerPage), prev + 1))}
+          disabled={page >= Math.ceil(data.length / contentsPerPage)}
+          className="px-3 py-1 text-sm rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export function AnalyticsDashboard() {
   const [showBackToBackDialog, setShowBackToBackDialog] = useState(false)
   const [showClashesDialog, setShowClashesDialog] = useState(false)
@@ -113,7 +142,6 @@ export function AnalyticsDashboard() {
   const [showPieDetails, setShowPieDetails] = useState(false)
   const [selectedPieData, setSelectedPieData] = useState<PieChartData | null>(null)
   const [backToBackPage, setBackToBackPage] = useState(1)
-  const studentsPerPage = 10
 
   useEffect(() => {
     const fetchAnalytics = async () => {
@@ -216,7 +244,10 @@ export function AnalyticsDashboard() {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
-        <Card className="cursor-pointer hover:border-red-200" onClick={() => setShowBackToBackDialog(true)}>
+        <Card className="cursor-pointer hover:border-red-200" onClick={() => {
+          setBackToBackPage(1)
+          setShowBackToBackDialog(true)
+        }}>
           <CardHeader className="p-3">
             <CardTitle className="text-sm">Back-to-Back</CardTitle>
           </CardHeader>
@@ -229,7 +260,10 @@ export function AnalyticsDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:border-red-200" onClick={() => setShowClashesDialog(true)}>
+        <Card className="cursor-pointer hover:border-red-200" onClick={() => {
+          setBackToBackPage(1)
+          setShowClashesDialog(true)
+        }}>
           <CardHeader className="p-3">
             <CardTitle className="text-sm">Clashes</CardTitle>
           </CardHeader>
@@ -261,7 +295,10 @@ export function AnalyticsDashboard() {
         </CardContent>
       </Card>
 
-        <Card className="cursor-pointer hover:border-red-200" onClick={() => setShowVenueClashesDialog(true)}>
+        <Card className="cursor-pointer hover:border-red-200" onClick={() => {
+          setBackToBackPage(1)
+          setShowVenueClashesDialog(true)
+        }}>
           <CardHeader className="p-3">
             <CardTitle className="text-sm">Venue Clashes</CardTitle>
           </CardHeader>
@@ -454,7 +491,7 @@ export function AnalyticsDashboard() {
           <ScrollArea className="max-h-[60vh]">
             <div className="space-y-4">
               {analyticsData.backToBackStudents
-                .slice((backToBackPage - 1) * studentsPerPage, backToBackPage * studentsPerPage)
+                .slice((backToBackPage - 1) * contentsPerPage, backToBackPage * contentsPerPage)
                 .map((student) => (
                 <Card key={student.matricNo}>
                   <CardHeader className="p-3">
@@ -494,27 +531,7 @@ export function AnalyticsDashboard() {
               ))}
             </div>
           </ScrollArea>
-          <div className="flex items-center justify-between mt-4">
-            <div className="text-sm text-muted-foreground">
-              Showing {Math.min((backToBackPage - 1) * studentsPerPage + 1, analyticsData.backToBackStudents.length)} to {Math.min(backToBackPage * studentsPerPage, analyticsData.backToBackStudents.length)} of {analyticsData.backToBackStudents.length} students
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setBackToBackPage(prev => Math.max(1, prev - 1))}
-                disabled={backToBackPage === 1}
-                className="px-3 py-1 text-sm rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Previous
-              </button>
-              <button
-                onClick={() => setBackToBackPage(prev => Math.min(Math.ceil(analyticsData.backToBackStudents.length / studentsPerPage), prev + 1))}
-                disabled={backToBackPage >= Math.ceil(analyticsData.backToBackStudents.length / studentsPerPage)}
-                className="px-3 py-1 text-sm rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Next
-              </button>
-            </div>
-          </div>
+          <Paging data={analyticsData.backToBackStudents} page={backToBackPage} setPage={setBackToBackPage} />
         </DialogContent>
       </Dialog>
 
@@ -527,7 +544,9 @@ export function AnalyticsDashboard() {
           </DialogHeader>
           <ScrollArea className="max-h-[60vh]">
             <div className="space-y-4">
-              {analyticsData.clashingStudents.map((student) => (
+              {analyticsData.clashingStudents
+                .slice((backToBackPage - 1) * contentsPerPage, backToBackPage * contentsPerPage)
+                .map((student) => (
                 <Card key={student.matricNo}>
                   <CardHeader className="p-3">
                     <CardTitle className="text-sm">{student.name}</CardTitle>
@@ -556,6 +575,7 @@ export function AnalyticsDashboard() {
               ))}
             </div>
           </ScrollArea>
+          <Paging data={analyticsData.clashingStudents} page={backToBackPage} setPage={setBackToBackPage} />
         </DialogContent>
       </Dialog>
 
@@ -568,7 +588,9 @@ export function AnalyticsDashboard() {
           </DialogHeader>
           <ScrollArea className="max-h-[60vh]">
             <div className="space-y-4">
-              {analyticsData?.venueClashes.map((clash, index) => (
+              {analyticsData.venueClashes
+                .slice((backToBackPage - 1) * contentsPerPage, backToBackPage * contentsPerPage)
+                .map((clash, index) => (
                 <Card key={index}>
                   <CardHeader className="p-3">
                     <CardTitle className="text-sm flex justify-between items-center">
@@ -600,6 +622,7 @@ export function AnalyticsDashboard() {
               ))}
             </div>
           </ScrollArea>
+          <Paging data={analyticsData.venueClashes} page={backToBackPage} setPage={setBackToBackPage} />
         </DialogContent>
       </Dialog>
 
@@ -654,7 +677,7 @@ export function AnalyticsDashboard() {
                     </div>
                   )
                 })()}
-                    </div>
+            </div>
           </ScrollArea>
         </DialogContent>
       </Dialog>

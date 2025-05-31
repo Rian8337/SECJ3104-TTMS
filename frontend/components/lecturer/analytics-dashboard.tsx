@@ -256,7 +256,7 @@ export function AnalyticsDashboard() {
               <Clock className="h-5 w-5 mr-2 text-amber-500" />
               <div className="text-2xl font-bold">{analyticsData.backToBackStudents.length}</div>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Students with 5+ hours back-to-back</p>
+            <p className="text-xs text-muted-foreground mt-1">Students with at least 5 hours of consecutive classes</p>
           </CardContent>
         </Card>
 
@@ -265,7 +265,7 @@ export function AnalyticsDashboard() {
           setShowClashesDialog(true)
         }}>
           <CardHeader className="p-3">
-            <CardTitle className="text-sm">Clashes</CardTitle>
+            <CardTitle className="text-sm">Timetable Clashes</CardTitle>
           </CardHeader>
           <CardContent className="p-3 pt-0">
             <div className="flex items-center">
@@ -291,7 +291,7 @@ export function AnalyticsDashboard() {
               </div> */}
             </div>
             {/* <Progress value={(analyticsData.activeStudents / totalStudents) * 100} className="h-2" /> */}
-          <p className="text-xs text-muted-foreground mt-1">Students with active timetables</p>
+          <p className="text-xs text-muted-foreground mt-1">Students with active timetables in this semester</p>
         </CardContent>
       </Card>
 

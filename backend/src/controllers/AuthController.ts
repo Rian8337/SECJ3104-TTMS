@@ -7,13 +7,12 @@ import { IAuthService } from "@/services";
 import { Request, Response } from "express";
 import { inject } from "tsyringe";
 import { BaseController } from "./BaseController";
-import { IAuthController } from "./IAuthController";
 
 /**
  * A controller that is responsible for handling authentication-related operations.
  */
 @Controller("/auth")
-export class AuthController extends BaseController implements IAuthController {
+export class AuthController extends BaseController {
     constructor(
         @inject(dependencyTokens.authService)
         private readonly authService: IAuthService
@@ -21,6 +20,12 @@ export class AuthController extends BaseController implements IAuthController {
         super();
     }
 
+    /**
+     * Logs a user into the system.
+     *
+     * @param req The request object.
+     * @param res The response object.
+     */
     @Post("/login")
     async login(
         req: Request<
@@ -53,6 +58,12 @@ export class AuthController extends BaseController implements IAuthController {
         }
     }
 
+    /**
+     * Logs a user out of the system.
+     *
+     * @param req The request object.
+     * @param res The response object.
+     */
     @Post("/logout")
     @Roles()
     logout(_: Request<"/logout">, res: Response) {

@@ -7,16 +7,12 @@ import { IStudentSearchEntry, ITimetable, UserRole } from "@/types";
 import { Request, Response } from "express";
 import { inject } from "tsyringe";
 import { BaseController } from "./BaseController";
-import { IStudentController } from "./IStudentController";
 
 /**
  * A controller that is responsible for handling student-related operations.
  */
 @Controller("/student")
-export class StudentController
-    extends BaseController
-    implements IStudentController
-{
+export class StudentController extends BaseController {
     constructor(
         @inject(dependencyTokens.studentService)
         private readonly studentService: IStudentService
@@ -24,6 +20,12 @@ export class StudentController
         super();
     }
 
+    /**
+     * Obtains a student's timetable by their matriculation number.
+     *
+     * @param req The request object.
+     * @param res The response object.
+     */
     @Get("/timetable")
     @Roles(UserRole.student, UserRole.lecturer)
     async getTimetable(
@@ -69,6 +71,12 @@ export class StudentController
         }
     }
 
+    /**
+     * Searches for students by their matriculation number or name.
+     *
+     * @param req The request object.
+     * @param res The response object.
+     */
     @Get("/search")
     @Roles(UserRole.student, UserRole.lecturer)
     async search(

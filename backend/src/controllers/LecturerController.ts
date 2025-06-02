@@ -8,16 +8,12 @@ import { ITimetable, IVenueClashTimetable, UserRole } from "@/types";
 import { Request, Response } from "express";
 import { inject } from "tsyringe";
 import { BaseController } from "./BaseController";
-import { ILecturerController } from "./ILecturerController";
 
 /**
  * A controller that is responsible for handling lecturer-related operations.
  */
 @Controller("/lecturer")
-export class LecturerController
-    extends BaseController
-    implements ILecturerController
-{
+export class LecturerController extends BaseController {
     constructor(
         @inject(dependencyTokens.lecturerService)
         private readonly lecturerService: ILecturerService
@@ -25,6 +21,12 @@ export class LecturerController
         super();
     }
 
+    /**
+     * Obtains a lecturer's timetable by their worker number.
+     *
+     * @param req The request object.
+     * @param res The response object.
+     */
     @Get("/timetable")
     @Roles(UserRole.student, UserRole.lecturer)
     async getTimetable(
@@ -68,6 +70,12 @@ export class LecturerController
         }
     }
 
+    /**
+     * Obtains the timetables that clash with a lecturer's timetable.
+     *
+     * @param req The request object.
+     * @param res The response object.
+     */
     @Get("/venue-clash")
     @Roles(UserRole.lecturer)
     async getVenueClash(
@@ -111,6 +119,12 @@ export class LecturerController
         }
     }
 
+    /**
+     * Searches for lecturers by their name.
+     *
+     * @param req The request object.
+     * @param res The response object.
+     */
     @Get("/search")
     @Roles(UserRole.student, UserRole.lecturer)
     async search(

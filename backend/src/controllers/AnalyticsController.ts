@@ -7,16 +7,12 @@ import { IAnalytics, UserRole } from "@/types";
 import { Request, Response } from "express";
 import { inject } from "tsyringe";
 import { BaseController } from "./BaseController";
-import { IAnalyticsController } from "./IAnalyticsController";
 
 /**
  * A controller that is responsible for handling analytics-related operations.
  */
 @Controller("/analytics")
-export class AnalyticsController
-    extends BaseController
-    implements IAnalyticsController
-{
+export class AnalyticsController extends BaseController {
     constructor(
         @inject(dependencyTokens.analyticsService)
         private readonly analyticsService: IAnalyticsService
@@ -24,6 +20,12 @@ export class AnalyticsController
         super();
     }
 
+    /**
+     * Generates analytics in a given academic session and semester.
+     *
+     * @param req The request object.
+     * @param res The response object.
+     */
     @Get("/generate")
     @Roles(UserRole.lecturer)
     async generate(

@@ -12,10 +12,10 @@ describe("CourseRepository (unit)", () => {
         repository = new CourseRepository(mockDb);
     });
 
-    it("Should call database", async () => {
+    it("[getByCode] Should call database", async () => {
         mockDb.limit.mockResolvedValueOnce([]);
 
-        await repository.getCourseByCode("CS101");
+        await repository.getByCode("CS101");
 
         expect(mockDb.select).toHaveBeenCalled();
 

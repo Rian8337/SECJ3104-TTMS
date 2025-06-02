@@ -18,7 +18,7 @@ import { dependencyTokens } from "../../src/dependencies/tokens";
  * each test to ensure a clean state.
  */
 export const mockCourseRepository: Mocked<ICourseRepository> = {
-    getCourseByCode: vi.fn(),
+    getByCode: vi.fn(),
     getSchedulesForAnalytics: vi.fn(),
 };
 

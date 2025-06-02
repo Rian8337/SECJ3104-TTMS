@@ -11,7 +11,7 @@ export interface ICourseRepository {
      * @param code The code of the course.
      * @returns The course with the given code, or `null` if not found.
      */
-    getCourseByCode(code: string): Promise<ICourse | null>;
+    getByCode(code: string): Promise<ICourse | null>;
 
     /**
      * Obtains all schedules for a given session and semester.

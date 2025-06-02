@@ -20,14 +20,13 @@ export class CourseRepository
         super(db);
     }
 
-    async getCourseByCode(code: string): Promise<ICourse | null> {
-        const res = await this.db
+    getByCode(code: string): Promise<ICourse | null> {
+        return this.db
             .select()
             .from(courses)
             .where(eq(courses.code, code))
-            .limit(1);
-
-        return res.at(0) ?? null;
+            .limit(1)
+            .then((res) => res.at(0) ?? null);
     }
 
     async getSchedulesForAnalytics(

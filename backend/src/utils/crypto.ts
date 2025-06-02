@@ -1,5 +1,7 @@
-import "dotenv/config";
 import crypto from "crypto";
+import { config } from "dotenv";
+
+config({ path: process.env.NODE_ENV === "test" ? ".env.test" : ".env" });
 
 if (!process.env.SESSION_ENCRYPTION_KEY) {
     throw new Error(

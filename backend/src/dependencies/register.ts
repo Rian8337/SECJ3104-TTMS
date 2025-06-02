@@ -31,7 +31,7 @@ const classes = [
 ];
 
 /**
- * Registers all repositories and services to the a DI container.
+ * Registers all repositories and services to a DI container.
  *
  * @param container The DI container to register the dependencies to.
  * If not provided, the global container will be used.

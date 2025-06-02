@@ -1,3 +1,5 @@
+import "reflect-metadata";
+
 export * from "./AnalyticsService";
 export * from "./AuthService";
 export * from "./IAnalyticsService";

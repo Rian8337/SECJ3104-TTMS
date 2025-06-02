@@ -1,3 +1,5 @@
+// Ensure controllers are loaded and metadata is registered
+import "./controllers";
 import { RequestHandler, Router } from "express";
 import { RouteDefinition } from "./decorators/routes";
 import { container } from "tsyringe";

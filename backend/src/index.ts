@@ -1,26 +1,13 @@
-import cookieParser from "cookie-parser";
-import cors from "cors";
-import "dotenv/config";
-import express from "express";
+import { config } from "dotenv";
 import "reflect-metadata";
-import "./controllers";
-import "./database/register";
-import "./dependencies/register";
-import { createRouter } from "./router";
+import { createApp } from "./app";
+import { registerDependencies } from "./dependencies/register";
 
-const app = express();
+config({ path: process.env.NODE_ENV === "test" ? ".env.test" : ".env" });
 
-app.use(express.json())
-    .use(express.urlencoded({ extended: true }))
-    .use(cookieParser(process.env.COOKIE_SECRET))
-    .use(
-        cors({
-            origin: "http://localhost:3000",
-            credentials: true,
-        })
-    )
-    .use(createRouter());
+registerDependencies();
 
+const app = createApp();
 const port = parseInt(process.env.SERVER_PORT ?? "3001");
 
 app.listen(port, (err) => {

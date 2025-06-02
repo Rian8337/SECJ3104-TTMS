@@ -14,6 +14,8 @@ import {
 } from "@/services";
 import { container as globalContainer } from "tsyringe";
 import { constructor } from "tsyringe/dist/typings/types";
+import { dependencyTokens } from "./tokens";
+import { db } from "@/database";
 
 const classes = [
     CourseRepository,
@@ -35,6 +37,8 @@ const classes = [
  * If not provided, the global container will be used.
  */
 export function registerDependencies(container = globalContainer) {
+    container.registerInstance(dependencyTokens.drizzleDb, db);
+
     for (const cls of classes) {
         const token = Reflect.getMetadata("registrationToken", cls) as
             | symbol

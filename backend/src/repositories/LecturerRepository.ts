@@ -27,14 +27,13 @@ export class LecturerRepository
         super(db);
     }
 
-    async getByWorkerNo(workerNo: number): Promise<ILecturer | null> {
-        const res = await this.db
+    getByWorkerNo(workerNo: number): Promise<ILecturer | null> {
+        return this.db
             .select()
             .from(lecturers)
             .where(eq(lecturers.workerNo, workerNo))
-            .limit(1);
-
-        return res.at(0) ?? null;
+            .limit(1)
+            .then((res) => res.at(0) ?? null);
     }
 
     async getTimetable(

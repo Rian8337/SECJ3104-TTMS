@@ -1,16 +1,14 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { IStudent } from "../../src/database/schema";
 import { FailedOperationResult, StudentService } from "../../src/services";
-import { mockCourseRepository, mockStudentRepository } from "../mocks";
+import { mockStudentRepository } from "../mocks";
+import { IRawTimetable } from "../../src/types";
 
 describe("StudentService (unit)", () => {
     let service: StudentService;
 
     beforeEach(() => {
-        service = new StudentService(
-            mockStudentRepository,
-            mockCourseRepository
-        );
+        service = new StudentService(mockStudentRepository);
     });
 
     it("[getByMatricNo] should get student by matric number from repository", async () => {
@@ -30,6 +28,29 @@ describe("StudentService (unit)", () => {
                 facultyCode: "FSKSM",
                 kpNo: "123456789012",
             } satisfies IStudent);
+
+            mockStudentRepository.getTimetable.mockResolvedValueOnce([
+                {
+                    courseCode: "CS101",
+                    courseName: "Introduction to Computer Science",
+                    section: "1",
+                    lecturerName: "John Doe",
+                    lecturerNo: 123456,
+                    scheduleDay: 1,
+                    scheduleTime: 2,
+                    venueShortName: "Room 101",
+                },
+                {
+                    courseCode: "CS102",
+                    courseName: "Data Structures",
+                    section: "1",
+                    lecturerName: "John Doe",
+                    lecturerNo: 123456,
+                    scheduleDay: 1,
+                    scheduleTime: 3,
+                    venueShortName: "Room 102",
+                },
+            ] satisfies IRawTimetable[]);
 
             const result = await service.getTimetable(
                 "A12345678",

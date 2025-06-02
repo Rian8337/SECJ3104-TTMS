@@ -31,7 +31,6 @@ export const mockCourseRepository: Mocked<ICourseRepository> = {
  */
 export const mockLecturerRepository: Mocked<ILecturerRepository> = {
     getByWorkerNo: vi.fn(),
-    getClashingTimetable: vi.fn(),
     getTimetable: vi.fn(),
     searchByName: vi.fn(),
 };
@@ -71,6 +70,7 @@ export const mockStudentRepository: Mocked<IStudentRepository> = {
  */
 export const mockVenueRepository: Mocked<IVenueRepository> = {
     getByCode: vi.fn(),
+    getVenueClashes: vi.fn(),
 };
 
 container.registerInstance(

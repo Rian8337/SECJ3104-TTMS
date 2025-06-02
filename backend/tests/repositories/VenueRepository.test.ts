@@ -1,19 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { VenueRepository } from "../../src/repositories";
-import { mockDb } from "../mocks";
 import { venues } from "../../src/database/schema";
+import { VenueRepository } from "../../src/repositories";
+import { createMockDb } from "../mocks";
 
 describe("VenueRepository (unit)", () => {
     it("Should call database", async () => {
-        mockDb.select.mockReturnValueOnce({
-            from: mockDb.from.mockReturnValueOnce({
-                where: mockDb.where.mockReturnValueOnce({
-                    limit: mockDb.limit.mockResolvedValueOnce([]),
-                }),
-            }),
-        });
-
+        const mockDb = createMockDb();
         const repository = new VenueRepository(mockDb);
+
+        mockDb.limit.mockResolvedValueOnce([]);
 
         await repository.getByCode("");
 

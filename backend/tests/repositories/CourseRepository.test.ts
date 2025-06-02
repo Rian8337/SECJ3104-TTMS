@@ -1,31 +1,31 @@
-import { describe, expect, it } from "vitest";
-import { mockDb } from "../mocks";
-import { CourseRepository } from "../../src/repositories";
+import { beforeEach, describe, expect, it } from "vitest";
 import { courses } from "../../src/database/schema";
+import { CourseRepository } from "../../src/repositories";
+import { createMockDb } from "../mocks";
 
 describe("CourseRepository (unit)", () => {
-    it("Should call database", async () => {
-        mockDb.select.mockReturnValueOnce({
-            from: mockDb.from.mockReturnValueOnce({
-                where: mockDb.where.mockReturnValueOnce({
-                    limit: mockDb.limit.mockResolvedValueOnce([]),
-                }),
-            }),
-        });
+    let repository: CourseRepository;
+    let mockDb: ReturnType<typeof createMockDb>;
 
-        const repository = new CourseRepository(mockDb);
+    beforeEach(() => {
+        mockDb = createMockDb();
+        repository = new CourseRepository(mockDb);
+    });
+
+    it("Should call database", async () => {
+        mockDb.limit.mockResolvedValueOnce([]);
 
         await repository.getCourseByCode("CS101");
 
         expect(mockDb.select).toHaveBeenCalled();
 
-        expect(mockDb.from).toHaveBeenCalledWith(courses);
+        expect(mockDb.from).toHaveBeenCalledExactlyOnceWith(courses);
         expect(mockDb.from).toHaveBeenCalledAfter(mockDb.select);
 
-        expect(mockDb.where).toHaveBeenCalled();
+        expect(mockDb.where).toHaveBeenCalledOnce();
         expect(mockDb.where).toHaveBeenCalledAfter(mockDb.from);
 
-        expect(mockDb.limit).toHaveBeenCalledWith(1);
+        expect(mockDb.limit).toHaveBeenCalledExactlyOnceWith(1);
         expect(mockDb.limit).toHaveBeenCalledAfter(mockDb.where);
     });
 });

@@ -13,8 +13,19 @@ export function Service(token: InjectionToken): ClassDecorator {
     return (target) => {
         const targetConstructor = target as unknown as constructor<unknown>;
 
-        injectable()(targetConstructor);
-
         Reflect.defineMetadata("registrationToken", token, target);
+
+        const services =
+            (Reflect.getMetadata("services", globalThis) as
+                | constructor<unknown>[]
+                | undefined) ?? [];
+
+        Reflect.defineMetadata(
+            "services",
+            services.concat(targetConstructor),
+            globalThis
+        );
+
+        injectable()(targetConstructor);
     };
 }

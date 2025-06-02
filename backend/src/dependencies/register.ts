@@ -1,34 +1,10 @@
-import {
-    CourseRepository,
-    LecturerRepository,
-    SessionRepository,
-    StudentRepository,
-    VenueRepository,
-} from "@/repositories";
-import {
-    AnalyticsService,
-    AuthService,
-    LecturerService,
-    StudentService,
-    VenueService,
-} from "@/services";
+// Ensure repositories and services are loaded and metadata is registered
+import "../repositories";
+import "../services";
 import { container as globalContainer } from "tsyringe";
 import { constructor } from "tsyringe/dist/typings/types";
 import { dependencyTokens } from "./tokens";
 import { db } from "@/database";
-
-const classes = [
-    CourseRepository,
-    LecturerRepository,
-    SessionRepository,
-    StudentRepository,
-    VenueRepository,
-    AnalyticsService,
-    AuthService,
-    LecturerService,
-    StudentService,
-    VenueService,
-];
 
 /**
  * Registers all repositories and services to a DI container.
@@ -38,6 +14,15 @@ const classes = [
  */
 export function registerDependencies(container = globalContainer) {
     container.registerInstance(dependencyTokens.drizzleDb, db);
+
+    const classes = [
+        ...((Reflect.getMetadata("repositories", globalThis) as
+            | constructor<unknown>[]
+            | undefined) ?? []),
+        ...((Reflect.getMetadata("services", globalThis) as
+            | constructor<unknown>[]
+            | undefined) ?? []),
+    ];
 
     for (const cls of classes) {
         const token = Reflect.getMetadata("registrationToken", cls) as
@@ -50,8 +35,6 @@ export function registerDependencies(container = globalContainer) {
             );
         }
 
-        container.register(token, {
-            useClass: cls as constructor<InstanceType<typeof cls>>,
-        });
+        container.register(token, { useClass: cls });
     }
 }

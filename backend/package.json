@@ -6,7 +6,7 @@
   "scripts": {
     "coverage": "vitest run --coverage",
     "start": "tsx src/index.ts",
-    "test": "vitest"
+    "test": "NODE_ENV=test vitest"
   },
   "engines": {
     "node": ">=18"

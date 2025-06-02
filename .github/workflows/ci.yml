@@ -11,9 +11,27 @@ jobs:
   backend-build-and-test:
     name: (Backend) Build and Test
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: ttms_test
+          MYSQL_USER: test_user
+          MYSQL_PASSWORD: test_pass
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     defaults:
       run:
         working-directory: ./backend
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,23 +44,43 @@ jobs:
           cache-dependency-path: backend/package-lock.json
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Type check
         run: tsc --noEmit
 
+      - name: Create test environment file
+        run: |
+          echo "NODE_ENV=test" >> .env.test
+          echo "DB_HOST=127.0.0.1" >> .env.test
+          echo "DB_PORT=3306" >> .env.test
+          echo "DB_USER=test_user" >> .env.test
+          echo "DB_PASSWORD=test_pass" >> .env.test
+          echo "DB_NAME=ttms_test" >> .env.test
+          echo "SESSION_ENCRYPTION_KEY=${{ secrets.GITHUB_TOKEN }}" >> .env.test
+
+      - name: Wait for MySQL
+        run: |
+          for i in {1..10}; do
+            mysqladmin ping -h127.0.0.1 -ptest_pass -utest_user && break
+            echo "Waiting for MySQL..."
+            sleep 3
+          done
+
+      - name: Run migrations
+        run: NODE_ENV=test npx drizzle-kit push
+
       - name: Run tests
         run: npm test
-        env:
-          # Required for session encryption
-          SESSION_ENCRYPTION_KEY: ${{ secrets.GITHUB_TOKEN }}
 
   frontend-build:
     name: (Frontend) Build
     runs-on: ubuntu-latest
+
     defaults:
       run:
         working-directory: ./frontend
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -55,7 +93,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build frontend
         run: npm run build

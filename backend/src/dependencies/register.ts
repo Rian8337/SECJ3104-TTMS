@@ -1,4 +1,3 @@
-import "reflect-metadata";
 import {
     CourseRepository,
     LecturerRepository,
@@ -13,7 +12,7 @@ import {
     StudentService,
     VenueService,
 } from "@/services";
-import { container } from "tsyringe";
+import { container as globalContainer } from "tsyringe";
 import { constructor } from "tsyringe/dist/typings/types";
 
 const classes = [
@@ -29,19 +28,26 @@ const classes = [
     VenueService,
 ];
 
-for (const cls of classes) {
-    const token = Reflect.getMetadata("registrationToken", cls) as
-        | symbol
-        | undefined;
+/**
+ * Registers all repositories and services to the a DI container.
+ *
+ * @param container The DI container to register the dependencies to.
+ * If not provided, the global container will be used.
+ */
+export function registerDependencies(container = globalContainer) {
+    for (const cls of classes) {
+        const token = Reflect.getMetadata("registrationToken", cls) as
+            | symbol
+            | undefined;
 
-    if (!token) {
-        throw new Error(
-            `Class ${cls.name} is missing a registration token. Please use the @Service or @Repository decorator.`
-        );
+        if (!token) {
+            throw new Error(
+                `Class ${cls.name} is missing a registration token. Please use the @Service or @Repository decorator.`
+            );
+        }
+
+        container.register(token, {
+            useClass: cls as constructor<InstanceType<typeof cls>>,
+        });
     }
-
-    container.registerSingleton(
-        token,
-        cls as constructor<InstanceType<typeof cls>>
-    );
 }

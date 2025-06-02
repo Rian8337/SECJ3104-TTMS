@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { API_BASE_URL } from "@/lib/config"
 import { dayMap, formatTime, timeMap } from "@/lib/timetable-utils"
-import { AlertCircle, AlertTriangle, BarChart2, Building2, Clock, PieChart, Users } from "lucide-react"
+import { AlertCircle, AlertTriangle, BarChart2, Building2, Clock, PieChart, Users, GraduationCap, AlertOctagon, Timer } from "lucide-react"
 import { Fragment, useEffect, useState } from "react"
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart as RechartsPieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 
@@ -138,7 +138,7 @@ export function AnalyticsDashboard() {
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [visualizationType, setVisualizationType] = useState<VisualizationType>('pie')
+  const [visualizationType, setVisualizationType] = useState<VisualizationType>('stacked-bar')
   const [showPieDetails, setShowPieDetails] = useState(false)
   const [selectedPieData, setSelectedPieData] = useState<PieChartData | null>(null)
   const [backToBackPage, setBackToBackPage] = useState(1)
@@ -410,7 +410,7 @@ export function AnalyticsDashboard() {
                         clashes: dept.totalClashes,
                         backToBack: dept.totalBackToBack
                       }))}
-                      margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+                      margin={{ top: 30, right: 20, left: 0, bottom: 30 }}
                     onClick={(data) => {
                       if (data && data.activePayload && data.activePayload[0]) {
                         handleDepartmentClick(data.activePayload[0].payload.name as DepartmentCode)
@@ -423,13 +423,17 @@ export function AnalyticsDashboard() {
                       <XAxis 
                         dataKey="name" 
                         tick={{ fontSize: 12 }}
+                        angle={-45}
+                        textAnchor="end"
                         tickLine={false}
                         axisLine={false}
                         padding={{ left: 20, right: 20 }}
+                        interval={0}
+                        height={60}
                       />
                       <YAxis 
                         tick={{ fontSize: 12 }} 
-                        width={40}
+                        width={30}
                         tickLine={false}
                         axisLine={false}
                       />
@@ -449,6 +453,7 @@ export function AnalyticsDashboard() {
                         maxBarSize={80}
                         radius={[4, 4, 0, 0]}
                         stackId="a"
+                        
                       />
                       <Bar 
                         dataKey="clashes" 
@@ -560,12 +565,11 @@ export function AnalyticsDashboard() {
                       {student.clashes[0].courses.map((course, index) => (
                         <div
                           key={index}
-                          className="text-xs p-1 rounded bg-red-50 border border-red-200 flex justify-between"
+                          className="text-xs p-1 rounded bg-red-50 border border-red-200 flex justify-between gap-2"
                         >
-                          <div>{course.course.name} ({course.section})</div>
-                          <div className="text-muted-foreground">
+                          <div className="w-[70%] break-words">{course.course.name} ({course.section})</div>
+                          <div className="text-muted-foreground w-[30%] text-right shrink-0">
                             {formatTimeSlot(student.clashes[0].time)}
-                            {course.venue && ` • ${course.venue.shortName}`}
                           </div>
                         </div>
                       ))}
@@ -644,19 +648,25 @@ export function AnalyticsDashboard() {
                     <div className="space-y-4">
                       <Card>
                         <CardHeader className="p-3">
-                          <CardTitle className="text-sm">Total Students</CardTitle>
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <Users className="h-4 w-4 text-[hsl(var(--chart-1))]" />
+                            Total Students
+                          </CardTitle>
                         </CardHeader>
                         <CardContent className="p-3 pt-0">
-                          <div className="text-2xl font-bold">{dept.totalStudents}</div>
+                          <div className="text-2xl font-bold text-[hsl(var(--chart-1))]">{dept.totalStudents}</div>
                         </CardContent>
                       </Card>
 
                       <Card>
                         <CardHeader className="p-3">
-                          <CardTitle className="text-sm">Students with Clashes</CardTitle>
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <AlertTriangle className="h-4 w-4 text-[hsl(var(--chart-2))]" />
+                            Students with Clashes
+                          </CardTitle>
                         </CardHeader>
                         <CardContent className="p-3 pt-0">
-                          <div className="text-2xl font-bold">{dept.totalClashes}</div>
+                          <div className="text-2xl font-bold text-[hsl(var(--chart-2))]">{dept.totalClashes}</div>
                           <p className="text-xs text-muted-foreground mt-1">
                             {Math.round((dept.totalClashes / dept.totalStudents) * 100)}% of students
                           </p>
@@ -665,10 +675,13 @@ export function AnalyticsDashboard() {
 
                       <Card>
                         <CardHeader className="p-3">
-                          <CardTitle className="text-sm">Students with Back-to-Back Classes</CardTitle>
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-[hsl(var(--chart-3))]" />
+                            Students with Back-to-Back Classes
+                          </CardTitle>
                         </CardHeader>
                         <CardContent className="p-3 pt-0">
-                          <div className="text-2xl font-bold">{dept.totalBackToBack}</div>
+                          <div className="text-2xl font-bold text-[hsl(var(--chart-3))]">{dept.totalBackToBack}</div>
                           <p className="text-xs text-muted-foreground mt-1">
                             {Math.round((dept.totalBackToBack / dept.totalStudents) * 100)}% of students
                           </p>
@@ -710,23 +723,29 @@ export function AnalyticsDashboard() {
                         {selectedPieData.departments?.map((dept) => (
                           <Badge key={dept} variant="outline">{dept}</Badge>
                         ))}
-                  </div>
+                      </div>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardHeader className="p-3">
-                      <CardTitle className="text-sm">Total Students</CardTitle>
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <GraduationCap className="h-4 w-4 text-blue-500" />
+                        Total Students
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="p-3 pt-0">
-                      <div className="text-2xl font-bold">{selectedPieData.value}</div>
+                      <div className="text-2xl font-bold text-blue-600">{selectedPieData.value}</div>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardHeader className="p-3">
-                      <CardTitle className="text-sm">Total Clashes</CardTitle>
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <AlertOctagon className="h-4 w-4 text-red-500" />
+                        Total Clashes
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="p-3 pt-0">
-                      <div className="text-2xl font-bold">{selectedPieData.clashes}</div>
+                      <div className="text-2xl font-bold text-red-600">{selectedPieData.clashes}</div>
                       <p className="text-xs text-muted-foreground mt-1">
                         {Math.round((selectedPieData.clashes / selectedPieData.value) * 100)}% of students
                       </p>
@@ -734,10 +753,13 @@ export function AnalyticsDashboard() {
                   </Card>
                   <Card>
                     <CardHeader className="p-3">
-                      <CardTitle className="text-sm">Total Back-to-Back Classes</CardTitle>
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Timer className="h-4 w-4 text-amber-500" />
+                        Total Back-to-Back Classes
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="p-3 pt-0">
-                      <div className="text-2xl font-bold">{selectedPieData.backToBack}</div>
+                      <div className="text-2xl font-bold text-amber-600">{selectedPieData.backToBack}</div>
                       <p className="text-xs text-muted-foreground mt-1">
                         {Math.round((selectedPieData.backToBack / selectedPieData.value) * 100)}% of students
                       </p>
@@ -748,18 +770,24 @@ export function AnalyticsDashboard() {
                 <>
                   <Card>
                     <CardHeader className="p-3">
-                      <CardTitle className="text-sm">Total Students</CardTitle>
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <GraduationCap className="h-4 w-4 text-blue-500" />
+                        Total Students
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="p-3 pt-0">
-                      <div className="text-2xl font-bold">{selectedPieData?.value}</div>
+                      <div className="text-2xl font-bold text-blue-600">{selectedPieData?.value}</div>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardHeader className="p-3">
-                      <CardTitle className="text-sm">Students with Clashes</CardTitle>
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <AlertOctagon className="h-4 w-4 text-red-500" />
+                        Students with Clashes
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="p-3 pt-0">
-                      <div className="text-2xl font-bold">{selectedPieData?.clashes}</div>
+                      <div className="text-2xl font-bold text-red-600">{selectedPieData?.clashes}</div>
                       <p className="text-xs text-muted-foreground mt-1">
                         {Math.round((selectedPieData?.clashes || 0) / (selectedPieData?.value || 1) * 100)}% of students
                       </p>
@@ -767,10 +795,13 @@ export function AnalyticsDashboard() {
                   </Card>
                   <Card>
                     <CardHeader className="p-3">
-                      <CardTitle className="text-sm">Students with Back-to-Back Classes</CardTitle>
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Timer className="h-4 w-4 text-amber-500" />
+                        Students with Back-to-Back Classes
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="p-3 pt-0">
-                      <div className="text-2xl font-bold">{selectedPieData?.backToBack}</div>
+                      <div className="text-2xl font-bold text-amber-600">{selectedPieData?.backToBack}</div>
                       <p className="text-xs text-muted-foreground mt-1">
                         {Math.round((selectedPieData?.backToBack || 0) / (selectedPieData?.value || 1) * 100)}% of students
                       </p>

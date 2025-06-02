@@ -1,5 +1,6 @@
+import { and, eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
-import { courses } from "../../src/database/schema";
+import { courses, courseSections } from "../../src/database/schema";
 import { CourseRepository } from "../../src/repositories";
 import { createMockDb } from "../mocks";
 
@@ -27,5 +28,31 @@ describe("CourseRepository (unit)", () => {
 
         expect(mockDb.limit).toHaveBeenCalledExactlyOnceWith(1);
         expect(mockDb.limit).toHaveBeenCalledAfter(mockDb.where);
+    });
+
+    it("[getSchedulesForAnalytics] Should call database", async () => {
+        await repository.getSchedulesForAnalytics("2023/2024", 1);
+
+        expect(
+            mockDb.query.courseSections.findMany
+        ).toHaveBeenCalledExactlyOnceWith({
+            columns: { section: true },
+            with: {
+                course: { columns: { code: true, name: true } },
+                schedules: {
+                    columns: {
+                        day: true,
+                        time: true,
+                    },
+                    with: {
+                        venue: { columns: { shortName: true } },
+                    },
+                },
+            },
+            where: and(
+                eq(courseSections.session, "2023/2024"),
+                eq(courseSections.semester, 1)
+            ),
+        });
     });
 });

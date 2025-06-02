@@ -37,7 +37,8 @@ export const mockLecturerService: Mocked<ILecturerService> = {
     createSuccessfulResponse: vi.fn(),
     getByWorkerNo: vi.fn(),
     getTimetable: vi.fn(),
-    getClashingTimetable: vi.fn(),
+    getVenueClashes: vi.fn(),
+    search: vi.fn(),
 };
 
 /**

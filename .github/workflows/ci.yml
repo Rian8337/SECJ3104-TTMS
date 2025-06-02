@@ -68,7 +68,7 @@ jobs:
           done
 
       - name: Run migrations
-        run: NODE_ENV=test npx drizzle-kit push
+        run: NODE_ENV=test npx drizzle-kit push --force
 
       - name: Run tests
         run: npm test

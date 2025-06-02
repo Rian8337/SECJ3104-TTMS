@@ -1,5 +1,6 @@
 import { vi } from "vitest";
 import {
+    IAnalyticsService,
     IAuthService,
     ILecturerService,
     IStudentService,
@@ -8,6 +9,19 @@ import {
 import { dependencyTokens } from "../../src/dependencies/tokens";
 import { Mocked } from "./Mocked";
 import { container } from "tsyringe";
+
+/**
+ * Mock implementation of {@link IAnalyticsService}.
+ *
+ * This mock contains empty implementations that can be overridden in individual tests to
+ * provide specific behavior as needed. It is reset via {@link vi.resetAllMocks} before
+ * each test to ensure a clean state.
+ */
+export const mockAnalyticsService: Mocked<IAnalyticsService> = {
+    createFailedResponse: vi.fn(),
+    createSuccessfulResponse: vi.fn(),
+    generate: vi.fn(),
+};
 
 /**
  * Mock implementation of {@link IAuthService}.

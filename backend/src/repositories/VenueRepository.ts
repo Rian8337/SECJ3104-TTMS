@@ -28,14 +28,13 @@ export class VenueRepository
         super(db);
     }
 
-    async getByCode(code: string): Promise<IVenue | null> {
-        const res = await this.db
+    getByCode(code: string): Promise<IVenue | null> {
+        return this.db
             .select()
             .from(venues)
             .where(eq(venues.code, code))
-            .limit(1);
-
-        return res.at(0) ?? null;
+            .limit(1)
+            .then((res) => res.at(0) ?? null);
     }
 
     getVenueClashes(

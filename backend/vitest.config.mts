@@ -9,6 +9,7 @@ export default defineConfig({
         globalSetup: ["tests/setup/globalSetup.ts"],
         globals: true,
         passWithNoTests: true,
+        reporters: ["default", "hanging-process", "github-actions"],
         coverage: {
             provider: "istanbul",
             include: ["src/**/*.ts"],

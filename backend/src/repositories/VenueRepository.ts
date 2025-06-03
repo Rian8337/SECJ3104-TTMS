@@ -62,8 +62,6 @@ export class VenueRepository
                 .selectDistinct({
                     section: cs1.section,
                     courseCode: cs1.courseCode,
-                    session: cs1.session,
-                    semester: cs1.semester,
                     lecturerNo: cs1.lecturerNo,
                     lecturerName: l.name,
                     courseName: c.name,

@@ -3,9 +3,15 @@ import { cleanupPrimaryTables, seedPrimaryTables } from "./db";
 
 config({ path: ".env.test" });
 
+let setupHappened = false;
 let teardownHappened = false;
 
 export async function setup() {
+    if (setupHappened) {
+        throw new Error("Setup called twice");
+    }
+
+    setupHappened = true;
     await seedPrimaryTables();
 }
 

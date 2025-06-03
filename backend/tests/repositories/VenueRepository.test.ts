@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { venues } from "../../src/database/schema";
+import { venues, VenueType } from "../../src/database/schema";
+import { dependencyTokens } from "../../src/dependencies/tokens";
 import { VenueRepository } from "../../src/repositories";
 import { createMockDb } from "../mocks";
+import { setupTestContainer } from "../setup/container";
+import { seedVenue } from "../setup/db";
 
 describe("VenueRepository (unit)", () => {
     let repository: VenueRepository;
@@ -48,5 +51,32 @@ describe("VenueRepository (unit)", () => {
 
         expect(mockDb.execute).toHaveBeenCalledOnce();
         expect(mockDb.execute).toHaveBeenCalledAfter(mockDb.orderBy);
+    });
+});
+
+describe("VenueRepository (integration)", () => {
+    const container = setupTestContainer();
+    const repository = container.resolve(dependencyTokens.venueRepository);
+
+    describe("getByCode", () => {
+        it("Should return null if venue does not exist", async () => {
+            const result = await repository.getByCode("NON_EXISTENT_VENUE");
+
+            expect(result).toBeNull();
+        });
+
+        it("Should return venue if it exists", async () => {
+            const venue = await seedVenue({
+                code: "VENUE_101",
+                capacity: 100,
+                name: "Venue 101",
+                shortName: "V101",
+                type: VenueType.laboratory,
+            });
+
+            const fetchedVenue = await repository.getByCode("VENUE_101");
+
+            expect(fetchedVenue).toEqual(venue);
+        });
     });
 });

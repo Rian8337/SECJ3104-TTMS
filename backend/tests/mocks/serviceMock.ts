@@ -1,11 +1,10 @@
-import { vi } from "vitest";
 import {
     IAnalyticsService,
     IAuthService,
     ILecturerService,
     IStudentService,
     IVenueService,
-} from "../../src/services";
+} from "@/services";
 import { Mocked } from "./Mocked";
 
 /**

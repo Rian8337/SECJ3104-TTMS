@@ -1,22 +1,23 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { StudentController } from "../../src/controllers/StudentController";
-import { IStudentSearchEntry, ITimetable } from "../../src/types";
+import { StudentController } from "@/controllers";
+import { ITimetable, IStudentSearchEntry } from "@/types";
 import {
     createFailedOperationResultMock,
+    createMockRequest,
+    createMockResponse,
     createSuccessfulOperationResultMock,
     mockStudentService,
 } from "../mocks";
-import {
-    createMockRequest,
-    createMockResponse,
-} from "../mocks/expressMockFactory";
+import { IStudentService } from "@/services";
 
 describe("StudentController", () => {
     let controller: StudentController;
     let mockResponse: ReturnType<typeof createMockResponse>;
 
     beforeEach(() => {
-        controller = new StudentController(mockStudentService);
+        controller = new StudentController(
+            mockStudentService as IStudentService
+        );
+
         mockResponse = createMockResponse();
     });
 

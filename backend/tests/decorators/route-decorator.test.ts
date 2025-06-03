@@ -1,4 +1,3 @@
-import { describe, expect, it } from "vitest";
 import {
     Delete,
     Get,
@@ -6,7 +5,7 @@ import {
     Post,
     Put,
     RouteDefinition,
-} from "../../src/decorators/routes";
+} from "@/decorators/routes";
 import { createMockMethodDecoratorTestTarget } from "../mocks";
 
 describe("@Get", () => {

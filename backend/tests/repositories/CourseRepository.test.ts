@@ -1,11 +1,11 @@
+import { courses, courseSections } from "@/database/schema";
+import { dependencyTokens } from "@/dependencies/tokens";
+import { CourseRepository } from "@/repositories";
 import { and, eq } from "drizzle-orm";
-import { beforeEach, describe, expect, it } from "vitest";
-import { courses, courseSections } from "../../src/database/schema";
-import { dependencyTokens } from "../../src/dependencies/tokens";
-import { CourseRepository } from "../../src/repositories";
 import { createMockDb } from "../mocks";
 import { setupTestContainer } from "../setup/container";
 import { seeders } from "../setup/db";
+import { DrizzleDb } from "@/database";
 
 describe("CourseRepository (unit)", () => {
     let repository: CourseRepository;
@@ -13,7 +13,7 @@ describe("CourseRepository (unit)", () => {
 
     beforeEach(() => {
         mockDb = createMockDb();
-        repository = new CourseRepository(mockDb);
+        repository = new CourseRepository(mockDb as unknown as DrizzleDb);
     });
 
     it("[getByCode] Should call database", async () => {

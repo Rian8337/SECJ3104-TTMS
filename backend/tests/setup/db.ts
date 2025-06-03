@@ -1,5 +1,5 @@
 import { AnyMySqlTable } from "drizzle-orm/mysql-core";
-import { db } from "../../src/database";
+import { db } from "@/database";
 import {
     courses,
     courseSections,
@@ -9,7 +9,7 @@ import {
     studentRegisteredCourses,
     students,
     venues,
-} from "../../src/database/schema";
+} from "@/database/schema";
 
 /**
  * Resets the database to a clean state by truncating all tables.

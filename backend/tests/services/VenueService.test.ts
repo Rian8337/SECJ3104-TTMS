@@ -1,5 +1,4 @@
-import { describe, expect, it } from "vitest";
-import { VenueService } from "../../src/services";
+import { VenueService } from "@/services";
 import { mockVenueRepository } from "../mocks";
 
 describe("VenueService (unit)", () => {

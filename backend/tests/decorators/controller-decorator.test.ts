@@ -1,5 +1,4 @@
-import { describe, expect, it } from "vitest";
-import { Controller } from "../../src/decorators/controller";
+import { Controller } from "@/decorators/controller";
 import { createMockClassDecoratorTestTarget } from "../mocks";
 
 describe("@Controller", () => {

@@ -1,11 +1,10 @@
-import { vi } from "vitest";
 import {
     ICourseRepository,
     ILecturerRepository,
     ISessionRepository,
     IStudentRepository,
     IVenueRepository,
-} from "../../src/repositories";
+} from "@/repositories";
 import { Mocked } from "./Mocked";
 
 /**

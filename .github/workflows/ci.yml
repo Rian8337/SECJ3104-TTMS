@@ -47,7 +47,7 @@ jobs:
         run: npm ci
 
       - name: Type check
-        run: tsc --noEmit
+        run: tsc --project tsconfig.build.json
 
       - name: Create test environment file
         run: |

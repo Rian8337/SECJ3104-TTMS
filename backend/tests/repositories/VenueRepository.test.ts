@@ -1,7 +1,7 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { venues, VenueType } from "../../src/database/schema";
-import { dependencyTokens } from "../../src/dependencies/tokens";
-import { VenueRepository } from "../../src/repositories";
+import { DrizzleDb } from "@/database";
+import { venues, VenueType } from "@/database/schema";
+import { dependencyTokens } from "@/dependencies/tokens";
+import { VenueRepository } from "@/repositories";
 import { createMockDb } from "../mocks";
 import { setupTestContainer } from "../setup/container";
 import { seeders } from "../setup/db";
@@ -12,7 +12,8 @@ describe("VenueRepository (unit)", () => {
 
     beforeEach(() => {
         mockDb = createMockDb();
-        repository = new VenueRepository(mockDb);
+
+        repository = new VenueRepository(mockDb as unknown as DrizzleDb);
     });
 
     it("[getByCode] Should call database", async () => {

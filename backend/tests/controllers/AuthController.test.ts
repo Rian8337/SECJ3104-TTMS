@@ -1,19 +1,19 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { AuthController } from "../../src/controllers";
-import { ILecturer, IStudent } from "../../src/database/schema";
+import { AuthController } from "@/controllers";
+import { IStudent, ILecturer } from "@/database/schema";
 import {
     createMockRequest,
     createMockResponse,
     createSuccessfulOperationResultMock,
     mockAuthService,
 } from "../mocks";
+import { IAuthService } from "@/services";
 
 describe("AuthController (unit)", () => {
     let controller: AuthController;
     let mockResponse: ReturnType<typeof createMockResponse>;
 
     beforeEach(() => {
-        controller = new AuthController(mockAuthService);
+        controller = new AuthController(mockAuthService as IAuthService);
         mockResponse = createMockResponse();
     });
 

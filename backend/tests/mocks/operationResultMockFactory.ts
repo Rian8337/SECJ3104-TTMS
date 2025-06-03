@@ -1,8 +1,4 @@
-import { vi } from "vitest";
-import {
-    FailedOperationResult,
-    SuccessfulOperationResult,
-} from "../../src/services";
+import { FailedOperationResult, SuccessfulOperationResult } from "@/services";
 
 /**
  * Creates a {@link SuccessfulOperationResult} whose methods have been mocked.

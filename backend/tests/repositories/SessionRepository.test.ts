@@ -1,10 +1,10 @@
-import { beforeEach, describe, expect, it } from "vitest";
 import { sessions } from "../../src/database/schema";
 import { dependencyTokens } from "../../src/dependencies/tokens";
 import { SessionRepository } from "../../src/repositories";
 import { createMockDb } from "../mocks";
 import { setupTestContainer } from "../setup/container";
 import { seeders } from "../setup/db";
+import { DrizzleDb } from "@/database";
 
 describe("SessionRepository (unit)", () => {
     let repository: SessionRepository;
@@ -12,7 +12,7 @@ describe("SessionRepository (unit)", () => {
 
     beforeEach(() => {
         mockDb = createMockDb();
-        repository = new SessionRepository(mockDb);
+        repository = new SessionRepository(mockDb as unknown as DrizzleDb);
     });
 
     it("[getSessions] Should call database", async () => {

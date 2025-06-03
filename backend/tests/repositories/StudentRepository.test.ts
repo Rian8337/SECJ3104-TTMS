@@ -1,8 +1,8 @@
 import { sql } from "drizzle-orm";
-import { beforeEach, describe, expect, it } from "vitest";
 import { studentRegisteredCourses, students } from "../../src/database/schema";
 import { StudentRepository } from "../../src/repositories";
 import { createMockDb } from "../mocks";
+import { DrizzleDb } from "@/database";
 
 describe("StudentRepository (unit)", () => {
     let repository: StudentRepository;
@@ -10,7 +10,7 @@ describe("StudentRepository (unit)", () => {
 
     beforeEach(() => {
         mockDb = createMockDb();
-        repository = new StudentRepository(mockDb);
+        repository = new StudentRepository(mockDb as unknown as DrizzleDb);
     });
 
     it("[getByMatricNo] Should query database", async () => {
@@ -32,7 +32,7 @@ describe("StudentRepository (unit)", () => {
 
     describe("getTimetable", () => {
         it("Should query database", async () => {
-            await repository.getTimetable("123456", "2023/2024", "1");
+            await repository.getTimetable("123456", "2023/2024", 1);
 
             expect(mockDb.select).toHaveBeenCalledOnce();
             expect(mockDb.from).toHaveBeenCalledOnce();

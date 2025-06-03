@@ -1,11 +1,10 @@
-import { describe, expect, it } from "vitest";
 import {
     isValidKpNo,
     isValidMatricNumber,
     isValidWorkerNo,
     validateAcademicSession,
     validateSemester,
-} from "../../src/utils";
+} from "@/utils";
 
 describe("TTMS utilities", () => {
     describe("validateAcademicSession", () => {

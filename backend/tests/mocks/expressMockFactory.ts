@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { vi } from "vitest";
 
 /**
  * Creates a mock request object for testing with Express.js.

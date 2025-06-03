@@ -1,6 +1,5 @@
-import { container as globalContainer, DependencyContainer } from "tsyringe";
-import { registerDependencies } from "../../src/dependencies/register";
-import { afterEach } from "vitest";
+import { registerDependencies } from "@/dependencies/register";
+import { DependencyContainer, container as globalContainer } from "tsyringe";
 import { resetDb } from "./db";
 
 /**

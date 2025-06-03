@@ -1,8 +1,7 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { IStudent } from "../../src/database/schema";
-import { FailedOperationResult, StudentService } from "../../src/services";
+import { IStudent } from "@/database/schema";
+import { StudentService, FailedOperationResult } from "@/services";
+import { IRawTimetable } from "@/types";
 import { mockStudentRepository } from "../mocks";
-import { IRawTimetable } from "../../src/types";
 
 describe("StudentService (unit)", () => {
     let service: StudentService;
@@ -55,7 +54,7 @@ describe("StudentService (unit)", () => {
             const result = await service.getTimetable(
                 "A12345678",
                 "2023/2024",
-                "1"
+                1
             );
 
             expect(result.isSuccessful()).toBe(true);
@@ -68,7 +67,7 @@ describe("StudentService (unit)", () => {
             expect(mockStudentRepository.getTimetable).toHaveBeenCalledWith(
                 "A12345678",
                 "2023/2024",
-                "1"
+                1
             );
         });
 
@@ -78,7 +77,7 @@ describe("StudentService (unit)", () => {
             const result = await service.getTimetable(
                 "C0000000",
                 "2023/2024",
-                "1"
+                1
             );
 
             const failedResult = result as FailedOperationResult;

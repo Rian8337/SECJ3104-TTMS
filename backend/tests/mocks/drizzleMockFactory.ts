@@ -1,5 +1,3 @@
-import { vi } from "vitest";
-
 interface QueryMock {
     findFirst: ReturnType<typeof vi.fn>;
     findMany: ReturnType<typeof vi.fn>;
@@ -29,9 +27,7 @@ export function createMockDb() {
     } satisfies Record<string, ReturnType<typeof vi.fn>>;
 
     for (const key of Object.keys(builder)) {
-        (builder[key] as ReturnType<typeof vi.fn>).mockImplementation(
-            () => builder
-        );
+        builder[key as keyof typeof builder].mockImplementation(() => builder);
     }
 
     return {

@@ -1,9 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { UseMiddleware } from "@/decorators/middleware";
 import {
     createMockClassDecoratorTestTarget,
     createMockMethodDecoratorTestTarget,
 } from "../mocks";
-import { UseMiddleware } from "../../src/decorators/middleware";
 
 describe("@UseMiddleware", () => {
     const middlewareFunction = () => {

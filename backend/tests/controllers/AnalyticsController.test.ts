@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { AnalyticsController } from "../../src/controllers";
+import { AnalyticsController } from "@/controllers";
+import { IAnalyticsService } from "@/services";
+import { IAnalytics } from "@/types";
 import {
     createFailedOperationResultMock,
     createMockRequest,
@@ -7,14 +8,16 @@ import {
     createSuccessfulOperationResultMock,
     mockAnalyticsService,
 } from "../mocks";
-import { IAnalytics } from "../../src/types";
 
 describe("AnalyticsController (unit)", () => {
     let controller: AnalyticsController;
     let mockResponse: ReturnType<typeof createMockResponse>;
 
     beforeEach(() => {
-        controller = new AnalyticsController(mockAnalyticsService);
+        controller = new AnalyticsController(
+            mockAnalyticsService as IAnalyticsService
+        );
+
         mockResponse = createMockResponse();
     });
 

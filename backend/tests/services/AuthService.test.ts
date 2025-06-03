@@ -1,12 +1,11 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ILecturer, IStudent } from "../../src/database/schema";
+import { IStudent, ILecturer } from "@/database/schema";
 import {
     AuthService,
     FailedOperationResult,
     SuccessfulOperationResult,
-} from "../../src/services";
-import { UserRole } from "../../src/types";
-import { encrypt } from "../../src/utils";
+} from "@/services";
+import { UserRole } from "@/types";
+import { encrypt } from "@/utils";
 import {
     createMockRequest,
     createMockResponse,
@@ -275,8 +274,8 @@ describe("AuthService (unit)", () => {
                     session: encrypt(
                         JSON.stringify({
                             name: "Test student",
-                            courseCode: "Test course",
-                            facultyCode: "Test faculty",
+                            courseCode: "SECVH",
+                            facultyCode: "FSKSM",
                             matricNo: "Test matric",
                             kpNo: "Test kp",
                         } satisfies IStudent)
@@ -324,8 +323,8 @@ describe("AuthService (unit)", () => {
                     session: encrypt(
                         JSON.stringify({
                             name: "Test student",
-                            courseCode: "Test course",
-                            facultyCode: "Test faculty",
+                            courseCode: "SECVH",
+                            facultyCode: "FSKSM",
                             matricNo: "Test matric",
                             kpNo: "Test kp",
                         } satisfies IStudent)

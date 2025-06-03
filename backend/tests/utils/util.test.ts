@@ -1,19 +1,13 @@
-import {
-    afterAll,
-    afterEach,
-    beforeAll,
-    describe,
-    expect,
-    it,
-    vi,
-} from "vitest";
-import { sleep } from "../../src/utils";
+import { sleep } from "@/utils";
 
 describe("Utilities", () => {
     describe("sleep", () => {
         const spy = vi.fn();
 
-        beforeAll(vi.useFakeTimers.bind(vi));
+        beforeAll(() => {
+            vi.useFakeTimers();
+        });
+
         afterEach(vi.restoreAllMocks.bind(vi));
         afterAll(vi.useRealTimers.bind(vi));
 

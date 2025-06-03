@@ -1,9 +1,9 @@
+import { Roles } from "@/decorators/roles";
+import { useContainer } from "@/dependencies/container";
+import { dependencyTokens } from "@/dependencies/tokens";
+import { IAuthService } from "@/services";
+import { UserRole } from "@/types";
 import { RequestHandler } from "express";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { Roles } from "../../src/decorators/roles";
-import { useContainer } from "../../src/dependencies/container";
-import { dependencyTokens } from "../../src/dependencies/tokens";
-import { UserRole } from "../../src/types";
 import {
     createMockMethodDecoratorTestTarget,
     createMockRequest,
@@ -17,7 +17,7 @@ describe("@Roles", () => {
         const container = createTestContainer((container) => {
             container.registerInstance(
                 dependencyTokens.authService,
-                mockAuthService
+                mockAuthService as IAuthService
             );
         });
 

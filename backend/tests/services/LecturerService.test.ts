@@ -1,8 +1,7 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { ILecturer } from "../../src/database/schema";
-import { FailedOperationResult, LecturerService } from "../../src/services";
+import { ILecturer } from "@/database/schema";
+import { FailedOperationResult, LecturerService } from "@/services";
+import { IRawTimetable } from "@/types";
 import { mockLecturerRepository, mockVenueRepository } from "../mocks";
-import { IRawTimetable } from "../../src/types";
 
 describe("LecturerService (unit)", () => {
     let service: LecturerService;
@@ -26,7 +25,7 @@ describe("LecturerService (unit)", () => {
         it("Should return an empty array if lecturer is not found", async () => {
             mockLecturerRepository.getByWorkerNo.mockResolvedValueOnce(null);
 
-            const result = await service.getTimetable(654321, "2023/2024", "1");
+            const result = await service.getTimetable(654321, "2023/2024", 1);
             const failedResult = result as FailedOperationResult;
 
             expect(result.failed()).toBe(true);
@@ -70,7 +69,7 @@ describe("LecturerService (unit)", () => {
                 },
             ] satisfies IRawTimetable[]);
 
-            const result = await service.getTimetable(123456, "2023/2024", "1");
+            const result = await service.getTimetable(123456, "2023/2024", 1);
 
             expect(result.isSuccessful()).toBe(true);
             expect(result.failed()).toBe(false);
@@ -78,7 +77,7 @@ describe("LecturerService (unit)", () => {
             expect(mockLecturerRepository.getTimetable).toHaveBeenCalledWith(
                 123456,
                 "2023/2024",
-                "1"
+                1
             );
         });
     });

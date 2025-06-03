@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { DrizzleDb } from "@/database";
 import { courseSections, lecturers } from "../../src/database/schema";
 import { LecturerRepository } from "../../src/repositories";
 import { createMockDb } from "../mocks";
@@ -9,7 +9,7 @@ describe("LecturerRepository (unit)", () => {
 
     beforeEach(() => {
         mockDb = createMockDb();
-        repository = new LecturerRepository(mockDb);
+        repository = new LecturerRepository(mockDb as unknown as DrizzleDb);
     });
 
     it("[getByWorkerNo] Should query database", async () => {
@@ -30,7 +30,7 @@ describe("LecturerRepository (unit)", () => {
     });
 
     it("[getTimetable] Should query database", async () => {
-        await repository.getTimetable(12345, "2023/2024", "1");
+        await repository.getTimetable(12345, "2023/2024", 1);
 
         expect(mockDb.select).toHaveBeenCalledOnce();
 

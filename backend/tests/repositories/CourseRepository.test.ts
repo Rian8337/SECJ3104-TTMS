@@ -5,7 +5,7 @@ import { dependencyTokens } from "../../src/dependencies/tokens";
 import { CourseRepository } from "../../src/repositories";
 import { createMockDb } from "../mocks";
 import { setupTestContainer } from "../setup/container";
-import { seedCourse } from "../setup/db";
+import { seeders } from "../setup/db";
 
 describe("CourseRepository (unit)", () => {
     let repository: CourseRepository;
@@ -72,7 +72,7 @@ describe("CourseRepository (integration)", () => {
         });
 
         it("Should return course if it exists", async () => {
-            const course = await seedCourse({
+            const course = await seeders.course.seedOne({
                 code: "SECJ1013",
                 name: "Programming Technique 1",
                 credits: 3,

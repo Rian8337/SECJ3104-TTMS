@@ -4,7 +4,7 @@ import { dependencyTokens } from "../../src/dependencies/tokens";
 import { SessionRepository } from "../../src/repositories";
 import { createMockDb } from "../mocks";
 import { setupTestContainer } from "../setup/container";
-import { seedSession } from "../setup/db";
+import { seeders } from "../setup/db";
 
 describe("SessionRepository (unit)", () => {
     let repository: SessionRepository;
@@ -29,7 +29,7 @@ describe("SessionRepository (integration)", () => {
     const repository = container.resolve(dependencyTokens.sessionRepository);
 
     it("[getSessions] Should return all sessions", async () => {
-        const session = await seedSession({
+        const session = await seeders.session.seedOne({
             session: "2023/2024",
             semester: 1,
             startDate: new Date("2023-09-01"),

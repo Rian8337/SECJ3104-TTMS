@@ -4,7 +4,7 @@ import { dependencyTokens } from "../../src/dependencies/tokens";
 import { VenueRepository } from "../../src/repositories";
 import { createMockDb } from "../mocks";
 import { setupTestContainer } from "../setup/container";
-import { seedVenue } from "../setup/db";
+import { seeders } from "../setup/db";
 
 describe("VenueRepository (unit)", () => {
     let repository: VenueRepository;
@@ -66,7 +66,7 @@ describe("VenueRepository (integration)", () => {
         });
 
         it("Should return venue if it exists", async () => {
-            const venue = await seedVenue({
+            const venue = await seeders.venue.seedOne({
                 code: "VENUE_101",
                 capacity: 100,
                 name: "Venue 101",

@@ -345,7 +345,7 @@ describe("StudentRepository (integration)", () => {
             });
         });
 
-        describe("searchByNmae", () => {
+        describe("searchByName", () => {
             it("Should return empty array if no student matches", async () => {
                 const results = await repository.searchByName(
                     firstSession.session,

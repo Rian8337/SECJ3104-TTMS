@@ -9,6 +9,8 @@ export default defineConfig({
         globalSetup: ["tests/setup/globalSetup.ts"],
         globals: true,
         passWithNoTests: true,
+        fileParallelism: false,
+        poolOptions: { forks: { singleFork: true } },
         reporters: ["default", "hanging-process", "github-actions"],
         coverage: {
             provider: "istanbul",

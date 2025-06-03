@@ -1,5 +1,6 @@
 import { config } from "dotenv";
 import { cleanupPrimaryTables, seedPrimaryTables } from "./db";
+import { db } from "@/database";
 
 config({ path: ".env.test" });
 
@@ -22,4 +23,6 @@ export async function teardown() {
 
     teardownHappened = true;
     await cleanupPrimaryTables();
+
+    db.$client.end();
 }

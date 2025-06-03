@@ -62,9 +62,7 @@ describe("CourseRepository (unit)", () => {
 
 describe("CourseRepository (integration)", () => {
     const container = setupTestContainer();
-    const repository = container.resolve<CourseRepository>(
-        dependencyTokens.courseRepository
-    );
+    const repository = container.resolve(dependencyTokens.courseRepository);
 
     describe("getByCode", () => {
         it("Should return null if course does not exist", async () => {

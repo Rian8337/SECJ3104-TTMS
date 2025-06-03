@@ -1,9 +1,8 @@
-import { container } from "tsyringe";
-import { UserRole } from "@/types";
-import { UseMiddleware } from "./middleware";
-import { IAuthService } from "@/services";
 import { dependencyTokens } from "@/dependencies/tokens";
+import { UserRole } from "@/types";
 import { RequestHandler } from "express";
+import { container } from "tsyringe";
+import { UseMiddleware } from "./middleware";
 
 /**
  * Marks a method as requiring authentication and authorization.
@@ -19,9 +18,7 @@ export function Roles(...roles: UserRole[]): MethodDecorator {
             next
         ) => {
             // IMPORTANT: The service resolution is deferred to here to make sure that it has been registered.
-            const authService = container.resolve<IAuthService>(
-                dependencyTokens.authService
-            );
+            const authService = container.resolve(dependencyTokens.authService);
 
             await authService.verifySession(...roles)(req, res, next);
         };

@@ -26,9 +26,7 @@ describe("SessionRepository (unit)", () => {
 
 describe("SessionRepository (integration)", () => {
     const container = setupTestContainer();
-    const repository = container.resolve<SessionRepository>(
-        dependencyTokens.sessionRepository
-    );
+    const repository = container.resolve(dependencyTokens.sessionRepository);
 
     it("[getSessions] Should return all sessions", async () => {
         const session = await seedSession({

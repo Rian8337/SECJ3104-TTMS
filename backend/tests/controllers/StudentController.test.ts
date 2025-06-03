@@ -9,7 +9,7 @@ import {
 } from "../mocks";
 import { IStudentService } from "@/services";
 
-describe("StudentController", () => {
+describe("StudentController (unit)", () => {
     let controller: StudentController;
     let mockResponse: ReturnType<typeof createMockResponse>;
 

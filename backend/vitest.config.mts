@@ -6,6 +6,7 @@ export default defineConfig({
         include: ["tests/**/*.test.ts"],
         exclude: ["node_modules", "dist"],
         setupFiles: ["tests/setup/setup.ts"],
+        globalSetup: ["tests/setup/globalSetup.ts"],
         globals: true,
         passWithNoTests: true,
         coverage: {

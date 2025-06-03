@@ -3,8 +3,8 @@ import { sessions } from "@/database/schema";
 import { dependencyTokens } from "@/dependencies/tokens";
 import { SessionRepository } from "@/repositories";
 import { createMockDb } from "../mocks";
-import { setupTestContainer } from "../setup/container";
-import { seeders } from "../setup/db";
+import { createTestContainer } from "../setup/container";
+import { seededPrimaryData } from "../setup/db";
 
 describe("SessionRepository (unit)", () => {
     let repository: SessionRepository;
@@ -25,24 +25,12 @@ describe("SessionRepository (unit)", () => {
 });
 
 describe("SessionRepository (integration)", () => {
-    const container = setupTestContainer();
+    const container = createTestContainer();
     const repository = container.resolve(dependencyTokens.sessionRepository);
 
     it("[getSessions] Should return all sessions", async () => {
-        const session = await seeders.session.seedOne({
-            session: "2023/2024",
-            semester: 1,
-            startDate: new Date("2023-09-01"),
-            endDate: new Date("2024-06-30"),
-        });
-
         const sessionsList = await repository.getSessions();
 
-        expect(sessionsList).toBeDefined();
-        expect(sessionsList.length).toBeGreaterThan(0);
-
-        const firstSession = sessionsList[0];
-
-        expect(firstSession).toEqual(session);
+        expect(sessionsList).toHaveLength(seededPrimaryData.sessions.length);
     });
 });

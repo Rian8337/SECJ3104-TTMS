@@ -9,23 +9,161 @@ import {
     studentRegisteredCourses,
     students,
     venues,
+    VenueType,
 } from "@/database/schema";
 
-/**
- * Resets the database to a clean state by truncating all tables.
- */
-export async function resetDb() {
-    // We only need to delete top-level tables as the foreign key constraints will handle the rest.
-    await db.delete(courses);
-    await db.delete(lecturers);
-    await db.delete(sessions);
-    await db.delete(students);
-    await db.delete(venues);
-}
-
-//#region Database Seeding
+//#region Global Database Seeding
 
 type Insert<T extends AnyMySqlTable> = T["$inferInsert"];
+
+/**
+ * The seeded data for primary tables.
+ */
+export const seededPrimaryData = {
+    /**
+     * The seeded sessions.
+     */
+    sessions: [
+        {
+            session: "2023/2024",
+            semester: 2,
+            startDate: new Date("2024-02-01"),
+            endDate: new Date("2024-06-30"),
+        },
+        {
+            session: "2023/2024",
+            semester: 1,
+            startDate: new Date("2023-09-01"),
+            endDate: new Date("2024-01-31"),
+        },
+    ] as const satisfies readonly Insert<typeof sessions>[],
+
+    /**
+     * The seeded students.
+     */
+    students: [
+        {
+            matricNo: "A12CS1234",
+            name: "John Doe",
+            courseCode: "SECBH",
+            facultyCode: "FSKSM",
+            kpNo: "201210M35216",
+        },
+        {
+            matricNo: "A12CS5678",
+            name: "Jane Smith",
+            courseCode: "SECVH",
+            facultyCode: "FC",
+            kpNo: "201210M35217",
+        },
+    ] as const satisfies readonly Insert<typeof students>[],
+
+    /**
+     * The seeded lecturers.
+     */
+    lecturers: [
+        { workerNo: 1, name: "Dr. Jane Smith" },
+        { workerNo: 2, name: "Prof. John Doe" },
+        { workerNo: 3, name: "Dr. Alice Johnson" },
+    ] as const satisfies readonly Insert<typeof lecturers>[],
+
+    /**
+     * The seeded courses.
+     */
+    courses: [
+        {
+            code: "SECJ1013",
+            name: "Programming Technique 1",
+            credits: 3,
+        },
+        {
+            code: "SECJ1023",
+            name: "Programming Technique 2",
+            credits: 3,
+        },
+        {
+            code: "SECJ1033",
+            name: "Data Structures and Algorithms",
+            credits: 3,
+        },
+    ] as const satisfies readonly Insert<typeof courses>[],
+
+    /**
+     * The seeded venues.
+     */
+    venues: [
+        {
+            code: "VENUE_101",
+            capacity: 100,
+            name: "Venue 101",
+            shortName: "V101",
+            type: VenueType.laboratory,
+        },
+        {
+            code: "VENUE_102",
+            capacity: 200,
+            name: "Venue 102",
+            shortName: "V102",
+            type: VenueType.lectureRoom,
+        },
+    ] as const satisfies readonly Insert<typeof venues>[],
+} as const;
+
+/**
+ * Seeds primary tables ({@link sessions}, {@link students}, {@link lecturers}, {@link courses},
+ * and {@link venues}) with {@link seededPrimaryData}.
+ *
+ * Additional data can be seeded by calling the respective {@link seeders}.
+ */
+export async function seedPrimaryTables() {
+    await db.transaction(async (tx) => {
+        await tx.insert(sessions).values(seededPrimaryData.sessions.slice());
+        await tx.insert(students).values(seededPrimaryData.students.slice());
+        await tx.insert(lecturers).values(seededPrimaryData.lecturers.slice());
+        await tx.insert(courses).values(seededPrimaryData.courses.slice());
+        await tx.insert(venues).values(seededPrimaryData.venues.slice());
+    });
+}
+
+//#endregion
+
+//#region Table Reset
+
+/**
+ * Deletes all records from primary tables ({@link sessions}, {@link students}, {@link lecturers},
+ * {@link courses}, and {@link venues}).
+ *
+ * **Because these are primary tables, all secondary tables that reference these tables will also
+ * be affected.**
+ */
+export async function cleanupPrimaryTables() {
+    await db.transaction(async (tx) => {
+        await tx.delete(courses);
+        await tx.delete(sessions);
+        await tx.delete(students);
+        await tx.delete(lecturers);
+        await tx.delete(venues);
+    });
+}
+
+/**
+ * Deletes all records from secondary tables ({@link courseSections}, {@link courseSectionSchedules},
+ * and {@link studentRegisteredCourses}).
+ *
+ * This will not affect primary tables. To clean up primary tables, use {@link cleanupPrimaryTables}
+ * instead.
+ */
+export async function cleanupSecondaryTables() {
+    await db.transaction(async (tx) => {
+        await tx.delete(courseSectionSchedules);
+        await tx.delete(studentRegisteredCourses);
+        await tx.delete(courseSections);
+    });
+}
+
+//#endregion
+
+//#region Per-Table Seeders
 
 interface TableSeeder<T extends AnyMySqlTable> {
     /**

@@ -4,8 +4,8 @@ import { dependencyTokens } from "@/dependencies/tokens";
 import { CourseRepository } from "@/repositories";
 import { and, eq } from "drizzle-orm";
 import { createMockDb } from "../mocks";
-import { setupTestContainer } from "../setup/container";
-import { seeders } from "../setup/db";
+import { createTestContainer } from "../setup/container";
+import { seededPrimaryData } from "../setup/db";
 
 describe("CourseRepository (unit)", () => {
     let repository: CourseRepository;
@@ -61,7 +61,7 @@ describe("CourseRepository (unit)", () => {
 });
 
 describe("CourseRepository (integration)", () => {
-    const container = setupTestContainer();
+    const container = createTestContainer();
     const repository = container.resolve(dependencyTokens.courseRepository);
 
     describe("getByCode", () => {
@@ -72,15 +72,9 @@ describe("CourseRepository (integration)", () => {
         });
 
         it("Should return course if it exists", async () => {
-            const course = await seeders.course.seedOne({
-                code: "SECJ1013",
-                name: "Programming Technique 1",
-                credits: 3,
-            });
-
             const fetchedCourse = await repository.getByCode("SECJ1013");
 
-            expect(fetchedCourse).toEqual(course);
+            expect(fetchedCourse).toEqual(seededPrimaryData.courses[0]);
         });
     });
 });

@@ -1,8 +1,8 @@
-import { sql } from "drizzle-orm";
-import { studentRegisteredCourses, students } from "../../src/database/schema";
-import { StudentRepository } from "../../src/repositories";
-import { createMockDb } from "../mocks";
 import { DrizzleDb } from "@/database";
+import { studentRegisteredCourses, students } from "@/database/schema";
+import { StudentRepository } from "@/repositories";
+import { sql } from "drizzle-orm";
+import { createMockDb } from "../mocks";
 
 describe("StudentRepository (unit)", () => {
     let repository: StudentRepository;

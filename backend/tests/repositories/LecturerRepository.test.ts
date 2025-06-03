@@ -1,6 +1,6 @@
 import { DrizzleDb } from "@/database";
-import { courseSections, lecturers } from "../../src/database/schema";
-import { LecturerRepository } from "../../src/repositories";
+import { courseSections, lecturers } from "@/database/schema";
+import { LecturerRepository } from "@/repositories";
 import { createMockDb } from "../mocks";
 
 describe("LecturerRepository (unit)", () => {

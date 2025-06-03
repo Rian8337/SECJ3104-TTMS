@@ -1,10 +1,10 @@
-import { sessions } from "../../src/database/schema";
-import { dependencyTokens } from "../../src/dependencies/tokens";
-import { SessionRepository } from "../../src/repositories";
+import { DrizzleDb } from "@/database";
+import { sessions } from "@/database/schema";
+import { dependencyTokens } from "@/dependencies/tokens";
+import { SessionRepository } from "@/repositories";
 import { createMockDb } from "../mocks";
 import { setupTestContainer } from "../setup/container";
 import { seeders } from "../setup/db";
-import { DrizzleDb } from "@/database";
 
 describe("SessionRepository (unit)", () => {
     let repository: SessionRepository;

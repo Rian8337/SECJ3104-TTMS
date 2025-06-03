@@ -1,3 +1,4 @@
+import { DrizzleDb } from "@/database";
 import { courses, courseSections } from "@/database/schema";
 import { dependencyTokens } from "@/dependencies/tokens";
 import { CourseRepository } from "@/repositories";
@@ -5,7 +6,6 @@ import { and, eq } from "drizzle-orm";
 import { createMockDb } from "../mocks";
 import { setupTestContainer } from "../setup/container";
 import { seeders } from "../setup/db";
-import { DrizzleDb } from "@/database";
 
 describe("CourseRepository (unit)", () => {
     let repository: CourseRepository;

@@ -7,8 +7,6 @@ import {
     IVenueRepository,
 } from "../../src/repositories";
 import { Mocked } from "./Mocked";
-import { container } from "tsyringe";
-import { dependencyTokens } from "../../src/dependencies/tokens";
 
 /**
  * Mock implementation of {@link ICourseRepository}.
@@ -72,28 +70,3 @@ export const mockVenueRepository: Mocked<IVenueRepository> = {
     getByCode: vi.fn(),
     getVenueClashes: vi.fn(),
 };
-
-container.registerInstance(
-    dependencyTokens.courseRepository,
-    mockCourseRepository
-);
-
-container.registerInstance(
-    dependencyTokens.lecturerRepository,
-    mockLecturerRepository
-);
-
-container.registerInstance(
-    dependencyTokens.sessionRepository,
-    mockSessionRepository
-);
-
-container.registerInstance(
-    dependencyTokens.studentRepository,
-    mockStudentRepository
-);
-
-container.registerInstance(
-    dependencyTokens.venueRepository,
-    mockVenueRepository
-);

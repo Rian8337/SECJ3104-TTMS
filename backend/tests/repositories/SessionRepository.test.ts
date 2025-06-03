@@ -43,9 +43,6 @@ describe("SessionRepository (integration)", () => {
 
         const firstSession = sessionsList[0];
 
-        expect(firstSession.session).toBe(session.session);
-        expect(firstSession.semester).toBe(session.semester);
-        expect(firstSession.startDate).toEqual(session.startDate);
-        expect(firstSession.endDate).toEqual(session.endDate);
+        expect(firstSession).toEqual(session);
     });
 });

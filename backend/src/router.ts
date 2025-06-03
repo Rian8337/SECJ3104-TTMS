@@ -1,13 +1,14 @@
+import { RequestHandler, Router } from "express";
 // Ensure controllers are loaded and metadata is registered
 import "./controllers";
-import { RequestHandler, Router } from "express";
 import { RouteDefinition } from "./decorators/routes";
-import { container } from "tsyringe";
+import { getContainer } from "./dependencies/container";
 
 /**
  * Creates the router for the application.
  */
 export function createRouter(): Router {
+    const container = getContainer();
     const router = Router();
 
     const controllers =

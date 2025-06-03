@@ -1,7 +1,7 @@
 // Ensure repositories and services are loaded and metadata is registered
 import "../repositories";
 import "../services";
-import { container as globalContainer } from "tsyringe";
+import { container as globalContainer, InjectionToken } from "tsyringe";
 import { constructor } from "tsyringe/dist/typings/types";
 import { dependencyTokens } from "./tokens";
 import { db } from "@/database";
@@ -26,7 +26,7 @@ export function registerDependencies(container = globalContainer) {
 
     for (const cls of classes) {
         const token = Reflect.getMetadata("registrationToken", cls) as
-            | symbol
+            | InjectionToken<unknown>
             | undefined;
 
         if (!token) {

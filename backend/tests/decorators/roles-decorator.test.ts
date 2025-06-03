@@ -1,5 +1,8 @@
-import { describe, expect, it, vi } from "vitest";
+import { RequestHandler } from "express";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Roles } from "../../src/decorators/roles";
+import { useContainer } from "../../src/dependencies/container";
+import { dependencyTokens } from "../../src/dependencies/tokens";
 import { UserRole } from "../../src/types";
 import {
     createMockMethodDecoratorTestTarget,
@@ -7,9 +10,20 @@ import {
     createMockResponse,
     mockAuthService,
 } from "../mocks";
-import { RequestHandler } from "express";
+import { createTestContainer } from "../setup/container";
 
 describe("@Roles", () => {
+    beforeEach(() => {
+        const container = createTestContainer((container) => {
+            container.registerInstance(
+                dependencyTokens.authService,
+                mockAuthService
+            );
+        });
+
+        useContainer(container);
+    });
+
     it("Adds middleware metadata", () => {
         const t = createMockMethodDecoratorTestTarget(Roles, UserRole.student);
 

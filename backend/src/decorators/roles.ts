@@ -1,7 +1,7 @@
+import { getContainer } from "@/dependencies/container";
 import { dependencyTokens } from "@/dependencies/tokens";
 import { UserRole } from "@/types";
 import { RequestHandler } from "express";
-import { container } from "tsyringe";
 import { UseMiddleware } from "./middleware";
 
 /**
@@ -18,6 +18,7 @@ export function Roles(...roles: UserRole[]): MethodDecorator {
             next
         ) => {
             // IMPORTANT: The service resolution is deferred to here to make sure that it has been registered.
+            const container = getContainer();
             const authService = container.resolve(dependencyTokens.authService);
 
             await authService.verifySession(...roles)(req, res, next);

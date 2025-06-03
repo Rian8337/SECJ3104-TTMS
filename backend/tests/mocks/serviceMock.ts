@@ -6,9 +6,7 @@ import {
     IStudentService,
     IVenueService,
 } from "../../src/services";
-import { dependencyTokens } from "../../src/dependencies/tokens";
 import { Mocked } from "./Mocked";
-import { container } from "tsyringe";
 
 /**
  * Mock implementation of {@link IAnalyticsService}.
@@ -82,14 +80,3 @@ export const mockVenueService: Mocked<IVenueService> = {
     createSuccessfulResponse: vi.fn(),
     getByCode: vi.fn(),
 };
-
-container.registerInstance(dependencyTokens.authService, mockAuthService);
-
-container.registerInstance(
-    dependencyTokens.lecturerService,
-    mockLecturerService
-);
-
-container.registerInstance(dependencyTokens.studentService, mockStudentService);
-
-container.registerInstance(dependencyTokens.venueService, mockVenueService);

@@ -1,11 +1,11 @@
 import { and, eq } from "drizzle-orm";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { courses, courseSections } from "../../src/database/schema";
 import { dependencyTokens } from "../../src/dependencies/tokens";
 import { CourseRepository } from "../../src/repositories";
 import { createMockDb } from "../mocks";
 import { setupTestContainer } from "../setup/container";
-import { resetDb, seedCourse } from "../setup/db";
+import { seedCourse } from "../setup/db";
 
 describe("CourseRepository (unit)", () => {
     let repository: CourseRepository;
@@ -61,15 +61,10 @@ describe("CourseRepository (unit)", () => {
 });
 
 describe("CourseRepository (integration)", () => {
-    let repository: CourseRepository;
-
-    beforeEach(() => {
-        const container = setupTestContainer();
-
-        repository = container.resolve(dependencyTokens.courseRepository);
-    });
-
-    afterEach(resetDb);
+    const container = setupTestContainer();
+    const repository = container.resolve<CourseRepository>(
+        dependencyTokens.courseRepository
+    );
 
     describe("getByCode", () => {
         it("Should return null if course does not exist", async () => {

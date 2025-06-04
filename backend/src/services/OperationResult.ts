@@ -3,7 +3,7 @@
  *
  * @template T The type of the data.
  */
-export interface OperationResult<T> {
+export interface OperationResult<T = unknown> {
     /**
      * The HTTP status code of the operation.
      */

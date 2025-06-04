@@ -13,10 +13,7 @@ export abstract class BaseController {
      * @param res The Express response object to send the result to.
      * @param result The result of the operation.
      */
-    respondWithOperationResult(
-        res: Response,
-        result: OperationResult<unknown>
-    ) {
+    respondWithOperationResult(res: Response, result: OperationResult) {
         res.status(result.status);
 
         if (result.isSuccessful()) {

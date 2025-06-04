@@ -10,6 +10,7 @@ import {
 import { IAuthService } from "@/services";
 import { app } from "../setup/app";
 import { seededPrimaryData } from "../setup/db";
+import { loginLecturer, loginStudent } from "../setup/auth";
 
 describe("AuthController (unit)", () => {
     let controller: AuthController;
@@ -121,9 +122,11 @@ describe("AuthController (integration)", () => {
     });
 
     describe("POST /auth/login", () => {
+        const endpoint = "/auth/login";
+
         it("Should return 400 if login is missing", async () => {
             const res = await agent
-                .post("/auth/login")
+                .post(endpoint)
                 .send({ password: "password123" });
 
             expect(res.status).toBe(400);
@@ -133,9 +136,7 @@ describe("AuthController (integration)", () => {
         });
 
         it("Should return 400 if password is missing", async () => {
-            const res = await agent
-                .post("/auth/login")
-                .send({ login: "C00000000" });
+            const res = await agent.post(endpoint).send({ login: "C00000000" });
 
             expect(res.status).toBe(400);
             expect(res.body).toEqual({
@@ -145,7 +146,7 @@ describe("AuthController (integration)", () => {
 
         it("Should return 401 for unrecognized login", async () => {
             const res = await agent
-                .post("/auth/login")
+                .post(endpoint)
                 .send({ login: "unknown", password: "password123" });
 
             expect(res.status).toBe(401);
@@ -156,10 +157,7 @@ describe("AuthController (integration)", () => {
 
         it("Should return 200 and student data if login is successful", async () => {
             const student = seededPrimaryData.students[0];
-
-            const res = await agent
-                .post("/auth/login")
-                .send({ login: student.matricNo, password: student.kpNo });
+            const res = await loginStudent(agent);
 
             expect(res.status).toBe(200);
             expect(res.body).toEqual(student);
@@ -167,11 +165,7 @@ describe("AuthController (integration)", () => {
 
         it("Should return 200 and lecturer data if login is successful", async () => {
             const lecturer = seededPrimaryData.lecturers[0];
-
-            const res = await agent.post("/auth/login").send({
-                login: lecturer.workerNo.toString(),
-                password: lecturer.workerNo.toString(),
-            });
+            const res = await loginLecturer(agent);
 
             expect(res.status).toBe(200);
             expect(res.body).toEqual(lecturer);
@@ -179,22 +173,20 @@ describe("AuthController (integration)", () => {
     });
 
     describe("POST /auth/logout", () => {
+        const endpoint = "/auth/logout";
+
         it("Should be restricted to non-authenticated users", async () => {
-            const res = await agent.post("/auth/logout");
+            const res = await agent.post(endpoint);
 
             expect(res.status).toBe(401);
             expect(res.body).toEqual({ error: "Unauthorized" });
         });
 
         it("Should clear session and return 200", async () => {
-            const student = seededPrimaryData.students[0];
-
             // First, log in to create a session
-            await agent
-                .post("/auth/login")
-                .send({ login: student.matricNo, password: student.kpNo });
+            await loginStudent(agent);
 
-            const res = await agent.post("/auth/logout");
+            const res = await agent.post(endpoint);
 
             expect(res.status).toBe(200);
         });

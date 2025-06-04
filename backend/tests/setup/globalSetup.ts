@@ -13,6 +13,8 @@ export async function setup() {
     }
 
     setupHappened = true;
+
+    await cleanupPrimaryTables();
     await seedPrimaryTables();
 }
 

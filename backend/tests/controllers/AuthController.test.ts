@@ -120,7 +120,7 @@ describe("AuthController (integration)", () => {
         agent = request.agent(app);
     });
 
-    describe("/auth/login", () => {
+    describe("POST /auth/login", () => {
         it("Should return 400 if login is missing", async () => {
             const res = await agent
                 .post("/auth/login")
@@ -178,7 +178,7 @@ describe("AuthController (integration)", () => {
         });
     });
 
-    describe("/auth/logout", () => {
+    describe("POST /auth/logout", () => {
         it("Should be restricted to non-authenticated users", async () => {
             const res = await agent.post("/auth/logout");
 

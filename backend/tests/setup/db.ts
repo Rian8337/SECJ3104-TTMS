@@ -137,13 +137,11 @@ export async function seedPrimaryTables() {
  * be affected.**
  */
 export async function cleanupPrimaryTables() {
-    await db.transaction(async (tx) => {
-        await tx.delete(courses);
-        await tx.delete(sessions);
-        await tx.delete(students);
-        await tx.delete(lecturers);
-        await tx.delete(venues);
-    });
+    await db.delete(courses);
+    await db.delete(sessions);
+    await db.delete(students);
+    await db.delete(lecturers);
+    await db.delete(venues);
 }
 
 /**
@@ -154,11 +152,9 @@ export async function cleanupPrimaryTables() {
  * instead.
  */
 export async function cleanupSecondaryTables() {
-    await db.transaction(async (tx) => {
-        await tx.delete(courseSectionSchedules);
-        await tx.delete(studentRegisteredCourses);
-        await tx.delete(courseSections);
-    });
+    await db.delete(courseSectionSchedules);
+    await db.delete(studentRegisteredCourses);
+    await db.delete(courseSections);
 }
 
 //#endregion

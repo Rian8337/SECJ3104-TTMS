@@ -171,7 +171,11 @@ export class AnalyticsService extends BaseService implements IAnalyticsService {
                     lastSchedules.length = 0;
                 }
 
-                lastSchedules.push(schedule);
+                lastSchedules.push({
+                    day: schedule.day,
+                    time: schedule.time,
+                    venue: schedule.venue,
+                });
 
                 // Now we check for clashing classes.
                 const key = `${schedule.day.toString()}-${schedule.time.toString()}`;

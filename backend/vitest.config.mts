@@ -28,10 +28,8 @@ export default defineConfig({
                 "src/scrapers/**",
                 // Well-known encryption utility functions
                 "src/utils/crypto.ts",
-                // Express application setup
+                // Application entry point
                 "src/index.ts",
-                // Express router setup
-                "src/router.ts",
             ],
         },
     },

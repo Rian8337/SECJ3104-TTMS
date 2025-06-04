@@ -144,26 +144,51 @@ describe("AnalyticsService (unit)", () => {
                     {
                         day: CourseSectionScheduleDay.monday,
                         time: CourseSectionScheduleTime.time2,
+                        course: {
+                            code: secondCourse.code,
+                            name: secondCourse.name,
+                        },
+                        section: "1",
                         venue: { shortName: venue.shortName },
                     },
                     {
                         day: CourseSectionScheduleDay.monday,
                         time: CourseSectionScheduleTime.time3,
+                        course: {
+                            code: firstCourse.code,
+                            name: firstCourse.name,
+                        },
+                        section: "1",
                         venue: { shortName: venue.shortName },
                     },
                     {
                         day: CourseSectionScheduleDay.monday,
                         time: CourseSectionScheduleTime.time4,
+                        course: {
+                            code: firstCourse.code,
+                            name: firstCourse.name,
+                        },
+                        section: "1",
                         venue: { shortName: venue.shortName },
                     },
                     {
                         day: CourseSectionScheduleDay.monday,
                         time: CourseSectionScheduleTime.time5,
+                        course: {
+                            code: firstCourse.code,
+                            name: firstCourse.name,
+                        },
+                        section: "1",
                         venue: { shortName: venue.shortName },
                     },
                     {
                         day: CourseSectionScheduleDay.monday,
                         time: CourseSectionScheduleTime.time6,
+                        course: {
+                            code: firstCourse.code,
+                            name: firstCourse.name,
+                        },
+                        section: "1",
                         venue: { shortName: venue.shortName },
                     },
                 ],

@@ -518,6 +518,16 @@ type AnalyticsCourseSchedule = {
     time: CourseSectionScheduleTime;
 
     /**
+     * The course. See Timetable Course data types section.
+     */
+    course: TimetableCourse;
+
+    /**
+     * The section of the course.
+     */
+    section: string;
+
+    /**
      * Information about the venue. Can be `null`, which means there is no assigned venue.
      *
      * See Timetable venue data type section.

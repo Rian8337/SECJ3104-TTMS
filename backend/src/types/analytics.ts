@@ -41,7 +41,7 @@ export type IBaseAnalyticsStudent = Pick<
  * Represents a student with back-to-back schedules in analytics.
  */
 export interface IAnalyticsBackToBackStudent extends IBaseAnalyticsStudent {
-    readonly schedules: IAnalyticsCourseSchedule[][];
+    readonly schedules: IAnalyticsBackToBackSchedule[][];
 }
 
 /**
@@ -65,6 +65,13 @@ export interface IAnalyticsCourse extends Pick<ICourseSection, "section"> {
 export interface IAnalyticsScheduleClash
     extends Pick<ICourseSectionSchedule, "day" | "time"> {
     readonly courses: IAnalyticsScheduleClashCourse[];
+}
+
+export interface IAnalyticsBackToBackSchedule
+    extends Pick<ICourseSectionSchedule, "day" | "time"> {
+    readonly course: Pick<ICourse, "code" | "name">;
+    readonly section: string;
+    readonly venue: Pick<IVenue, "shortName"> | null;
 }
 
 /**

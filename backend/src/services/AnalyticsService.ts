@@ -7,10 +7,10 @@ import {
 } from "@/repositories";
 import {
     IAnalytics,
+    IAnalyticsBackToBackSchedule,
     IAnalyticsBackToBackStudent,
     IAnalyticsClashingStudent,
     IAnalyticsCourse,
-    IAnalyticsCourseSchedule,
     IAnalyticsScheduleClash,
     IAnalyticsStudentDepartment,
     IRegisteredStudent,
@@ -18,11 +18,11 @@ import {
     TTMSSemester,
     TTMSSession,
 } from "@/types";
+import { convertRawVenueClashTimetableToVenueClashTimetable } from "@/utils";
 import { inject } from "tsyringe";
 import { BaseService } from "./BaseService";
 import { IAnalyticsService } from "./IAnalyticsService";
 import { OperationResult } from "./OperationResult";
-import { convertRawVenueClashTimetableToVenueClashTimetable } from "@/utils";
 
 /**
  * A service that is responsible for handling analytics-related operations.
@@ -118,33 +118,34 @@ export class AnalyticsService extends BaseService implements IAnalyticsService {
             };
 
             // Obtain all schedules of the student.
-            const studentSchedules = registeredStudent
-                .flatMap((rs) => {
-                    const studentCourse = schedulesMap
-                        .get(rs.courseCode)
-                        ?.get(rs.section);
+            const studentSchedules: IAnalyticsBackToBackSchedule[] =
+                registeredStudent
+                    .flatMap((rs) => {
+                        const studentCourse = schedulesMap
+                            .get(rs.courseCode)
+                            ?.get(rs.section);
 
-                    return (
-                        studentCourse?.schedules.map((schedule) => ({
-                            day: schedule.day,
-                            time: schedule.time,
-                            venue: schedule.venue,
-                            course: studentCourse.course,
-                            section: rs.section,
-                        })) ?? []
-                    );
-                })
-                .sort((a, b) => {
-                    // Sort schedules by day and time, with day being a priority.
-                    if (a.day !== b.day) {
-                        return a.day - b.day;
-                    }
+                        return (
+                            studentCourse?.schedules.map((schedule) => ({
+                                day: schedule.day,
+                                time: schedule.time,
+                                venue: schedule.venue,
+                                course: studentCourse.course,
+                                section: rs.section,
+                            })) ?? []
+                        );
+                    })
+                    .sort((a, b) => {
+                        // Sort schedules by day and time, with day being a priority.
+                        if (a.day !== b.day) {
+                            return a.day - b.day;
+                        }
 
-                    return a.time - b.time;
-                });
+                        return a.time - b.time;
+                    });
 
             const dayTimeMap = new Map<string, IAnalyticsScheduleClash[]>();
-            const lastSchedules: IAnalyticsCourseSchedule[] = [];
+            const lastSchedules: IAnalyticsBackToBackSchedule[] = [];
 
             // Check if the student has back-to-back or clashing classes.
             // A student has back-to-back classes if they have classes for 5 consecutive hours or more.
@@ -171,11 +172,7 @@ export class AnalyticsService extends BaseService implements IAnalyticsService {
                     lastSchedules.length = 0;
                 }
 
-                lastSchedules.push({
-                    day: schedule.day,
-                    time: schedule.time,
-                    venue: schedule.venue,
-                });
+                lastSchedules.push(schedule);
 
                 // Now we check for clashing classes.
                 const key = `${schedule.day.toString()}-${schedule.time.toString()}`;

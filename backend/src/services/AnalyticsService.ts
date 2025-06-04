@@ -224,6 +224,13 @@ export class AnalyticsService extends BaseService implements IAnalyticsService {
                 }
             }
 
+            // Check for back-to-back after iteration, which would otherwise be ignored.
+            if (lastSchedules.length >= 5) {
+                backToBackAnalyticsStudent.schedules.push(
+                    lastSchedules.slice()
+                );
+            }
+
             // Add the student to the department analytics.
             const departmentCode = registeredStudent[0].student.courseCode;
 

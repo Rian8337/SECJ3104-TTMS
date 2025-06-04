@@ -1,3 +1,4 @@
+import request from "supertest";
 import { AuthController } from "@/controllers";
 import { IStudent, ILecturer } from "@/database/schema";
 import {
@@ -7,6 +8,8 @@ import {
     mockAuthService,
 } from "../mocks";
 import { IAuthService } from "@/services";
+import { app } from "../setup/app";
+import { seededPrimaryData } from "../setup/db";
 
 describe("AuthController (unit)", () => {
     let controller: AuthController;
@@ -107,5 +110,93 @@ describe("AuthController (unit)", () => {
 
         expect(mockAuthService.clearSession).toHaveBeenCalledWith(mockResponse);
         expect(mockResponse.sendStatus).toHaveBeenCalledWith(200);
+    });
+});
+
+describe("AuthController (integration)", () => {
+    let agent: ReturnType<typeof request.agent>;
+
+    beforeEach(() => {
+        agent = request.agent(app);
+    });
+
+    describe("/auth/login", () => {
+        it("Should return 400 if login is missing", async () => {
+            const res = await agent
+                .post("/auth/login")
+                .send({ password: "password123" });
+
+            expect(res.status).toBe(400);
+            expect(res.body).toEqual({
+                error: "Login and password are required",
+            });
+        });
+
+        it("Should return 400 if password is missing", async () => {
+            const res = await agent
+                .post("/auth/login")
+                .send({ login: "C00000000" });
+
+            expect(res.status).toBe(400);
+            expect(res.body).toEqual({
+                error: "Login and password are required",
+            });
+        });
+
+        it("Should return 401 for unrecognized login", async () => {
+            const res = await agent
+                .post("/auth/login")
+                .send({ login: "unknown", password: "password123" });
+
+            expect(res.status).toBe(401);
+            expect(res.body).toEqual({
+                error: "Invalid username or password.",
+            });
+        });
+
+        it("Should return 200 and student data if login is successful", async () => {
+            const student = seededPrimaryData.students[0];
+
+            const res = await agent
+                .post("/auth/login")
+                .send({ login: student.matricNo, password: student.kpNo });
+
+            expect(res.status).toBe(200);
+            expect(res.body).toEqual(student);
+        });
+
+        it("Should return 200 and lecturer data if login is successful", async () => {
+            const lecturer = seededPrimaryData.lecturers[0];
+
+            const res = await agent.post("/auth/login").send({
+                login: lecturer.workerNo.toString(),
+                password: lecturer.workerNo.toString(),
+            });
+
+            expect(res.status).toBe(200);
+            expect(res.body).toEqual(lecturer);
+        });
+    });
+
+    describe("/auth/logout", () => {
+        it("Should be restricted to non-authenticated users", async () => {
+            const res = await agent.post("/auth/logout");
+
+            expect(res.status).toBe(401);
+            expect(res.body).toEqual({ error: "Unauthorized" });
+        });
+
+        it("Should clear session and return 200", async () => {
+            const student = seededPrimaryData.students[0];
+
+            // First, log in to create a session
+            await agent
+                .post("/auth/login")
+                .send({ login: student.matricNo, password: student.kpNo });
+
+            const res = await agent.post("/auth/logout");
+
+            expect(res.status).toBe(200);
+        });
     });
 });

@@ -28,8 +28,8 @@ export async function teardown() {
     }
 
     teardownHappened = true;
-    await wipeTestDb();
 
+    await wipeTestDb();
     db.$client.end();
 }
 

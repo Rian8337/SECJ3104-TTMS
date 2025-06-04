@@ -57,6 +57,7 @@ jobs:
           echo "DB_USER=test_user" >> .env.test
           echo "DB_PASSWORD=test_pass" >> .env.test
           echo "DB_NAME=ttms_test" >> .env.test
+          echo "COOKIE_SECRET=secret" >> .env.test
           echo "SESSION_ENCRYPTION_KEY=${{ secrets.GITHUB_TOKEN }}" >> .env.test
 
       - name: Wait for MySQL

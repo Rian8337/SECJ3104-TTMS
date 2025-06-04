@@ -14,7 +14,7 @@ export interface IAuthService extends IService {
      * @param password The password of the user.
      * @returns A promise that resolves to an operation result containing the user data or an error.
      */
-    login(login: string, password: string): Promise<OperationResult<unknown>>;
+    login(login: string, password: string): Promise<OperationResult>;
 
     /**
      * Creates a session for a user.

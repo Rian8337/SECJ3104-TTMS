@@ -32,7 +32,7 @@ export class AuthService extends BaseService implements IAuthService {
         super();
     }
 
-    login(login: string, password: string): Promise<OperationResult<unknown>> {
+    login(login: string, password: string): Promise<OperationResult> {
         if (isValidMatricNumber(login)) {
             return this.loginStudent(login, password);
         }

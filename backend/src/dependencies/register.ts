@@ -1,18 +1,19 @@
+import { db } from "@/database";
+import { InjectionToken } from "tsyringe";
+import { constructor } from "tsyringe/dist/typings/types";
 // Ensure repositories and services are loaded and metadata is registered
 import "../repositories";
 import "../services";
-import { container as globalContainer, InjectionToken } from "tsyringe";
-import { constructor } from "tsyringe/dist/typings/types";
+import { getContainer } from "./container";
 import { dependencyTokens } from "./tokens";
-import { db } from "@/database";
 
 /**
  * Registers all repositories and services to a DI container.
  *
  * @param container The DI container to register the dependencies to.
- * If not provided, the global container will be used.
+ * If not provided, the container from {@link getContainer} will be used.
  */
-export function registerDependencies(container = globalContainer) {
+export function registerDependencies(container = getContainer()) {
     container.registerInstance(dependencyTokens.drizzleDb, db);
 
     const classes = [

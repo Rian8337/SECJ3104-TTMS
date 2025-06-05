@@ -1,7 +1,7 @@
 import { Service } from "@/decorators/service";
-import { createMockClassDecoratorTestTarget } from "../mocks";
+import { createMockClassDecoratorTestTarget } from "@test/mocks";
 
-describe("@Service", () => {
+describe("@Service decorator (unit)", () => {
     it("Adds service metadata and registers the service to globalThis", () => {
         const testToken = "testToken";
 

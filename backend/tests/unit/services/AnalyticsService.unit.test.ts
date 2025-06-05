@@ -12,8 +12,8 @@ import {
     mockCourseRepository,
     mockStudentRepository,
     mockVenueRepository,
-} from "../mocks";
-import { seededPrimaryData } from "../setup/db";
+} from "@test/mocks";
+import { seededPrimaryData } from "@test/setup";
 
 describe("AnalyticsService (unit)", () => {
     let service: AnalyticsService;

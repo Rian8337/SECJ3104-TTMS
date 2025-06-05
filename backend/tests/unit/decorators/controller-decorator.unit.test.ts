@@ -1,7 +1,7 @@
 import { Controller } from "@/decorators/controller";
-import { createMockClassDecoratorTestTarget } from "../mocks";
+import { createMockClassDecoratorTestTarget } from "@test/mocks";
 
-describe("@Controller", () => {
+describe("@Controller decorator (unit)", () => {
     it("Adds controller metadata with the default path", () => {
         const t = createMockClassDecoratorTestTarget(Controller);
 

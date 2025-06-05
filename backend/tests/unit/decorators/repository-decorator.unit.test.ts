@@ -1,7 +1,7 @@
 import { Repository } from "@/decorators/repository";
-import { createMockClassDecoratorTestTarget } from "../mocks";
+import { createMockClassDecoratorTestTarget } from "@test/mocks";
 
-describe("@Repository", () => {
+describe("@Repository decorator (unit)", () => {
     it("Adds repository metadata and registers the repository to globalThis", () => {
         const testToken = "testToken";
 

@@ -4,12 +4,12 @@ import {
     CourseSectionScheduleTime,
     IAnalyticsCourse,
 } from "@/types";
-import { createTestContainer } from "../setup/container";
 import {
     cleanupSecondaryTables,
+    createTestContainer,
     seededPrimaryData,
     seeders,
-} from "../setup/db";
+} from "@test/setup";
 
 describe("CourseRepository (integration)", () => {
     const container = createTestContainer();

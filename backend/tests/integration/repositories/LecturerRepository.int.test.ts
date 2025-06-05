@@ -1,42 +1,15 @@
-import { DrizzleDb } from "@/database";
 import { dependencyTokens } from "@/dependencies/tokens";
-import { LecturerRepository } from "@/repositories";
 import {
     CourseSectionScheduleDay,
     CourseSectionScheduleTime,
     IRawTimetable,
 } from "@/types";
-import { createMockDb } from "../mocks";
-import { createTestContainer } from "../setup/container";
 import {
     cleanupSecondaryTables,
+    createTestContainer,
     seededPrimaryData,
     seeders,
-} from "../setup/db";
-
-describe("LecturerRepository (unit)", () => {
-    let repository: LecturerRepository;
-    let mockDb: ReturnType<typeof createMockDb>;
-
-    beforeEach(() => {
-        mockDb = createMockDb();
-        repository = new LecturerRepository(mockDb as unknown as DrizzleDb);
-    });
-
-    describe("searchByName", () => {
-        it("Should throw an error if limit is lower than 1", async () => {
-            await expect(async () =>
-                repository.searchByName("2024/2025", 1, "John Doe", 0)
-            ).rejects.toThrow("Limit must be at least 1");
-        });
-
-        it("Should throw an error if offset is lower than 0", async () => {
-            await expect(async () =>
-                repository.searchByName("2024/2025", 1, "John Doe", 10, -1)
-            ).rejects.toThrow("Offset must be at least 0");
-        });
-    });
-});
+} from "@test/setup";
 
 describe("LecturerRepository (integration)", () => {
     const container = createTestContainer();

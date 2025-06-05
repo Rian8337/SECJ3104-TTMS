@@ -1,6 +1,5 @@
 import { dependencyTokens } from "@/dependencies/tokens";
-import { createTestContainer } from "../setup/container";
-import { seededPrimaryData } from "../setup/db";
+import { createTestContainer, seededPrimaryData } from "@test/setup";
 
 describe("SessionRepository (integration)", () => {
     const container = createTestContainer();

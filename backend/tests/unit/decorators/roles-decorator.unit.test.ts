@@ -9,8 +9,8 @@ import {
     createMockRequest,
     createMockResponse,
     mockAuthService,
-} from "../mocks";
-import { createTestContainer } from "../setup/container";
+} from "@test/mocks";
+import { createTestContainer } from "@test/setup";
 
 describe("@Roles", () => {
     beforeEach(() => {

@@ -2,9 +2,9 @@ import { UseMiddleware } from "@/decorators/middleware";
 import {
     createMockClassDecoratorTestTarget,
     createMockMethodDecoratorTestTarget,
-} from "../mocks";
+} from "@test/mocks";
 
-describe("@UseMiddleware", () => {
+describe("@UseMiddleware decorator (unit)", () => {
     const middlewareFunction = () => {
         // Middleware logic
     };

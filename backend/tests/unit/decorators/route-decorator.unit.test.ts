@@ -6,7 +6,7 @@ import {
     Put,
     RouteDefinition,
 } from "@/decorators/routes";
-import { createMockMethodDecoratorTestTarget } from "../mocks";
+import { createMockMethodDecoratorTestTarget } from "@test/mocks";
 
 describe("@Get", () => {
     it("Registers the route with the correct metadata", () => {

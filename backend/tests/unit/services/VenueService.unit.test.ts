@@ -1,5 +1,5 @@
 import { VenueService } from "@/services";
-import { mockVenueRepository } from "../mocks";
+import { mockVenueRepository } from "@test/mocks";
 
 describe("VenueService (unit)", () => {
     it("[getByCode] should retrieve venue by code from repository", async () => {

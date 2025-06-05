@@ -4,12 +4,12 @@ import {
     CourseSectionScheduleTime,
     IRawVenueClashTimetable,
 } from "@/types";
-import { createTestContainer } from "../setup/container";
 import {
+    createTestContainer,
     cleanupSecondaryTables,
     seededPrimaryData,
     seeders,
-} from "../setup/db";
+} from "@test/setup";
 
 describe("VenueRepository (integration)", () => {
     const container = createTestContainer();

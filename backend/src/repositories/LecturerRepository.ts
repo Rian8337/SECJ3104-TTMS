@@ -5,6 +5,7 @@ import {
     courseSectionSchedules,
     ILecturer,
     lecturers,
+    venues,
 } from "@/database/schema";
 import { Repository } from "@/decorators/repository";
 import { dependencyTokens } from "@/dependencies/tokens";
@@ -45,13 +46,14 @@ export class LecturerRepository
         const c = alias(courses, "c");
         const cs = alias(courseSections, "cs");
         const l = alias(lecturers, "l");
+        const v = alias(venues, "v");
 
         return (
             this.db
                 .select({
                     scheduleDay: css.day,
                     scheduleTime: css.time,
-                    venueShortName: css.venueCode,
+                    venueShortName: v.shortName,
                     courseCode: css.courseCode,
                     section: css.section,
                     courseName: c.name,
@@ -73,6 +75,8 @@ export class LecturerRepository
                 .innerJoin(c, eq(cs.courseCode, c.code))
                 // Join to obtain the name of the lecturer.
                 .innerJoin(l, eq(cs.lecturerNo, l.workerNo))
+                // Left join to obtain the venue's short name (if available).
+                .leftJoin(v, eq(css.venueCode, v.code))
                 // Filter by the lecturer's worker number, session, and semester.
                 .where(
                     and(

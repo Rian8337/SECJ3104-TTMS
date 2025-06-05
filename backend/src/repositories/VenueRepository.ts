@@ -56,6 +56,7 @@ export class VenueRepository
 
         const l = alias(lecturers, "l");
         const c = alias(courses, "c");
+        const v = alias(venues, "v");
 
         return (
             this.db
@@ -67,7 +68,7 @@ export class VenueRepository
                     courseName: c.name,
                     scheduleDay: css1.day,
                     scheduleTime: css1.time,
-                    scheduleVenue: css1.venueCode,
+                    scheduleVenue: v.shortName,
                 })
                 .from(cs1)
                 // Get all schedules of the primary course section.
@@ -110,6 +111,8 @@ export class VenueRepository
                 .leftJoin(l, eq(l.workerNo, cs1.lecturerNo))
                 // Join to get the course name.
                 .innerJoin(c, eq(c.code, cs1.courseCode))
+                // Left join to get the venue's short name (if available).
+                .leftJoin(v, eq(v.code, css1.venueCode))
                 // Filter the results to the current academic session and semester, and exclude
                 // the lecturer's own course sections.
                 .where(

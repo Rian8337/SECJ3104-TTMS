@@ -1,4 +1,5 @@
-import { IStudent, ILecturer } from "@/database/schema";
+import { ILecturer, IStudent } from "@/database/schema";
+import { dependencyTokens } from "@/dependencies/tokens";
 import {
     AuthService,
     FailedOperationResult,
@@ -12,18 +13,17 @@ import {
     mockLecturerRepository,
     mockStudentRepository,
 } from "../mocks";
+import { createTestContainer } from "../setup/container";
+import { seededPrimaryData } from "../setup/db";
 
 describe("AuthService (unit)", () => {
     let service: AuthService;
-    let mockResponse: ReturnType<typeof createMockResponse>;
 
     beforeEach(() => {
         service = new AuthService(
             mockStudentRepository,
             mockLecturerRepository
         );
-
-        mockResponse = createMockResponse();
     });
 
     describe("login", () => {
@@ -134,23 +134,6 @@ describe("AuthService (unit)", () => {
                 name: "John Doe",
             };
 
-            it("Should return 401 if login is not a number", async () => {
-                const result = (await service.login(
-                    "invalidLogin",
-                    "password123"
-                )) as FailedOperationResult;
-
-                expect(
-                    mockLecturerRepository.getByWorkerNo
-                ).not.toHaveBeenCalled();
-
-                expect(result.isSuccessful()).toBe(false);
-                expect(result.failed()).toBe(true);
-
-                expect(result.status).toBe(401);
-                expect(result.error).toBe("Invalid username or password.");
-            });
-
             it("Should return 401 if lecturer is not found", async () => {
                 mockLecturerRepository.getByWorkerNo.mockResolvedValueOnce(
                     null
@@ -215,139 +198,187 @@ describe("AuthService (unit)", () => {
             });
         });
     });
+});
 
-    it("[createSession] Should create a session cookie", () => {
-        service.createSession(mockResponse, { test: "test" });
+describe("AuthService (integration)", () => {
+    const container = createTestContainer();
+    const service = container.resolve(dependencyTokens.authService);
 
-        expect(mockResponse.cookie).toHaveBeenCalledWith(
-            "session",
-            expect.any(String),
-            {
-                httpOnly: true,
-                signed: true,
-                secure: false,
-                sameSite: "strict",
-                maxAge: 3600000,
-            }
-        );
+    describe("login", () => {
+        it("Should return 401 if user is not recognized", async () => {
+            const result = (await service.login(
+                "invalidUser",
+                "password123"
+            )) as FailedOperationResult;
+
+            expect(result.isSuccessful()).toBe(false);
+            expect(result.failed()).toBe(true);
+
+            expect(result.status).toBe(401);
+            expect(result.error).toBe("Invalid username or password.");
+        });
+
+        it("Should login student successfully with valid credentials", async () => {
+            const student = seededPrimaryData.students[0];
+
+            const result = (await service.login(
+                student.matricNo,
+                student.kpNo
+            )) as SuccessfulOperationResult<IStudent>;
+
+            expect(result.isSuccessful()).toBe(true);
+            expect(result.failed()).toBe(false);
+
+            expect(result.status).toBe(200);
+            expect(result.data).toStrictEqual(student);
+        });
+
+        it("Should login lecturer successfully with valid credentials", async () => {
+            const lecturer = seededPrimaryData.lecturers[0];
+
+            const result = (await service.login(
+                lecturer.workerNo.toString(),
+                lecturer.workerNo.toString()
+            )) as SuccessfulOperationResult<ILecturer>;
+
+            expect(result.isSuccessful()).toBe(true);
+            expect(result.failed()).toBe(false);
+
+            expect(result.status).toBe(200);
+            expect(result.data).toStrictEqual(lecturer);
+        });
     });
 
-    it("[clearSession] Should clear the session cookie", () => {
-        service.clearSession(mockResponse);
+    describe("createSession", () => {
+        it("Should create a session cookie", () => {
+            const student = seededPrimaryData.students[0];
+            const mockResponse = createMockResponse();
 
-        expect(mockResponse.clearCookie).toHaveBeenCalledWith("session");
+            service.createSession(mockResponse, student);
+
+            expect(mockResponse.cookie).toHaveBeenCalledExactlyOnceWith(
+                "session",
+                expect.any(String),
+                expect.objectContaining({
+                    httpOnly: true,
+                    signed: true,
+                    secure: false,
+                    sameSite: "strict",
+                    maxAge: 3600000,
+                })
+            );
+        });
     });
 
     describe("verifySession", () => {
-        const next = vi.fn();
+        let mockRequest: ReturnType<typeof createMockRequest>;
+        let mockResponse: ReturnType<typeof createMockResponse>;
+        let next: ReturnType<typeof vi.fn>;
 
-        it("Should return 401 if no session cookie is present", async () => {
-            const mockRequest = createMockRequest();
-
-            await service.verifySession()(mockRequest, mockResponse, next);
-
-            expect(mockResponse.status).toHaveBeenCalledWith(401);
-            expect(mockResponse.json).toHaveBeenCalledWith({
-                error: "Unauthorized",
-            });
-            expect(next).not.toHaveBeenCalled();
+        beforeEach(() => {
+            mockRequest = createMockRequest();
+            mockResponse = createMockResponse();
+            next = vi.fn();
         });
 
-        it("Should return 401 and clear session if session cookie is invalid", async () => {
-            const mockRequest = createMockRequest({
-                signedCookies: { session: "invalid" },
-            });
-
-            await service.verifySession()(mockRequest, mockResponse, next);
-
-            expect(mockResponse.status).toHaveBeenCalledWith(401);
-            expect(mockResponse.json).toHaveBeenCalledWith({
-                error: "Unauthorized",
-            });
-            expect(next).not.toHaveBeenCalled();
-            expect(mockResponse.clearCookie).toHaveBeenCalledWith("session");
-        });
-
-        it("Should return 403 if user role is not allowed", async () => {
-            const mockRequest = createMockRequest({
-                signedCookies: {
-                    session: encrypt(
-                        JSON.stringify({
-                            name: "Test student",
-                            courseCode: "SECVH",
-                            facultyCode: "FSKSM",
-                            matricNo: "Test matric",
-                            kpNo: "Test kp",
-                        } satisfies IStudent)
-                    ),
-                },
-            });
-
-            await service.verifySession(UserRole.lecturer)(
+        it("Should return 401 if session cookie is not set", async () => {
+            await service.verifySession(UserRole.student)(
                 mockRequest,
                 mockResponse,
                 next
             );
 
-            expect(mockResponse.status).toHaveBeenCalledWith(403);
-            expect(mockResponse.json).toHaveBeenCalledWith({
+            expect(mockResponse.status).toHaveBeenCalledExactlyOnceWith(401);
+            expect(mockResponse.json).toHaveBeenCalledExactlyOnceWith({
+                error: "Unauthorized",
+            });
+
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it("Should return 401 and clear session cookie if session cookie is invalid", async () => {
+            mockRequest.signedCookies.session = "invalidSession";
+
+            await service.verifySession(UserRole.student)(
+                mockRequest,
+                mockResponse,
+                next
+            );
+
+            expect(mockResponse.status).toHaveBeenCalledExactlyOnceWith(401);
+            expect(mockResponse.json).toHaveBeenCalledExactlyOnceWith({
+                error: "Unauthorized",
+            });
+
+            expect(mockResponse.clearCookie).toHaveBeenCalledExactlyOnceWith(
+                "session"
+            );
+
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it("Should return 401 for an unrecognized user", async () => {
+            mockRequest.signedCookies.session = encrypt(
+                JSON.stringify({ what: "the dog doin" })
+            );
+
+            await service.verifySession(UserRole.student)(
+                mockRequest,
+                mockResponse,
+                next
+            );
+
+            expect(mockResponse.status).toHaveBeenCalledExactlyOnceWith(401);
+            expect(mockResponse.json).toHaveBeenCalledExactlyOnceWith({
+                error: "Unauthorized",
+            });
+
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it("Should return 403 if session cookie is for a different user role", async () => {
+            const lecturer = seededPrimaryData.lecturers[0];
+
+            mockRequest.signedCookies.session = encrypt(
+                JSON.stringify(lecturer)
+            );
+
+            await service.verifySession(UserRole.student)(
+                mockRequest,
+                mockResponse,
+                next
+            );
+
+            expect(mockResponse.status).toHaveBeenCalledExactlyOnceWith(403);
+            expect(mockResponse.json).toHaveBeenCalledExactlyOnceWith({
                 error: "Forbidden",
             });
+
             expect(next).not.toHaveBeenCalled();
         });
 
-        it("Should return 401 if user role is not recognized", async () => {
-            const mockRequest = createMockRequest({
-                signedCookies: {
-                    session: encrypt(
-                        JSON.stringify({
-                            name: "Test user",
-                            unrecognizedField: "value",
-                        })
-                    ),
-                },
-            });
+        it("Should call next if session is valid for student", async () => {
+            const student = seededPrimaryData.students[0];
 
-            await service.verifySession()(mockRequest, mockResponse, next);
+            mockRequest.signedCookies.session = encrypt(
+                JSON.stringify(student)
+            );
 
-            expect(mockResponse.status).toHaveBeenCalledWith(401);
-            expect(mockResponse.json).toHaveBeenCalledWith({
-                error: "Unauthorized",
-            });
-            expect(next).not.toHaveBeenCalled();
+            await service.verifySession(UserRole.student)(
+                mockRequest,
+                mockResponse,
+                next
+            );
+
+            expect(next).toHaveBeenCalledOnce();
         });
 
-        it("Should call next if user is authenticated and no role is specified", async () => {
-            const mockRequest = createMockRequest({
-                signedCookies: {
-                    session: encrypt(
-                        JSON.stringify({
-                            name: "Test student",
-                            courseCode: "SECVH",
-                            facultyCode: "FSKSM",
-                            matricNo: "Test matric",
-                            kpNo: "Test kp",
-                        } satisfies IStudent)
-                    ),
-                },
-            });
+        it("Should call next if session is valid for lecturer", async () => {
+            const lecturer = seededPrimaryData.lecturers[0];
 
-            await service.verifySession()(mockRequest, mockResponse, next);
-
-            expect(next).toHaveBeenCalled();
-        });
-
-        it("Should call next if user role is allowed", async () => {
-            const mockRequest = createMockRequest({
-                signedCookies: {
-                    session: encrypt(
-                        JSON.stringify({
-                            name: "Test lecturer",
-                            workerNo: 19391378,
-                        } satisfies ILecturer)
-                    ),
-                },
-            });
+            mockRequest.signedCookies.session = encrypt(
+                JSON.stringify(lecturer)
+            );
 
             await service.verifySession(UserRole.lecturer)(
                 mockRequest,
@@ -355,7 +386,7 @@ describe("AuthService (unit)", () => {
                 next
             );
 
-            expect(next).toHaveBeenCalled();
+            expect(next).toHaveBeenCalledOnce();
         });
     });
 });

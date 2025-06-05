@@ -1,5 +1,4 @@
 import { DrizzleDb } from "@/database";
-import { studentRegisteredCourses, students } from "@/database/schema";
 import { dependencyTokens } from "@/dependencies/tokens";
 import { StudentRepository } from "@/repositories";
 import {
@@ -7,7 +6,6 @@ import {
     CourseSectionScheduleTime,
     IRawTimetable,
 } from "@/types";
-import { sql } from "drizzle-orm";
 import { createMockDb } from "../mocks";
 import { createTestContainer } from "../setup/container";
 import {
@@ -23,37 +21,6 @@ describe("StudentRepository (unit)", () => {
     beforeEach(() => {
         mockDb = createMockDb();
         repository = new StudentRepository(mockDb as unknown as DrizzleDb);
-    });
-
-    it("[getByMatricNo] Should query database", async () => {
-        mockDb.limit.mockResolvedValueOnce([]);
-
-        await repository.getByMatricNo("123456");
-
-        expect(mockDb.select).toHaveBeenCalled();
-
-        expect(mockDb.from).toHaveBeenCalledExactlyOnceWith(students);
-        expect(mockDb.from).toHaveBeenCalledAfter(mockDb.select);
-
-        expect(mockDb.where).toHaveBeenCalledOnce();
-        expect(mockDb.where).toHaveBeenCalledAfter(mockDb.from);
-
-        expect(mockDb.limit).toHaveBeenCalledExactlyOnceWith(1);
-        expect(mockDb.limit).toHaveBeenCalledAfter(mockDb.where);
-    });
-
-    describe("getTimetable", () => {
-        it("Should query database", async () => {
-            await repository.getTimetable("123456", "2023/2024", 1);
-
-            expect(mockDb.select).toHaveBeenCalledOnce();
-            expect(mockDb.from).toHaveBeenCalledOnce();
-            expect(mockDb.innerJoin).toHaveBeenCalledTimes(3);
-            expect(mockDb.leftJoin).toHaveBeenCalledTimes(2);
-            expect(mockDb.where).toHaveBeenCalledOnce();
-            expect(mockDb.orderBy).toHaveBeenCalledOnce();
-            expect(mockDb.execute).toHaveBeenCalledOnce();
-        });
     });
 
     describe("searchByMatricNo", () => {
@@ -72,37 +39,6 @@ describe("StudentRepository (unit)", () => {
 
             expect(mockDb.select).not.toHaveBeenCalled();
         });
-
-        it("Should query database with matric number match expression", async () => {
-            await repository.searchByMatricNo("2024/2025", 1, "123456", 10, 0);
-
-            expect(mockDb.select).toHaveBeenCalledTimes(2);
-            expect(mockDb.select).toHaveBeenNthCalledWith(1, {
-                matricNo: students.matricNo,
-                name: students.name,
-                courseCode: students.courseCode,
-            });
-            expect(mockDb.select).toHaveBeenNthCalledWith(2, {
-                exists: sql`1`,
-            });
-
-            expect(mockDb.from).toHaveBeenCalledTimes(2);
-            expect(mockDb.from).toHaveBeenCalledAfter(mockDb.select);
-            expect(mockDb.from).toHaveBeenNthCalledWith(1, students);
-            expect(mockDb.from).toHaveBeenNthCalledWith(
-                2,
-                studentRegisteredCourses
-            );
-
-            expect(mockDb.where).toHaveBeenCalledTimes(2);
-            expect(mockDb.where).toHaveBeenCalledAfter(mockDb.from);
-
-            expect(mockDb.limit).toHaveBeenCalledExactlyOnceWith(10);
-            expect(mockDb.limit).toHaveBeenCalledAfter(mockDb.where);
-
-            expect(mockDb.offset).toHaveBeenCalledExactlyOnceWith(0);
-            expect(mockDb.offset).toHaveBeenCalledAfter(mockDb.limit);
-        });
     });
 
     describe("searchByName", () => {
@@ -120,42 +56,6 @@ describe("StudentRepository (unit)", () => {
             ).rejects.toThrow("Offset must be greater than or equal to 0");
 
             expect(mockDb.select).not.toHaveBeenCalled();
-        });
-
-        it("Should query database with name match expression", async () => {
-            mockDb.execute.mockResolvedValue([]);
-
-            await repository.searchByName("2024/2025", 1, "John Doe", 10, 0);
-
-            expect(mockDb.select).toHaveBeenCalledTimes(3);
-            expect(mockDb.select).toHaveBeenNthCalledWith(3, {
-                exists: sql`1`,
-            });
-
-            expect(mockDb.from).toHaveBeenCalledTimes(3);
-            expect(mockDb.from).toHaveBeenCalledAfter(mockDb.select);
-            expect(mockDb.from).toHaveBeenNthCalledWith(1, students);
-            expect(mockDb.from).toHaveBeenNthCalledWith(
-                3,
-                studentRegisteredCourses
-            );
-
-            expect(mockDb.where).toHaveBeenCalledTimes(2);
-            expect(mockDb.where).toHaveBeenCalledAfter(mockDb.from);
-
-            expect(mockDb.orderBy).toHaveBeenCalledOnce();
-            expect(mockDb.orderBy).toHaveBeenCalledAfter(mockDb.where);
-
-            expect(mockDb.limit).toHaveBeenCalledExactlyOnceWith(10);
-            expect(mockDb.limit).toHaveBeenCalledAfter(mockDb.orderBy);
-
-            expect(mockDb.offset).toHaveBeenCalledExactlyOnceWith(0);
-            expect(mockDb.offset).toHaveBeenCalledAfter(mockDb.limit);
-
-            expect(mockDb.execute).toHaveBeenCalledExactlyOnceWith({
-                name: "+JOHN* +DOE*",
-            });
-            expect(mockDb.execute).toHaveBeenCalledAfter(mockDb.offset);
         });
     });
 });

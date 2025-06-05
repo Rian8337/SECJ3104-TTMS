@@ -130,7 +130,7 @@ export class LecturerController extends BaseController {
     async search(
         req: Request<
             "/search",
-            unknown,
+            ILecturer[] | { error: string },
             unknown,
             Partial<{
                 session: string;

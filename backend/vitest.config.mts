@@ -8,6 +8,7 @@ export default defineConfig({
         setupFiles: ["tests/setup/setup.ts"],
         globalSetup: ["tests/setup/globalSetup.ts"],
         globals: true,
+        silent: "passed-only",
         passWithNoTests: true,
         fileParallelism: false,
         poolOptions: { forks: { singleFork: true } },

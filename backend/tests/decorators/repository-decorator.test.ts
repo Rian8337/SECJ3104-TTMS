@@ -2,7 +2,7 @@ import { Repository } from "@/decorators/repository";
 import { createMockClassDecoratorTestTarget } from "../mocks";
 
 describe("@Repository", () => {
-    it("Registers the repository in the DI global container", () => {
+    it("Adds repository metadata and registers the repository to globalThis", () => {
         const testToken = "testToken";
 
         const registeredClass = createMockClassDecoratorTestTarget(
@@ -13,5 +13,14 @@ describe("@Repository", () => {
         expect(Reflect.getMetadata("registrationToken", registeredClass)).toBe(
             testToken
         );
+
+        const repositories = Reflect.getMetadata(
+            "repositories",
+            globalThis
+        ) as unknown[];
+
+        expect(repositories).toBeDefined();
+        expect(Array.isArray(repositories)).toBe(true);
+        expect(repositories).toContain(registeredClass);
     });
 });

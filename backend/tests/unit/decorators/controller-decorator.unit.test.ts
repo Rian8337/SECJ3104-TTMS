@@ -2,6 +2,16 @@ import { Controller } from "@/decorators/controller";
 import { createMockClassDecoratorTestTarget } from "@test/mocks";
 
 describe("@Controller decorator (unit)", () => {
+    afterEach(() => {
+        // Clear the metadata after each test to avoid interference
+        const controllers = Reflect.getMetadata(
+            "controllers",
+            globalThis
+        ) as unknown[];
+
+        controllers.pop();
+    });
+
     it("Adds controller metadata with the default path", () => {
         const t = createMockClassDecoratorTestTarget(Controller);
 

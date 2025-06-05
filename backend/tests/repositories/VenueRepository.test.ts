@@ -126,7 +126,7 @@ describe("VenueRepository (integration)", () => {
 
             expect(clashes).toHaveLength(1);
 
-            expect(clashes[0]).toEqual({
+            expect(clashes[0]).toStrictEqual({
                 courseCode: firstCourse.code,
                 courseName: firstCourse.name,
                 lecturerName: firstLecturer.name,
@@ -134,7 +134,7 @@ describe("VenueRepository (integration)", () => {
                 section: "1",
                 scheduleDay: CourseSectionScheduleDay.monday,
                 scheduleTime: CourseSectionScheduleTime.time2,
-                scheduleVenue: venue.code,
+                scheduleVenue: venue.shortName,
             } satisfies IRawVenueClashTimetable);
         });
     });

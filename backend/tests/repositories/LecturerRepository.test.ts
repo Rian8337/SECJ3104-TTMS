@@ -139,7 +139,7 @@ describe("LecturerRepository (integration)", () => {
                 lecturerNo: lecturer.workerNo,
                 scheduleDay: CourseSectionScheduleDay.monday,
                 scheduleTime: CourseSectionScheduleTime.time2,
-                venueShortName: venue.code,
+                venueShortName: venue.shortName,
             } satisfies IRawTimetable);
 
             expect(timetable[1]).toEqual({
@@ -150,7 +150,7 @@ describe("LecturerRepository (integration)", () => {
                 lecturerNo: lecturer.workerNo,
                 scheduleDay: CourseSectionScheduleDay.tuesday,
                 scheduleTime: CourseSectionScheduleTime.time3,
-                venueShortName: venue.code,
+                venueShortName: venue.shortName,
             } satisfies IRawTimetable);
         });
     });

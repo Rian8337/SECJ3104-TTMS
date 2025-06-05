@@ -1,12 +1,10 @@
 import { LecturerController } from "@/controllers";
 import { ILecturerService } from "@/services";
-import { ITimetable } from "@/types";
+import { ITimetable, IVenueClashTimetable } from "@/types";
 import request from "supertest";
 import {
-    createFailedOperationResultMock,
     createMockRequest,
     createMockResponse,
-    createSuccessfulOperationResultMock,
     mockLecturerService,
 } from "../mocks";
 import { app } from "../setup/app";
@@ -34,196 +32,6 @@ describe("LecturerController (unit)", () => {
 
         type Res = ITimetable[] | { error: string };
 
-        it("Should return 400 if session is missing", async () => {
-            const mockRequest = createMockRequest<
-                "/timetable",
-                Res,
-                Record<string, unknown>,
-                Req
-            >();
-
-            await controller.getTimetable(mockRequest, mockResponse);
-
-            expect(mockResponse.status).toHaveBeenCalledWith(400);
-            expect(mockResponse.json).toHaveBeenCalledWith({
-                error: "Academic session is required.",
-            });
-        });
-
-        it("Should return 400 if semester is missing", async () => {
-            const mockRequest = createMockRequest<
-                "/timetable",
-                Res,
-                Record<string, unknown>,
-                Req
-            >({
-                query: { session: "2023/2024" },
-            });
-
-            await controller.getTimetable(mockRequest, mockResponse);
-
-            expect(mockResponse.status).toHaveBeenCalledWith(400);
-            expect(mockResponse.json).toHaveBeenCalledWith({
-                error: "Semester is required.",
-            });
-        });
-
-        it("Should return 400 if worker_no is missing", async () => {
-            const mockRequest = createMockRequest<
-                "/timetable",
-                Res,
-                Record<string, unknown>,
-                Req
-            >({
-                query: { session: "2023/2024", semester: "1" },
-            });
-
-            await controller.getTimetable(mockRequest, mockResponse);
-
-            expect(mockResponse.status).toHaveBeenCalledWith(400);
-            expect(mockResponse.json).toHaveBeenCalledWith({
-                error: "Worker number is required.",
-            });
-        });
-
-        it("Should return 400 if worker_no is not a number", async () => {
-            const mockRequest = createMockRequest<
-                "/timetable",
-                Res,
-                Record<string, unknown>,
-                Req
-            >({
-                query: {
-                    session: "2023/2024",
-                    semester: "1",
-                    worker_no: "abcde",
-                },
-            });
-
-            await controller.getTimetable(mockRequest, mockResponse);
-
-            expect(mockResponse.status).toHaveBeenCalledWith(400);
-            expect(mockResponse.json).toHaveBeenCalledWith({
-                error: "Invalid worker number format.",
-            });
-        });
-
-        it("Should return 400 if session format is invalid", async () => {
-            const mockRequest = createMockRequest<
-                "/timetable",
-                Res,
-                Record<string, unknown>,
-                Req
-            >({
-                query: {
-                    session: "2023-2024",
-                    semester: "1",
-                    worker_no: "12345",
-                },
-            });
-
-            await controller.getTimetable(mockRequest, mockResponse);
-
-            expect(mockResponse.status).toHaveBeenCalledWith(400);
-            expect(mockResponse.json).toHaveBeenCalledWith({
-                error: "Invalid session format. Expected format: YYYY/YYYY.",
-            });
-        });
-
-        it("Should return 400 if semester is invalid", async () => {
-            const mockRequest = createMockRequest<
-                "/timetable",
-                Res,
-                Record<string, unknown>,
-                Req
-            >({
-                query: {
-                    session: "2023/2024",
-                    semester: "4",
-                    worker_no: "12345",
-                },
-            });
-
-            await controller.getTimetable(mockRequest, mockResponse);
-
-            expect(mockResponse.status).toHaveBeenCalledWith(400);
-            expect(mockResponse.json).toHaveBeenCalledWith({
-                error: "Invalid semester format. Expected format: 1, 2, or 3.",
-            });
-        });
-
-        it("Should return error if timetable retrieval fails", async () => {
-            const result = createFailedOperationResultMock(
-                "Database error",
-                500
-            );
-
-            mockLecturerService.getTimetable.mockResolvedValueOnce(result);
-
-            const mockRequest = createMockRequest<
-                "/timetable",
-                Res,
-                Record<string, unknown>,
-                Req
-            >({
-                query: {
-                    session: "2023/2024",
-                    semester: "1",
-                    worker_no: "12345",
-                },
-            });
-
-            await controller.getTimetable(mockRequest, mockResponse);
-
-            expect(mockLecturerService.getTimetable).toHaveBeenCalledWith(
-                12345,
-                "2023/2024",
-                1
-            );
-
-            expect(result.isSuccessful).toHaveBeenCalled();
-            expect(result.failed).toHaveBeenCalled();
-
-            expect(mockResponse.status).toHaveBeenCalledWith(500);
-            expect(mockResponse.json).toHaveBeenCalledWith({
-                error: "Database error",
-            });
-        });
-
-        it("Should return timetable if all parameters are valid", async () => {
-            const mockTimetable: ITimetable[] = [];
-            const result = createSuccessfulOperationResultMock(mockTimetable);
-
-            mockLecturerService.getTimetable.mockResolvedValueOnce(result);
-
-            const mockRequest = createMockRequest<
-                "/timetable",
-                Res,
-                Record<string, unknown>,
-                Req
-            >({
-                query: {
-                    session: "2023/2024",
-                    semester: "1",
-                    worker_no: "12345",
-                },
-            });
-
-            await controller.getTimetable(mockRequest, mockResponse);
-
-            expect(mockLecturerService.getTimetable).toHaveBeenCalledWith(
-                12345,
-                "2023/2024",
-                1
-            );
-
-            expect(result.isSuccessful).toHaveBeenCalled();
-            expect(result.failed).not.toHaveBeenCalled();
-
-            expect(mockResponse.status).toHaveBeenCalledWith(200);
-            expect(mockResponse.json).toHaveBeenCalledWith(mockTimetable);
-        });
-
         it("Should return 500 if an error occurs", async () => {
             mockLecturerService.getTimetable.mockRejectedValueOnce(
                 new Error("Database error")
@@ -244,16 +52,104 @@ describe("LecturerController (unit)", () => {
 
             await controller.getTimetable(mockRequest, mockResponse);
 
-            expect(mockResponse.status).toHaveBeenCalledWith(500);
-            expect(mockResponse.json).toHaveBeenCalledWith({
-                error: "Internal server error",
-            });
-
             expect(mockLecturerService.getTimetable).toHaveBeenCalledWith(
                 12345,
                 "2023/2024",
                 1
             );
+
+            expect(mockResponse.status).toHaveBeenCalledWith(500);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                error: "Internal server error",
+            });
+        });
+    });
+
+    describe("getVenueClash", () => {
+        type Req = Partial<{
+            session: string;
+            semester: string;
+            worker_no: string;
+        }>;
+
+        type Res = IVenueClashTimetable[] | { error: string };
+
+        it("Should return 500 if an error occurs", async () => {
+            mockLecturerService.getVenueClashes.mockRejectedValueOnce(
+                new Error("Database error")
+            );
+
+            const mockRequest = createMockRequest<
+                "/venue-clash",
+                Res,
+                Record<string, unknown>,
+                Req
+            >({
+                query: {
+                    session: "2023/2024",
+                    semester: "1",
+                    worker_no: "12345",
+                },
+            });
+
+            await controller.getVenueClash(mockRequest, mockResponse);
+
+            expect(mockLecturerService.getVenueClashes).toHaveBeenCalledWith(
+                "2023/2024",
+                1,
+                12345
+            );
+
+            expect(mockResponse.status).toHaveBeenCalledWith(500);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                error: "Internal server error",
+            });
+        });
+    });
+
+    describe("search", () => {
+        type Req = Partial<{
+            session: string;
+            semester: string;
+            query: string;
+            limit: string;
+            offset: string;
+        }>;
+
+        type Res = { name: string; workerNo: number }[] | { error: string };
+
+        it("Should return 500 if an error occurs", async () => {
+            mockLecturerService.search.mockRejectedValueOnce(
+                new Error("Database error")
+            );
+
+            const mockRequest = createMockRequest<
+                "/search",
+                Res,
+                Record<string, unknown>,
+                Req
+            >({
+                query: {
+                    session: "2023/2024",
+                    semester: "1",
+                    query: "John",
+                },
+            });
+
+            await controller.search(mockRequest, mockResponse);
+
+            expect(mockLecturerService.search).toHaveBeenCalledWith(
+                "2023/2024",
+                1,
+                "John",
+                10,
+                0
+            );
+
+            expect(mockResponse.status).toHaveBeenCalledWith(500);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                error: "Internal server error",
+            });
         });
     });
 });

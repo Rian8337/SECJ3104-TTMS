@@ -1,11 +1,11 @@
-import request from "supertest";
+import { sleep } from "@/utils";
 import {
     app,
     loginLecturer,
     loginStudent,
     seededPrimaryData,
 } from "@test/setup";
-import { sleep } from "@/utils";
+import request from "supertest";
 
 describe("Auth System Flow", () => {
     const session = seededPrimaryData.sessions[0];

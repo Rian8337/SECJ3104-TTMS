@@ -1,12 +1,4 @@
-import request from "supertest";
-import {
-    app,
-    cleanupSecondaryTables,
-    loginLecturer,
-    loginStudent,
-    seededPrimaryData,
-    seeders,
-} from "@test/setup";
+import { ILecturer } from "@/database/schema";
 import {
     CourseSectionScheduleDay,
     CourseSectionScheduleTime,
@@ -18,7 +10,15 @@ import {
     ITimetableCourseSection,
     IVenueClashTimetable,
 } from "@/types";
-import { ILecturer } from "@/database/schema";
+import {
+    app,
+    cleanupSecondaryTables,
+    loginLecturer,
+    loginStudent,
+    seededPrimaryData,
+    seeders,
+} from "@test/setup";
+import request from "supertest";
 
 describe("Lecturer System Flow", () => {
     const [session, otherSession] = seededPrimaryData.sessions;
@@ -776,7 +776,8 @@ describe("Lecturer System Flow", () => {
                 expect(result.venueClashes).toBeInstanceOf(Array);
                 expect(result.venueClashes).toHaveLength(1);
 
-                // This fails in CI if toStrictEqual is used, so we check properties individually.
+                // This fails in CI if toStrictEqual is used due to different ordering,
+                // so we check properties individually.
                 const clash = result.venueClashes[0];
 
                 expect(clash.day).toBe(CourseSectionScheduleDay.monday);

@@ -6,6 +6,8 @@ const loginEndpoint = "/auth/login";
 /**
  * Logins a test agent as a student.
  *
+ * This uses the first student from {@link seededPrimaryData.students} to perform the login.
+ *
  * @param agent The test agent to login.
  * @returns The response from the login endpoint.
  */
@@ -20,6 +22,8 @@ export function loginStudent(agent: TestAgent) {
 
 /**
  * Logins a test agent as a lecturer.
+ *
+ * This uses the first lecturer from {@link seededPrimaryData.lecturers} to perform the login.
  *
  * @param agent The test agent to login.
  * @returns The response from the login endpoint.

@@ -15,6 +15,7 @@ import {
     IAnalyticsClashingStudent,
     IAnalyticsStudentDepartment,
     ITimetable,
+    ITimetableCourseSection,
     IVenueClashTimetable,
 } from "@/types";
 import { ILecturer } from "@/database/schema";
@@ -775,29 +776,34 @@ describe("Lecturer System Flow", () => {
                 expect(result.venueClashes).toBeInstanceOf(Array);
                 expect(result.venueClashes).toHaveLength(1);
 
-                expect(result.venueClashes[0]).toStrictEqual({
-                    day: CourseSectionScheduleDay.monday,
-                    time: CourseSectionScheduleTime.time2,
-                    venue: { shortName: venue.shortName },
-                    courseSections: [
-                        {
-                            course: {
-                                code: secondCourse.code,
-                                name: secondCourse.name,
-                            },
-                            lecturer: otherLecturer,
-                            section: "1",
-                        },
-                        {
-                            course: {
-                                code: firstCourse.code,
-                                name: firstCourse.name,
-                            },
-                            lecturer,
-                            section: "1",
-                        },
-                    ],
-                } satisfies IVenueClashTimetable);
+                // This fails in CI if toStrictEqual is used, so we check properties individually.
+                const clash = result.venueClashes[0];
+
+                expect(clash.day).toBe(CourseSectionScheduleDay.monday);
+                expect(clash.time).toBe(CourseSectionScheduleTime.time2);
+                expect(clash.venue).toStrictEqual({
+                    shortName: venue.shortName,
+                });
+                expect(clash.courseSections).toBeInstanceOf(Array);
+                expect(clash.courseSections).toHaveLength(2);
+
+                expect(clash.courseSections).toContainEqual({
+                    course: {
+                        code: firstCourse.code,
+                        name: firstCourse.name,
+                    },
+                    lecturer,
+                    section: "1",
+                } satisfies ITimetableCourseSection);
+
+                expect(clash.courseSections).toContainEqual({
+                    course: {
+                        code: secondCourse.code,
+                        name: secondCourse.name,
+                    },
+                    lecturer: otherLecturer,
+                    section: "1",
+                } satisfies ITimetableCourseSection);
 
                 expect(result.departments).toBeInstanceOf(Array);
                 expect(result.departments).toHaveLength(1);

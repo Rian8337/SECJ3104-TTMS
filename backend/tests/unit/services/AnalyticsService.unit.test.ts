@@ -132,6 +132,7 @@ describe("AnalyticsService (unit)", () => {
         )) as SuccessfulOperationResult<IAnalytics>;
 
         expect(result.status).toBe(200);
+        expect(result.data.activeStudents).toBe(1);
 
         expect(result.data.backToBackStudents).toHaveLength(1);
 

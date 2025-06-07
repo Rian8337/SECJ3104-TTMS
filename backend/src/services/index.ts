@@ -5,6 +5,7 @@ export * from "./AuthService";
 export * from "./IAnalyticsService";
 export * from "./IAuthService";
 export * from "./ILecturerService";
+export * from "./IService";
 export * from "./IStudentService";
 export * from "./IVenueService";
 export * from "./LecturerService";

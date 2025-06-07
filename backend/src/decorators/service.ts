@@ -1,3 +1,4 @@
+import { IService } from "@/services";
 import { injectable, InjectionToken } from "tsyringe";
 import { constructor } from "tsyringe/dist/typings/types";
 
@@ -9,7 +10,7 @@ import { constructor } from "tsyringe/dist/typings/types";
  * @param token The injection token for the service.
  * @returns A class decorator that marks the class as a service.
  */
-export function Service(token: InjectionToken): ClassDecorator {
+export function Service(token: InjectionToken<IService>): ClassDecorator {
     return (target) => {
         const targetConstructor = target as unknown as constructor<unknown>;
 

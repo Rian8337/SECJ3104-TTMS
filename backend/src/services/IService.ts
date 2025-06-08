@@ -5,8 +5,6 @@ import {
 
 /**
  * Represents a service that handles operations and provides utility methods for creating operation results.
- *
- * @template T The type of the data.
  */
 export interface IService {
     /**
@@ -15,6 +13,7 @@ export interface IService {
      * @param data The data of the operation.
      * @param status The HTTP status code of the operation. Defaults to 200 (OK).
      * @returns The successful operation result.
+     * @template T The type of the data.
      */
     createSuccessfulResponse<T>(
         data: T,

@@ -163,8 +163,14 @@ export class LecturerController extends BaseController {
         const parsedLimit = parseInt(limit ?? "10");
         const parsedOffset = parseInt(offset ?? "0");
 
-        if (Number.isNaN(parsedLimit) || Number.isNaN(parsedOffset)) {
-            res.status(400).json({ error: "Invalid pagination parameters." });
+        if (Number.isNaN(parsedLimit) || parsedLimit < 1) {
+            res.status(400).json({ error: "Invalid limit" });
+
+            return;
+        }
+
+        if (Number.isNaN(parsedOffset) || parsedOffset < 0) {
+            res.status(400).json({ error: "Invalid offset" });
 
             return;
         }

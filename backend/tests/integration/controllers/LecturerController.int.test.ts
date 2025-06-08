@@ -358,6 +358,62 @@ describe("LecturerController (integration)", () => {
                 });
             });
 
+            it("Should return 400 if limit is not a number", async () => {
+                const res = await agent.get(endpoint).query({
+                    session: session.session,
+                    semester: session.semester,
+                    query: "John",
+                    limit: "not-a-number",
+                });
+
+                expect(res.status).toBe(400);
+                expect(res.body).toEqual({
+                    error: "Invalid limit",
+                });
+            });
+
+            it("Should return 400 if limit is less than 1", async () => {
+                const res = await agent.get(endpoint).query({
+                    session: session.session,
+                    semester: session.semester,
+                    query: "John",
+                    limit: "-1",
+                });
+
+                expect(res.status).toBe(400);
+                expect(res.body).toEqual({
+                    error: "Invalid limit",
+                });
+            });
+
+            it("Should return 400 if offset is not a number", async () => {
+                const res = await agent.get(endpoint).query({
+                    session: session.session,
+                    semester: session.semester,
+                    query: "John",
+                    offset: "not-a-number",
+                });
+
+                expect(res.status).toBe(400);
+                expect(res.body).toEqual({
+                    error: "Invalid offset",
+                });
+            });
+
+            it("Should return 400 if offset is less than 0", async () => {
+                const res = await agent.get(endpoint).query({
+                    session: session.session,
+                    semester: session.semester,
+                    query: "John",
+                    offset: "-1",
+                });
+
+                expect(res.status).toBe(400);
+                expect(res.body).toEqual({
+                    error: "Invalid offset",
+                });
+            });
+
             it("Should return lecturer search results if all parameters are valid", async () => {
                 const res = await agent.get(endpoint).query({
                     session: session.session,

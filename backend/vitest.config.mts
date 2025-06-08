@@ -16,7 +16,7 @@ export default defineConfig({
         passWithNoTests: true,
         fileParallelism: false,
         poolOptions: { forks: { singleFork: true } },
-        reporters: ["default", "hanging-process", "github-actions"],
+        reporters: ["default", "hanging-process", "github-actions", "html"],
         coverage: {
             provider: "istanbul",
             include: ["src/**/*.ts"],

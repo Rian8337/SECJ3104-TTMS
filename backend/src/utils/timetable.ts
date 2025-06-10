@@ -1,4 +1,6 @@
 import {
+    CourseSectionScheduleDay,
+    CourseSectionScheduleTime,
     IRawTimetable,
     IRawVenueClashTimetable,
     ITimetable,
@@ -78,4 +80,28 @@ export function convertRawVenueClashTimetableToVenueClashTimetable(
     }
 
     return Array.from(clashes.values());
+}
+
+/**
+ * Validates whether the given day is a valid timetable day.
+ *
+ * @param day The day to validate.
+ * @returns `true` if the day is valid, `false` otherwise.
+ */
+export function isValidTimetableDay(
+    day: unknown
+): day is CourseSectionScheduleDay {
+    return typeof day === "number" && day >= 1 && day <= 7;
+}
+
+/**
+ * Validates whether the given time is a valid timetable time.
+ *
+ * @param time The time to validate.
+ * @returns `true` if the time is valid, `false` otherwise.
+ */
+export function isValidTimetableTime(
+    time: unknown
+): time is CourseSectionScheduleTime {
+    return typeof time === "number" && time >= 1 && time <= 11;
 }

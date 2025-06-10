@@ -78,4 +78,5 @@ export const mockVenueService: Mocked<IVenueService> = {
     createFailedResponse: vi.fn(),
     createSuccessfulResponse: vi.fn(),
     getByCode: vi.fn(),
+    getAvailableVenues: vi.fn(),
 };

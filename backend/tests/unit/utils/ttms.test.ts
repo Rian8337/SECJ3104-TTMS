@@ -1,6 +1,8 @@
 import {
     isValidKpNo,
     isValidMatricNumber,
+    isValidTimetableDay,
+    isValidTimetableTime,
     isValidWorkerNo,
     validateAcademicSession,
     validateSemester,
@@ -75,6 +77,34 @@ describe("TTMS utilities", () => {
             expect(isValidWorkerNo("12345678901234567890")).toBe(false);
             expect(isValidWorkerNo("abcde")).toBe(false);
             expect(isValidWorkerNo(12345)).toBe(false);
+        });
+    });
+
+    describe("isValidTimetableDay", () => {
+        it("Should validate a valid timetable day", () => {
+            expect(isValidTimetableDay(1)).toBe(true);
+            expect(isValidTimetableDay(7)).toBe(true);
+        });
+
+        it("Should invalidate an invalid timetable day", () => {
+            expect(isValidTimetableDay(0)).toBe(false);
+            expect(isValidTimetableDay(8)).toBe(false);
+            expect(isValidTimetableDay(-1)).toBe(false);
+            expect(isValidTimetableDay("Monday")).toBe(false);
+        });
+    });
+
+    describe("isValidTimetableTime", () => {
+        it("Should validate a valid timetable time", () => {
+            expect(isValidTimetableTime(1)).toBe(true);
+            expect(isValidTimetableTime(12)).toBe(true);
+        });
+
+        it("Should invalidate an invalid timetable time", () => {
+            expect(isValidTimetableTime(0)).toBe(false);
+            expect(isValidTimetableTime(17)).toBe(false);
+            expect(isValidTimetableTime(-1)).toBe(false);
+            expect(isValidTimetableTime("time1")).toBe(false);
         });
     });
 });

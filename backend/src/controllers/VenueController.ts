@@ -83,6 +83,7 @@ export class VenueController extends BaseController {
                 times
                     .trim()
                     .split(",")
+                    .filter((t) => t.length > 0)
                     .map((t) => parseInt(t.trim(), 10))
             )
         );

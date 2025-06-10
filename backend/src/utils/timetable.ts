@@ -103,5 +103,5 @@ export function isValidTimetableDay(
 export function isValidTimetableTime(
     time: unknown
 ): time is CourseSectionScheduleTime {
-    return typeof time === "number" && time >= 1 && time <= 11;
+    return typeof time === "number" && time >= 1 && time <= 16;
 }

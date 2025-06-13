@@ -7,11 +7,13 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertTriangle } from "lucide-react"
 import { ClashesView } from "@/components/lecturer/clashes-view"
 import { AnalyticsDashboard } from "@/components/lecturer/analytics-dashboard"
+import { VenueAvailabilityView } from "@/components/lecturer/venue-availability-view"
 import { useRouter, useSearchParams } from "next/navigation"
 import { API_BASE_URL } from "@/lib/config"
 import { DailyClassesView } from "@/components/lecturer/daily-classes-view"
 import { motion } from "framer-motion"
-import { formatTimetableData } from "@/lib/timetable-utils"
+import { formatTimetableData, getTimetableClashes, getClashSummary } from "@/lib/timetable-utils"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
 interface TimetableEntry {
   id: string
@@ -46,6 +48,10 @@ export function LecturerDashboard() {
   const [error, setError] = useState<string | null>(null)
   const [lecturerInfo, setLecturerInfo] = useState<LecturerInfo | null>(null)
   const router = useRouter()
+
+  // Detect clashes in timetable
+  const clashes = getTimetableClashes(timetable)
+  const clashSummary = getClashSummary(clashes)
 
   // Update activeTab and activeSubTab when URL changes
   useEffect(() => {
@@ -170,11 +176,31 @@ export function LecturerDashboard() {
         <h3 className="text-2xl font-cursive text-center mt-2">{lecturerInfo.name}</h3>
       </motion.div>
 
+      {clashSummary.count > 0 && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Timetable Clashes Detected</AlertTitle>
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="clash-details" className="border-none">
+              <AccordionTrigger className="py-2 hover:no-underline">
+                View Clash Details
+              </AccordionTrigger>
+              <AccordionContent>
+                <AlertDescription className="whitespace-pre-line">
+                  {clashSummary.description}
+                </AlertDescription>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </Alert>
+      )}
+
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-       <TabsList className="border #000000 w-full">
+        <TabsList className="border #000000 w-full">
           <TabsTrigger value="my-timetable">My Timetable</TabsTrigger>
           <TabsTrigger value="search">Search</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="venues">Venues</TabsTrigger>
         </TabsList>
 
         <TabsContent value="my-timetable" className="space-y-4">
@@ -215,6 +241,10 @@ export function LecturerDashboard() {
               <ClashesView />
             </TabsContent>
           </Tabs>
+        </TabsContent>
+
+        <TabsContent value="venues">
+          <VenueAvailabilityView />
         </TabsContent>
       </Tabs>
     </motion.div>

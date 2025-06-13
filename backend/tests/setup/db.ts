@@ -93,14 +93,14 @@ export const seededPrimaryData = {
      */
     venues: [
         {
-            code: "VENUE_101",
+            code: "N28-VN-101",
             capacity: 100,
             name: "Venue 101",
             shortName: "V101",
             type: VenueType.laboratory,
         },
         {
-            code: "VENUE_102",
+            code: "N28A-VN-102",
             capacity: 200,
             name: "Venue 102",
             shortName: "V102",

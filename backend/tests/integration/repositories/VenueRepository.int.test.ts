@@ -23,7 +23,7 @@ describe("VenueRepository (integration)", () => {
         });
 
         it("Should return venue if it exists", async () => {
-            const fetchedVenue = await repository.getByCode("VENUE_101");
+            const fetchedVenue = await repository.getByCode("N28-VN-101");
 
             expect(fetchedVenue).toEqual(seededPrimaryData.venues[0]);
         });
@@ -136,6 +136,80 @@ describe("VenueRepository (integration)", () => {
                 scheduleTime: CourseSectionScheduleTime.time2,
                 scheduleVenue: venue.shortName,
             } satisfies IRawVenueClashTimetable);
+        });
+    });
+
+    describe("getAvailableVenues", () => {
+        const session = seededPrimaryData.sessions[0];
+        const venue = seededPrimaryData.venues[0];
+
+        beforeAll(async () => {
+            const otherSession = seededPrimaryData.sessions[1];
+            const course = seededPrimaryData.courses[0];
+
+            const [section, otherSection] =
+                await seeders.courseSection.seedMany(
+                    {
+                        session: session.session,
+                        semester: session.semester,
+                        courseCode: course.code,
+                        section: "1",
+                    },
+                    // Should not be included in the results
+                    {
+                        session: otherSession.session,
+                        semester: otherSession.semester,
+                        courseCode: course.code,
+                        section: "1",
+                    }
+                );
+
+            await seeders.courseSectionSchedule.seedMany(
+                {
+                    session: session.session,
+                    semester: session.semester,
+                    courseCode: section.courseCode,
+                    section: section.section,
+                    day: CourseSectionScheduleDay.monday,
+                    time: CourseSectionScheduleTime.time2,
+                    venueCode: venue.code,
+                },
+                {
+                    session: section.session,
+                    semester: section.semester,
+                    courseCode: section.courseCode,
+                    section: section.section,
+                    day: CourseSectionScheduleDay.monday,
+                    time: CourseSectionScheduleTime.time3,
+                    venueCode: venue.code,
+                },
+                {
+                    session: otherSection.session,
+                    semester: otherSection.semester,
+                    courseCode: otherSection.courseCode,
+                    section: otherSection.section,
+                    day: CourseSectionScheduleDay.monday,
+                    time: CourseSectionScheduleTime.time4,
+                    venueCode: venue.code,
+                }
+            );
+        });
+
+        afterAll(cleanupSecondaryTables);
+
+        it("Should return available venues for a given academic session and semester", async () => {
+            const availableVenues = await repository.getAvailableVenues(
+                session.session,
+                session.semester,
+                CourseSectionScheduleDay.monday,
+                [CourseSectionScheduleTime.time4]
+            );
+
+            expect(availableVenues).toHaveLength(2);
+            expect(availableVenues[0]).toStrictEqual(venue);
+            expect(availableVenues[1]).toStrictEqual(
+                seededPrimaryData.venues[1]
+            );
         });
     });
 });

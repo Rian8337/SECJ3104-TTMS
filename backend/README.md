@@ -78,16 +78,17 @@ For all endpoints, unless otherwise specified, non-2xx responses will return the
 }
 ```
 
-| Name                                                    | Description                                                                                          |
-| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| [POST `/auth/login`](#post-authlogin)                   | Logs a user into the server                                                                          |
-| [POST `/auth/logout`](#post-authlogout)                 | Logs a user out                                                                                      |
-| [GET `/student/timetable`](#get-studenttimetable)       | Obtains a student's timetable                                                                        |
-| [GET `/student/search`](#get-studentsearch)             | Searches for students                                                                                |
-| [GET `/lecturer/timetable`](#get-lecturertimetable)     | Obtains a lecturer's timetable                                                                       |
-| [GET `/lecturer/venue-clash`](#get-lecturervenue-clash) | Obtains the timetables of other lecturers that clash with the lecturer's timetable in terms of venue |
-| [GET `/lecturer/search`](#get-lecturersearch)           | Searches for lecturers                                                                               |
-| [GET `/analytics/generate`](#get-analyticsgenerate)     | Obtains analytics of an academic session and semester                                                |
+| Name                                                        | Description                                                                                          |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| [POST `/auth/login`](#post-authlogin)                       | Logs a user into the server                                                                          |
+| [POST `/auth/logout`](#post-authlogout)                     | Logs a user out                                                                                      |
+| [GET `/student/timetable`](#get-studenttimetable)           | Obtains a student's timetable                                                                        |
+| [GET `/student/search`](#get-studentsearch)                 | Searches for students                                                                                |
+| [GET `/lecturer/timetable`](#get-lecturertimetable)         | Obtains a lecturer's timetable                                                                       |
+| [GET `/lecturer/venue-clash`](#get-lecturervenue-clash)     | Obtains the timetables of other lecturers that clash with the lecturer's timetable in terms of venue |
+| [GET `/lecturer/search`](#get-lecturersearch)               | Searches for lecturers                                                                               |
+| [GET `/analytics/generate`](#get-analyticsgenerate)         | Obtains analytics of an academic session and semester                                                |
+| [GET `/venue/available-venues`](#get-venueavailable-venues) | Obtains venues that are not occupied                                                                 |
 
 ## POST `/auth/login`
 
@@ -222,6 +223,23 @@ This endpoint is restricted to a lecturer, in which they must authenticate first
 ### Response
 
 An [`Analytics`](#analytics) object.
+
+## GET `/venue/available-venues`
+
+Obtains venues that are not occupied.
+
+### Query Parameters
+
+| Name       | Required | Default | Description                                                                             | Example    |
+| ---------- | -------- | ------- | --------------------------------------------------------------------------------------- | ---------- |
+| `session`  | ✅       | N/A     | The academic session to check availability in                                           | 2024/2025  |
+| `semester` | ✅       | N/A     | The academic semester to check availability in                                          | 1, 2, or 3 |
+| `day`      | ✅       | N/A     | The day of the week to check availability for. See [`Day`](#day) data types section     | 1          |
+| `times`    | ✅       | N/A     | Comma-separated times to check availability for. See [`Time`](#time) data types section | 2,3,4      |
+
+### Response
+
+A list of [`Venue`](#venue) objects.
 
 # Data Types
 
@@ -431,6 +449,45 @@ type TimetableLecturer = {
     name: string;
 };
 ```
+
+## Venue
+
+```ts
+type Venue = {
+    /**
+     * The code of the venue.
+     */
+    code: string;
+
+    /**
+     * The name of the venue.
+     */
+    name: string;
+
+    /**
+     * The short name of the venue.
+     */
+    shortName: string;
+
+    /**
+     * The capacity of the venue.
+     */
+    capacity: number;
+
+    /**
+     * The type of the venue. See Venue Type data types section.
+     */
+    type: VenueType;
+};
+```
+
+### Venue Type
+
+| Value | Description  |
+| ----- | ------------ |
+| 0     | Unidentified |
+| 1     | Laboratory   |
+| 2     | Lecture Room |
 
 ## Analytics
 

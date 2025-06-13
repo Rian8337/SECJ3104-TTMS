@@ -68,4 +68,5 @@ export const mockStudentRepository: Mocked<IStudentRepository> = {
 export const mockVenueRepository: Mocked<IVenueRepository> = {
     getByCode: vi.fn(),
     getVenueClashes: vi.fn(),
+    getAvailableVenues: vi.fn(),
 };

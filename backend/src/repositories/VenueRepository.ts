@@ -6,11 +6,30 @@ import {
     IVenue,
     lecturers,
     venues,
+    VenueType,
 } from "@/database/schema";
 import { Repository } from "@/decorators/repository";
 import { dependencyTokens } from "@/dependencies/tokens";
-import { IRawVenueClashTimetable, TTMSSemester, TTMSSession } from "@/types";
-import { and, asc, eq, isNotNull, ne, or } from "drizzle-orm";
+import {
+    CourseSectionScheduleDay,
+    CourseSectionScheduleTime,
+    IRawVenueClashTimetable,
+    TTMSSemester,
+    TTMSSession,
+} from "@/types";
+import {
+    and,
+    asc,
+    eq,
+    gt,
+    inArray,
+    isNotNull,
+    like,
+    ne,
+    notExists,
+    or,
+    sql,
+} from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
 import { inject } from "tsyringe";
 import { BaseRepository } from "./BaseRepository";
@@ -131,5 +150,44 @@ export class VenueRepository
                 .orderBy(asc(css1.day), asc(css1.time))
                 .execute()
         );
+    }
+
+    getAvailableVenues(
+        session: TTMSSession,
+        semester: TTMSSemester,
+        day: CourseSectionScheduleDay,
+        times: CourseSectionScheduleTime[]
+    ): Promise<IVenue[]> {
+        return this.db
+            .select()
+            .from(venues)
+            .where(
+                and(
+                    // Only include venues from N28/N28A.
+                    like(venues.code, "N28%"),
+                    gt(venues.capacity, 0),
+                    ne(venues.type, VenueType.none),
+                    notExists(
+                        this.db
+                            .select({ exists: sql`1` })
+                            .from(courseSectionSchedules)
+                            .where(
+                                and(
+                                    eq(courseSectionSchedules.session, session),
+                                    eq(
+                                        courseSectionSchedules.semester,
+                                        semester
+                                    ),
+                                    eq(
+                                        courseSectionSchedules.venueCode,
+                                        venues.code
+                                    ),
+                                    eq(courseSectionSchedules.day, day),
+                                    inArray(courseSectionSchedules.time, times)
+                                )
+                            )
+                    )
+                )
+            );
     }
 }

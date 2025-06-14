@@ -13,7 +13,10 @@ export abstract class BaseController {
      * @param res The Express response object to send the result to.
      * @param result The result of the operation.
      */
-    respondWithOperationResult(res: Response, result: OperationResult) {
+    protected respondWithOperationResult(
+        res: Response,
+        result: OperationResult
+    ) {
         res.status(result.status);
 
         if (result.isSuccessful()) {
@@ -31,7 +34,7 @@ export abstract class BaseController {
      * @returns An object containing the validated session and semester if validation is successful;
      * otherwise, returns null.
      */
-    validateSessionSemester(
+    protected validateSessionSemester(
         req: Request<
             unknown,
             { error: string },

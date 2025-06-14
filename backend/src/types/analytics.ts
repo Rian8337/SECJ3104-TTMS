@@ -1,12 +1,14 @@
 import {
-    ICourse,
     ICourseSection,
     ICourseSectionSchedule,
     IStudent,
-    IVenue,
 } from "@/database/schema";
+import {
+    ITimetableCourse,
+    ITimetableVenue,
+    IVenueClashTimetable,
+} from "./timetable";
 import { TTMSCourseCode } from "./ttms";
-import { IVenueClashTimetable } from "./timetable";
 
 /**
  * Represents analytics data in an academic session and semester.
@@ -55,7 +57,7 @@ export interface IAnalyticsClashingStudent extends IBaseAnalyticsStudent {
  * Represents a course with its sections and schedules for analytics purposes.
  */
 export interface IAnalyticsCourse extends Pick<ICourseSection, "section"> {
-    readonly course: Pick<ICourse, "code" | "name">;
+    readonly course: ITimetableCourse;
     readonly schedules: IAnalyticsCourseSchedule[];
 }
 
@@ -67,20 +69,23 @@ export interface IAnalyticsScheduleClash
     readonly courses: IAnalyticsScheduleClashCourse[];
 }
 
+/**
+ * Represents a back-to-back schedule for a student in analytics.
+ */
 export interface IAnalyticsBackToBackSchedule
     extends Pick<ICourseSectionSchedule, "day" | "time"> {
-    readonly course: Pick<ICourse, "code" | "name">;
+    readonly course: ITimetableCourse;
     readonly section: string;
-    readonly venue: Pick<IVenue, "shortName"> | null;
+    readonly venue: ITimetableVenue | null;
 }
 
 /**
  * Represents a clashing course for a student in analytics.
  */
 export interface IAnalyticsScheduleClashCourse {
-    readonly course: Pick<ICourse, "code" | "name">;
+    readonly course: ITimetableCourse;
     readonly section: string;
-    readonly venue: Pick<IVenue, "shortName"> | null;
+    readonly venue: ITimetableVenue | null;
 }
 
 /**
@@ -88,5 +93,5 @@ export interface IAnalyticsScheduleClashCourse {
  */
 export interface IAnalyticsCourseSchedule
     extends Pick<ICourseSectionSchedule, "day" | "time"> {
-    readonly venue: Pick<IVenue, "shortName"> | null;
+    readonly venue: ITimetableVenue | null;
 }

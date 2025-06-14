@@ -13,7 +13,7 @@ import { dependencyTokens } from "@/dependencies/tokens";
 import {
     CourseSectionScheduleDay,
     CourseSectionScheduleTime,
-    IRawVenueClashTimetable,
+    IRawTimetable,
     TTMSSemester,
     TTMSSession,
 } from "@/types";
@@ -60,7 +60,7 @@ export class VenueRepository
         session: TTMSSession,
         semester: TTMSSemester,
         workerNo?: number
-    ): Promise<IRawVenueClashTimetable[]> {
+    ): Promise<IRawTimetable[]> {
         // Primary course section of the lecturer.
         const cs1 = alias(courseSections, "cs1");
 
@@ -87,7 +87,7 @@ export class VenueRepository
                     courseName: c.name,
                     scheduleDay: css1.day,
                     scheduleTime: css1.time,
-                    scheduleVenue: v.shortName,
+                    venueShortName: v.shortName,
                 })
                 .from(cs1)
                 // Get all schedules of the primary course section.

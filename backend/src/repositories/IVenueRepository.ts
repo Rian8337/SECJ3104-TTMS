@@ -1,5 +1,5 @@
 import { IVenue } from "@/database/schema";
-import { IRawVenueClashTimetable } from "@/types";
+import { IRawTimetable } from "@/types";
 import {
     CourseSectionScheduleDay,
     CourseSectionScheduleTime,
@@ -32,7 +32,7 @@ export interface IVenueRepository {
         session: TTMSSession,
         semester: TTMSSemester,
         workerNo?: number
-    ): Promise<IRawVenueClashTimetable[]>;
+    ): Promise<IRawTimetable[]>;
 
     /**
      * Obtains the venues that are available in a given academic session and semester

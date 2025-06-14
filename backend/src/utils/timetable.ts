@@ -1,9 +1,4 @@
-import {
-    IRawTimetable,
-    IRawVenueClashTimetable,
-    ITimetable,
-    IVenueClashTimetable,
-} from "@/types";
+import { IRawTimetable, ITimetable, IVenueClashTimetable } from "@/types";
 
 /**
  * Converts raw timetables from the database to a structured timetable format.
@@ -43,18 +38,18 @@ export function convertRawTimetableToTimetable(
  * @returns An array of structured venue clash timetables.
  */
 export function convertRawVenueClashTimetableToVenueClashTimetable(
-    rawTimetables: IRawVenueClashTimetable[]
+    rawTimetables: IRawTimetable[]
 ): IVenueClashTimetable[] {
     const clashes = new Map<string, IVenueClashTimetable>();
 
     for (const timetable of rawTimetables) {
-        const key = `${timetable.scheduleDay.toString()}-${timetable.scheduleTime.toString()}-${timetable.scheduleVenue!}`;
+        const key = `${timetable.scheduleDay.toString()}-${timetable.scheduleTime.toString()}-${timetable.venueShortName!}`;
 
         if (!clashes.has(key)) {
             clashes.set(key, {
                 day: timetable.scheduleDay,
                 time: timetable.scheduleTime,
-                venue: { shortName: timetable.scheduleVenue! },
+                venue: { shortName: timetable.venueShortName! },
                 courseSections: [],
             });
         }

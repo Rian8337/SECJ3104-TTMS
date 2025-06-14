@@ -2,11 +2,11 @@ import { dependencyTokens } from "@/dependencies/tokens";
 import {
     CourseSectionScheduleDay,
     CourseSectionScheduleTime,
-    IRawVenueClashTimetable,
+    IRawTimetable,
 } from "@/types";
 import {
-    createTestContainer,
     cleanupSecondaryTables,
+    createTestContainer,
     seededPrimaryData,
     seeders,
 } from "@test/setup";
@@ -134,8 +134,8 @@ describe("VenueRepository (integration)", () => {
                 section: "1",
                 scheduleDay: CourseSectionScheduleDay.monday,
                 scheduleTime: CourseSectionScheduleTime.time2,
-                scheduleVenue: venue.shortName,
-            } satisfies IRawVenueClashTimetable);
+                venueShortName: venue.shortName,
+            } satisfies IRawTimetable);
         });
     });
 

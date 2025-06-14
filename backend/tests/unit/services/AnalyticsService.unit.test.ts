@@ -111,7 +111,7 @@ describe("AnalyticsService (unit)", () => {
                 lecturerNo: null,
                 scheduleDay: CourseSectionScheduleDay.monday,
                 scheduleTime: CourseSectionScheduleTime.time2,
-                scheduleVenue: venue.shortName,
+                venueShortName: venue.shortName,
                 section: "1",
             },
             {
@@ -121,7 +121,7 @@ describe("AnalyticsService (unit)", () => {
                 lecturerNo: null,
                 scheduleDay: CourseSectionScheduleDay.monday,
                 scheduleTime: CourseSectionScheduleTime.time2,
-                scheduleVenue: venue.shortName,
+                venueShortName: venue.shortName,
                 section: "1",
             },
         ]);

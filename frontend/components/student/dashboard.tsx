@@ -9,8 +9,9 @@ import { DailyClassesView } from "@/components/student/daily-classes-view"
 import { useSearchParams, useRouter } from "next/navigation"
 import { API_BASE_URL } from "@/lib/config"
 import { motion } from "framer-motion"
-import { formatTimetableData } from "@/lib/timetable-utils"
+import { formatTimetableData, getTimetableClashes, getClashSummary } from "@/lib/timetable-utils"
 import { TimetableView } from "@/components/timetable-view"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
 interface TimetableEntry {
   id: string
@@ -52,6 +53,10 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
   const [lecturerError, setLecturerError] = useState<string | null>(null)
   const [lecturerName, setLecturerName] = useState<string>("")
   const router = useRouter()
+
+  // Detect clashes in timetable
+  const clashes = getTimetableClashes(timetable)
+  const clashSummary = getClashSummary(clashes)
 
   // Update activeTab when URL changes
   useEffect(() => {
@@ -100,18 +105,6 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
 
     fetchTimetable()
   }, [studentInfo?.matricNo])
-
-  // Detect clashes in timetable
-  const clashes = timetable.filter((class1) =>
-    timetable.some(
-      (class2) =>
-        class1.id !== class2.id &&
-        class1.day === class2.day &&
-        ((class1.startTime >= class2.startTime && class1.startTime < class2.endTime) ||
-          (class1.endTime > class2.startTime && class1.endTime <= class2.endTime) ||
-          (class1.startTime <= class2.startTime && class1.endTime >= class2.endTime)),
-    ),
-  )
 
   // Add new function to fetch lecturer timetable
   const fetchLecturerTimetable = async (workerNo: string, name: string) => {
@@ -176,6 +169,25 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
         <h3 className="text-2xl font-cursive text-center mt-2">{studentInfo.name}</h3> 
       </motion.div>
 
+      {clashSummary.count > 0 && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Timetable Clashes Detected</AlertTitle>
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="clash-details" className="border-none">
+              <AccordionTrigger className="py-2 hover:no-underline">
+                View Clash Details
+              </AccordionTrigger>
+              <AccordionContent>
+                <AlertDescription className="whitespace-pre-line">
+                  {clashSummary.description}
+                </AlertDescription>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </Alert>
+      )}
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 border #000000">
           <TabsTrigger value="my-timetable">Dashboard</TabsTrigger>
@@ -191,58 +203,45 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
             </Alert>
           )}
 
-          {clashes.length > 0 && (
-            <Alert variant="destructive">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Timetable Clashes Detected</AlertTitle>
-              <AlertDescription>You have {clashes.length} class conflicts in your schedule.</AlertDescription>
-            </Alert>
-          )}
-
-          <div className="space-y-2">
-            {/* <p className="text-sm text-muted-foreground text-center p-4">
-              {studentInfo.facultyCode ? `Faculty of ${studentInfo.facultyCode}` : ''}
-            </p> */}
-            {showLecturerTimetable ? (
-              <div className="space-y-4">
-                <div className="flex justify-center items-center">
-                  <button
-                  onClick={() => setShowLecturerTimetable(false)}
-                  className="flex items-center justify-center gap-2 px-4 py-2 bg-white text-black border rounded hover:bg-gray-100 transition-colors"
-                  style={{ borderColor: '#000000' }}
-                >
-                  <img
-                    src="https://img.icons8.com/pastel-glyph/100/u-turn-to-left.png"
-                    alt="Back Icon"
-                    className="w-8 h-8"
-                  />
-                  Return
-                </button>
-                </div>
-                <h2 className="text-l font-semibold text-blue-700 text-center">{lecturerName}'s Timetable</h2>
-                {lecturerLoading ? (
-                  <div className="text-center py-4">Loading lecturer timetable...</div>
-                ) : lecturerError ? (
-                  <div className="text-center py-4 text-red-500">{lecturerError}</div>
-                ) : (
-                  <TimetableView 
-                    classes={lecturerTimetable} 
-                    userType="lecturer"
-                    showDaySelector={true}
-                  />
-                )}
-              </div>
-            ) : (
-              loading ? (
-                <div className="text-center py-4">Loading timetable...</div>
-              ) : (
-                <DailyClassesView 
-                  classes={timetable} 
-                  onLecturerClick={handleLecturerClick}
+          {showLecturerTimetable ? (
+            <div className="space-y-4">
+              <div className="flex justify-center items-center">
+                <button
+                onClick={() => setShowLecturerTimetable(false)}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-white text-black border rounded hover:bg-gray-100 transition-colors"
+                style={{ borderColor: '#000000' }}
+              >
+                <img
+                  src="https://img.icons8.com/pastel-glyph/100/u-turn-to-left.png"
+                  alt="Back Icon"
+                  className="w-8 h-8"
                 />
-              )
-            )}
-          </div>
+                Return
+              </button>
+              </div>
+              <h2 className="text-l font-semibold text-blue-700 text-center">{lecturerName}'s Timetable</h2>
+              {lecturerLoading ? (
+                <div className="text-center py-4">Loading lecturer timetable...</div>
+              ) : lecturerError ? (
+                <div className="text-center py-4 text-red-500">{lecturerError}</div>
+              ) : (
+                <TimetableView 
+                  classes={lecturerTimetable} 
+                  userType="lecturer"
+                  showDaySelector={true}
+                />
+              )}
+            </div>
+          ) : (
+            loading ? (
+              <div className="text-center py-4">Loading timetable...</div>
+            ) : (
+              <DailyClassesView 
+                classes={timetable} 
+                onLecturerClick={handleLecturerClick}
+              />
+            )
+          )}
         </TabsContent>
 
         <TabsContent value="search-timetable">

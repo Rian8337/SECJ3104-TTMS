@@ -331,4 +331,59 @@ export const renderGapAndLunch = (prevEnd: string, currStart: string, userType: 
     type: 'gap',
     duration: hours
   } : null
+}
+
+// Interface for clash information
+export interface ClashInfo {
+  class1: ClassItem
+  class2: ClassItem
+}
+
+// Get all clashes in a timetable
+export const getTimetableClashes = (classes: ClassItem[]): ClashInfo[] => {
+  const clashes: ClashInfo[] = []
+  
+  for (let i = 0; i < classes.length; i++) {
+    for (let j = i + 1; j < classes.length; j++) {
+      const class1 = classes[i]
+      const class2 = classes[j]
+      
+      if (class1.id === class2.id || class1.day !== class2.day) continue
+
+      const start1 = new Date(`2000-01-01T${class1.startTime}`)
+      const end1 = new Date(`2000-01-01T${class1.endTime}`)
+      const start2 = new Date(`2000-01-01T${class2.startTime}`)
+      const end2 = new Date(`2000-01-01T${class2.endTime}`)
+
+      // Check for any overlap
+      if ((start1 >= start2 && start1 < end2) || 
+          (end1 > start2 && end1 <= end2) ||
+          (start1 <= start2 && end1 >= end2)) {
+        clashes.push({ class1, class2 })
+      }
+    }
+  }
+
+  return clashes
+}
+
+// Get clash summary for display
+export const getClashSummary = (clashes: ClashInfo[]): { count: number; description: string } => {
+  if (clashes.length === 0) {
+    return { count: 0, description: '' }
+  }
+
+  // Get unique classes involved in clashes
+  const uniqueClasses = new Set<string>()
+  clashes.forEach(clash => {
+    uniqueClasses.add(`${clash.class1.courseCode}-${clash.class1.section}`)
+    uniqueClasses.add(`${clash.class2.courseCode}-${clash.class2.section}`)
+  })
+
+  const affectedClasses = Array.from(uniqueClasses).sort()
+  
+  return {
+    count: uniqueClasses.size,
+    description: `${uniqueClasses.size} classes are affected :\n${affectedClasses.join('\n')}`
+  }
 } 

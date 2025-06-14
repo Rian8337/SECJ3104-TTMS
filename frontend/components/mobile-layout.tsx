@@ -97,7 +97,7 @@ export function MobileLayout({ children, userType, studentInfo: initialStudentIn
     <div className="flex flex-col min-h-screen bg-slate-50">
       <header className="sticky top-0 z-10 bg-red-800 text-white border-b border-red-900">
         <div className="flex items-center justify-between p-4">
-          <div className="flex items-center">
+          <div className="w-10">
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="text-white hover:bg-red-700">
@@ -106,7 +106,11 @@ export function MobileLayout({ children, userType, studentInfo: initialStudentIn
               </SheetTrigger>
               <SheetContent side="left" className="w-64 border-r-red-100">
                 <SheetHeader className="text-left">
-                  <SheetTitle className="text-red-800">UTM TMS</SheetTitle>
+                  <SheetTitle>
+                    <img src="/LOGO UTM.png" alt="UTM Logo" style={{ 
+                      height: '40px'
+                    }} />
+                  </SheetTitle>
                 </SheetHeader>
                 <div className="flex flex-col gap-1 mt-6">
                   <div className="flex items-center p-2">
@@ -181,22 +185,28 @@ export function MobileLayout({ children, userType, studentInfo: initialStudentIn
                 </div>
               </SheetContent>
             </Sheet>
-            <h1 className="text-lg font-semibold ml-2">
-              UTM TMS | {userType === "student" ? "Student Portal" : "Lecturer Portal"}
-            </h1>
           </div>
-          {userType === "lecturer" ? (
-            <img src="/lecturer.png" alt="Lecturer" style={{ objectFit: 'contain' }} className="h-10 w-10 ml-2" />
-          ) : studentInfo ? (
-            <Avatar className="h-10 w-10 ml-2">
-              <AvatarImage src="/diverse-students-studying.png" alt={studentInfo.name} style={{ objectFit: 'contain' }} />
-              <AvatarFallback className="bg-red-100 text-red-800">{studentInfo.name.split(' ').map(n => n[0]).join('') || "SS"}</AvatarFallback>
-            </Avatar>
-          ) : (
-            <Avatar className="h-10 w-10 ml-2">
-              <AvatarFallback className="bg-red-100 text-red-800">SS</AvatarFallback>
-            </Avatar>
-          )}
+          
+          <div className="flex-1 flex justify-center">
+            <img src="/LOGO UTM REVERSE (putih).png" alt="UTM Logo" style={{ 
+              height: '40px'
+            }} />
+          </div>
+
+          <div className="w-10">
+            {userType === "lecturer" ? (
+              <img src="/lecturer.png" alt="Lecturer" style={{ objectFit: 'contain' }} className="h-10 w-10" />
+            ) : studentInfo ? (
+              <Avatar className="h-10 w-10">
+                <AvatarImage src="/diverse-students-studying.png" alt={studentInfo.name} style={{ objectFit: 'contain' }} />
+                <AvatarFallback className="bg-red-100 text-red-800">{studentInfo.name.split(' ').map(n => n[0]).join('') || "SS"}</AvatarFallback>
+              </Avatar>
+            ) : (
+              <Avatar className="h-10 w-10">
+                <AvatarFallback className="bg-red-100 text-red-800">SS</AvatarFallback>
+              </Avatar>
+            )}
+          </div>
         </div>
       </header>
 

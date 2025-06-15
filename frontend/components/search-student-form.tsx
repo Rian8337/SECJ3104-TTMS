@@ -238,7 +238,7 @@ export function SearchStudentForm() {
     setCurrentLecturerName(lecturerName)
     setLecturerLoading(true)
     setLecturerError(null)
-
+    
     try {
       const response = await fetch(
         `${API_BASE_URL}/lecturer/timetable?worker_no=${workerNo}&session=2024/2025&semester=2`,

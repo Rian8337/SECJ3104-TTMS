@@ -7,7 +7,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { AlertTriangle, BookOpen, Calendar, LogOut, Menu, Search, User } from "lucide-react"
+import { BookOpen, Building, Calendar, LogOut, Menu, Search, User } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { API_BASE_URL } from "@/lib/config"
 

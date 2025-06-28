@@ -163,6 +163,15 @@ export function MobileLayout({ children, userType, studentInfo: initialStudentIn
                     />
                   )}
 
+                  {userType === "lecturer" && (
+                    <NavItem
+                      icon={Building}
+                      label="Venues"
+                      href={`/${userType}/dashboard?tab=venues`}
+                      onClick={() => setIsMenuOpen(false)}
+                    />
+                  )}
+
                   <Separator />
 
                   {userType === "student" && (

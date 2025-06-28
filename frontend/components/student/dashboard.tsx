@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { SearchStudentForm } from "@/components/search-student-form"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertTriangle } from "lucide-react"
+import { AlertTriangle, X } from "lucide-react"
 import { DailyClassesView } from "@/components/student/daily-classes-view"
 import { useSearchParams, useRouter } from "next/navigation"
 import { API_BASE_URL } from "@/lib/config"
@@ -12,6 +12,7 @@ import { motion } from "framer-motion"
 import { formatTimetableData, getTimetableClashes, getClashSummary } from "@/lib/timetable-utils"
 import { TimetableView } from "@/components/timetable-view"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Button } from "@/components/ui/button"
 
 interface TimetableEntry {
   id: string
@@ -52,6 +53,7 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
   const [lecturerLoading, setLecturerLoading] = useState(false)
   const [lecturerError, setLecturerError] = useState<string | null>(null)
   const [lecturerName, setLecturerName] = useState<string>("")
+  const [warningDismissed, setWarningDismissed] = useState(false)
   const router = useRouter()
 
   // Detect clashes in timetable
@@ -169,25 +171,6 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
         <h3 className="text-2xl font-cursive text-center mt-2">{studentInfo.name}</h3> 
       </motion.div>
 
-      {clashSummary.count > 0 && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Timetable Clashes Detected</AlertTitle>
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="clash-details" className="border-none">
-              <AccordionTrigger className="py-2 hover:no-underline">
-                View Clash Details
-              </AccordionTrigger>
-              <AccordionContent>
-                <AlertDescription className="whitespace-pre-line">
-                  {clashSummary.description}
-                </AlertDescription>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </Alert>
-      )}
-
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 border #000000">
           <TabsTrigger value="my-timetable">Dashboard</TabsTrigger>
@@ -195,6 +178,39 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
         </TabsList>
 
         <TabsContent value="my-timetable" className="space-y-4 mt-4">
+          {clashSummary.count > 0 && !warningDismissed && (
+            <Alert variant="destructive" className="mb-4 relative">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start space-x-2 flex-1">
+                  <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <AlertTitle>Timetable Clashes Detected</AlertTitle>
+                    <Accordion type="single" collapsible className="w-full">
+                      <AccordionItem value="clash-details" className="border-none">
+                        <AccordionTrigger className="py-2 hover:no-underline text-left">
+                          View Clash Details
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <AlertDescription className="whitespace-pre-line">
+                            {clashSummary.description}
+                          </AlertDescription>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setWarningDismissed(true)}
+                  className="h-8 w-8 p-0 hover:bg-destructive/20 flex-shrink-0 mt-0.5"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </Alert>
+          )}
+
           {error && (
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />

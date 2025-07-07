@@ -23,6 +23,7 @@ Create an unnamed environment (`.env`) file at the root of this project and fill
 
 ```sh
 DB_HOST= # The host of the MySQL database
+DB_PORT= # The port of the MySQL database
 DB_USER= # The username to login to the MySQL database
 DB_PASSWORD= # The password to login to the MySQL database
 DB_NAME= # The name of the database to use

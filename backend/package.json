@@ -5,6 +5,14 @@
   "main": "dist/index.js",
   "scripts": {
     "coverage": "cross-env NODE_ENV=test vitest run --coverage",
+    "retrieve-courses": "tsx src/scrapers/courseScraper.ts",
+    "retrieve-course-sections": "tsx src/scrapers/courseSectionScraper.ts",
+    "retrieve-course-section-schedules": "tsx src/scrapers/courseSectionScheduleScraper.ts",
+    "retrieve-per-semester": "tsx src/scrapers/perSemesterScraper.ts",
+    "retrieve-student-kp-no": "tsx src/scrapers/studentKpNoScraper.ts",
+    "retrieve-students": "tsx src/scrapers/studentScraper.ts",
+    "retrieve-student-registered-courses": "tsx src/scrapers/studentRegisteredCourseScraper.ts",
+    "retrieve-sessions": "tsx src/scrapers/sessionScraper.ts",
     "start": "tsx src/index.ts",
     "test": "cross-env NODE_ENV=test vitest"
   },

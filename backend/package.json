@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "coverage": "vitest run --coverage",
+    "coverage": "cross-env NODE_ENV=test vitest run --coverage",
     "start": "tsx src/index.ts",
     "test": "cross-env NODE_ENV=test vitest"
   },

@@ -25,7 +25,7 @@ import {
     TTMSSession,
 } from "@/types";
 import { sleep } from "@/utils";
-import { eq, or } from "drizzle-orm";
+import { eq, or, sql } from "drizzle-orm";
 
 const ttmsService = new TTMSService();
 
@@ -140,7 +140,6 @@ export async function retrieveStudents(
         if (serverStudents.length > 0) {
             await db
                 .insert(students)
-                .ignore()
                 .values(
                     serverStudents.map(
                         (s): IStudentInsert => ({
@@ -151,7 +150,15 @@ export async function retrieveStudents(
                             kpNo: s.no_kp,
                         })
                     )
-                );
+                )
+                .onDuplicateKeyUpdate({
+                    set: {
+                        name: sql`VALUES(${students.name})`,
+                        courseCode: sql`VALUES(${students.courseCode})`,
+                        facultyCode: sql`VALUES(${students.facultyCode})`,
+                        kpNo: sql`VALUES(${students.kpNo})`,
+                    },
+                });
         }
 
         console.log(
@@ -214,7 +221,6 @@ export async function retrieveLecturers(
     if (serverLecturers.length > 0) {
         await db
             .insert(lecturers)
-            .ignore()
             .values(
                 serverLecturers.map(
                     (s): ILecturerInsert => ({
@@ -222,7 +228,10 @@ export async function retrieveLecturers(
                         workerNo: s.no_pekerja,
                     })
                 )
-            );
+            )
+            .onDuplicateKeyUpdate({
+                set: { name: sql`VALUES(${lecturers.name})` },
+            });
     }
 
     console.log(
@@ -258,7 +267,6 @@ export async function retrieveCourses(
 
     await db
         .insert(courses)
-        .ignore()
         .values(
             serverCourses.map(
                 (c): ICourseInsert => ({
@@ -267,7 +275,13 @@ export async function retrieveCourses(
                     credits: parseInt(c.kod_subjek.split("").at(-1)!) || 0,
                 })
             )
-        );
+        )
+        .onDuplicateKeyUpdate({
+            set: {
+                name: sql`VALUES(${courses.name})`,
+                credits: sql`VALUES(${courses.credits})`,
+            },
+        });
 
     console.log(
         "Inserted",
@@ -343,8 +357,10 @@ export async function retrieveCourseSections(
     if (mappedCourseSections.length > 0) {
         await db
             .insert(courseSections)
-            .ignore()
-            .values((await Promise.all(mappedCourseSections)).flat());
+            .values((await Promise.all(mappedCourseSections)).flat())
+            .onDuplicateKeyUpdate({
+                set: { lecturerNo: sql`VALUES(${courseSections.lecturerNo})` },
+            });
     }
 
     console.log(

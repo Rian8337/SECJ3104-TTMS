@@ -1,0 +1,9 @@
+{
+  "name": "secj3104-ttms",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=18"
+  }
+}

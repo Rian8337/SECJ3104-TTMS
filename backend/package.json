@@ -4,6 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
+    "lint": "eslint .",
     "coverage": "cross-env NODE_ENV=test vitest run --coverage",
     "retrieve-courses": "tsx src/scrapers/courseScraper.ts",
     "retrieve-course-sections": "tsx src/scrapers/courseSectionScraper.ts",

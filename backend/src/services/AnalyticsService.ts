@@ -35,19 +35,19 @@ export class AnalyticsService extends BaseService implements IAnalyticsService {
         @inject(dependencyTokens.courseRepository)
         private readonly courseRepository: ICourseRepository,
         @inject(dependencyTokens.venueRepository)
-        private readonly venueRepository: IVenueRepository
+        private readonly venueRepository: IVenueRepository,
     ) {
         super();
     }
 
     async generate(
         session: TTMSSession,
-        semester: TTMSSemester
+        semester: TTMSSemester,
     ): Promise<OperationResult<IAnalytics>> {
         const registeredStudents =
             await this.studentRepository.getRegisteredStudents(
                 session,
-                semester
+                semester,
             );
 
         // Group students by matric number
@@ -59,7 +59,7 @@ export class AnalyticsService extends BaseService implements IAnalyticsService {
             ) {
                 registeredStudentsMap.set(
                     registeredStudent.student.matricNo,
-                    []
+                    [],
                 );
             }
 
@@ -70,7 +70,7 @@ export class AnalyticsService extends BaseService implements IAnalyticsService {
 
         const schedules = await this.courseRepository.getSchedulesForAnalytics(
             session,
-            semester
+            semester,
         );
 
         // Group schedules by course code, and then by section
@@ -93,7 +93,7 @@ export class AnalyticsService extends BaseService implements IAnalyticsService {
             clashingStudents: [],
             departments: [],
             venueClashes: convertRawVenueClashTimetableToVenueClashTimetable(
-                await this.venueRepository.getVenueClashes(session, semester)
+                await this.venueRepository.getVenueClashes(session, semester),
             ),
         };
 
@@ -158,14 +158,14 @@ export class AnalyticsService extends BaseService implements IAnalyticsService {
                 if (
                     lastSchedule &&
                     (lastSchedule.day !== schedule.day ||
-                        lastSchedule.time + 1 !== (schedule.time as number))
+                        schedule.time - lastSchedule.time !== 1)
                 ) {
                     // The current schedule is not consecutive with the last one.
                     // We need to reset the last schedules if they are not consecutive, but before
                     // that, we check if the last schedules have 5 or more consecutive hours.
                     if (lastSchedules.length >= 5) {
                         backToBackAnalyticsStudent.schedules.push(
-                            lastSchedules.slice()
+                            lastSchedules.slice(),
                         );
                     }
 
@@ -218,7 +218,7 @@ export class AnalyticsService extends BaseService implements IAnalyticsService {
                                     course: c.course,
                                     section: c.section,
                                     venue: c.venue,
-                                }))
+                                })),
                             ),
                         });
                     }
@@ -228,7 +228,7 @@ export class AnalyticsService extends BaseService implements IAnalyticsService {
             // Check for back-to-back after iteration, which would otherwise be ignored.
             if (lastSchedules.length >= 5) {
                 backToBackAnalyticsStudent.schedules.push(
-                    lastSchedules.slice()
+                    lastSchedules.slice(),
                 );
             }
 

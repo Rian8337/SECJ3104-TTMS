@@ -1,0 +1,20 @@
+name: Setup pnpm workspace
+description: Installs pnpm, Node.js v18, and all workspace dependencies from the repo root.
+
+runs:
+  using: composite
+  steps:
+    - name: Install pnpm
+      uses: pnpm/action-setup@v6
+
+    - name: Install Node.js v18
+      uses: actions/setup-node@v6
+      with:
+        node-version: '18'
+        cache: 'pnpm'
+        cache-dependency-path: pnpm-lock.yaml
+
+    - name: Install dependencies
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: pnpm install --frozen-lockfile

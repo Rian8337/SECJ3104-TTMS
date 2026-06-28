@@ -5,6 +5,7 @@ import tseslint from "typescript-eslint";
 import vitest from "@vitest/eslint-plugin";
 
 export default tseslint.config(
+    { ignores: ["coverage/", "html/", "dist/", "drizzle/", "eslint.config.mjs"] },
     eslint.configs.recommended,
     tseslint.configs.strictTypeChecked,
     tseslint.configs.stylisticTypeChecked,

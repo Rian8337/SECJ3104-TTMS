@@ -73,7 +73,7 @@ export function CurrentClassesView() {
         const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' })
         const currentTime = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })
 
-        const filteredClasses = formattedTimetable.filter((classItem) => {
+        const filteredClasses = formattedTimetable.filter((classItem: { day: string; startTime: string; endTime: string }) => {
           if (classItem.day !== currentDay) return false
           return classItem.startTime <= currentTime && classItem.endTime >= currentTime
         })

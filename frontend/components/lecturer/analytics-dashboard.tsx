@@ -361,7 +361,7 @@ export function AnalyticsDashboard() {
                 className="h-[400px]"
               >
                 <ResponsiveContainer width="100%" height="100%">
-                  {visualizationType === 'pie' && (
+                  {visualizationType === 'pie' ? (
                     <RechartsPieChart>
                       <Pie
                         data={preparePieChartData(analyticsData.departments)}
@@ -377,13 +377,13 @@ export function AnalyticsDashboard() {
                         }}
                       >
                         {preparePieChartData(analyticsData.departments).map((entry, index) => (
-                          <Cell 
-                            key={`cell-${index}`} 
-                            fill={`hsl(var(--chart-${(index % 3) + 1}))`} 
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={`hsl(var(--chart-${(index % 3) + 1}))`}
                           />
                         ))}
                       </Pie>
-                      <Tooltip 
+                      <Tooltip
                         content={({ active, payload }) => {
                           if (active && payload && payload.length) {
                             const data = payload[0].payload
@@ -400,9 +400,7 @@ export function AnalyticsDashboard() {
                         }}
                       />
                     </RechartsPieChart>
-                  )}
-
-                  {visualizationType === 'stacked-bar' && (
+                  ) : (
                     <BarChart
                       data={analyticsData.departments.map(dept => ({
                         name: dept.code,
@@ -420,8 +418,8 @@ export function AnalyticsDashboard() {
                       barCategoryGap={40}
                     >
                       <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis 
-                        dataKey="name" 
+                      <XAxis
+                        dataKey="name"
                         tick={{ fontSize: 12 }}
                         angle={-45}
                         textAnchor="end"
@@ -431,14 +429,14 @@ export function AnalyticsDashboard() {
                         interval={0}
                         height={60}
                       />
-                      <YAxis 
-                        tick={{ fontSize: 12 }} 
+                      <YAxis
+                        tick={{ fontSize: 12 }}
                         width={30}
                         tickLine={false}
                         axisLine={false}
                       />
-                      <Tooltip 
-                        contentStyle={{ 
+                      <Tooltip
+                        contentStyle={{
                           fontSize: "12px",
                           backgroundColor: "white",
                           border: "1px solid #e2e8f0",
@@ -447,24 +445,24 @@ export function AnalyticsDashboard() {
                         }}
                         cursor={{ fill: 'rgba(0,0,0,0.05)' }}
                       />
-                      <Bar 
-                        dataKey="students" 
-                        fill="var(--color-students)" 
+                      <Bar
+                        dataKey="students"
+                        fill="var(--color-students)"
                         maxBarSize={80}
                         radius={[4, 4, 0, 0]}
                         stackId="a"
-                        
+
                       />
-                      <Bar 
-                        dataKey="clashes" 
-                        fill="var(--color-clashes)" 
+                      <Bar
+                        dataKey="clashes"
+                        fill="var(--color-clashes)"
                         maxBarSize={80}
                         radius={[4, 4, 0, 0]}
                         stackId="a"
                       />
-                      <Bar 
-                        dataKey="backToBack" 
-                        fill="var(--color-backToBack)" 
+                      <Bar
+                        dataKey="backToBack"
+                        fill="var(--color-backToBack)"
                         maxBarSize={80}
                         radius={[4, 4, 0, 0]}
                         stackId="a"

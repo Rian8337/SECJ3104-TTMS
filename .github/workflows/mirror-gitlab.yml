@@ -15,5 +15,5 @@ jobs:
 
     - name: Push to GitLab
       run: |
-        git remote add gitlab https://oauth2:${{ secrets.GITLAB_MIRROR_TOKEN }}@gitlab.devops-ctrlaltelite.me/<your-namespace>/secj3104-ttms.git
+        git remote add gitlab https://oauth2:${{ secrets.GITLAB_MIRROR_TOKEN }}@gitlab.devops-ctrlaltelite.me/ctrlaltelite/secj3104-ttms.git
         git push gitlab HEAD:main --force

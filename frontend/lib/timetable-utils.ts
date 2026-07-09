@@ -380,7 +380,7 @@ export const getClashSummary = (clashes: ClashInfo[]): { count: number; descript
     uniqueClasses.add(`${clash.class2.courseCode}-${clash.class2.section}`)
   })
 
-  const affectedClasses = Array.from(uniqueClasses).sort()
+  const affectedClasses = Array.from(uniqueClasses).sort((a, b) => a.localeCompare(b))
   
   return {
     count: uniqueClasses.size,

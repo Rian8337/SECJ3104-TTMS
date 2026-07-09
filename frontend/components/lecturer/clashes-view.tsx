@@ -176,7 +176,14 @@ export function ClashesView() {
             </Card>
           ) : (
             lecturerClashes.map((clash) => (
-              <Card key={clash.id} className="border-red-200">
+              <Card
+                key={clash.id}
+                className="border-red-200 cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => {
+                  setSelectedClash(clash)
+                  setShowLecturerClashDetails(true)
+                }}
+              >
                 <CardHeader className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
@@ -234,7 +241,14 @@ export function ClashesView() {
             </Card>
           ) : (
             venueClashes.map((clash) => (
-              <Card key={clash.id} className="border-blue-200">
+              <Card
+                key={clash.id}
+                className="border-blue-200 cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => {
+                  setSelectedClash(clash)
+                  setShowVenueClashDetails(true)
+                }}
+              >
                 <CardHeader className="p-4">
                   <div className="flex items-center justify-between">
                     <div>

@@ -5,5 +5,8 @@
   "packageManager": "pnpm@11.10.0",
   "engines": {
     "node": ">=22.13"
+  },
+  "scripts": {
+    "sonar": ". ./.env.sonar && sonar"
   }
 }

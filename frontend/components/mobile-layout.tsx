@@ -240,9 +240,7 @@ function NavItem({ icon: Icon, label, href, onClick }: NavItemProps) {
   
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault()
-    if (onClick) {
-      onClick()
-    }
+    onClick?.()
     if (href) {
       router.push(href)
     }

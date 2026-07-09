@@ -24,7 +24,7 @@ export function validateAcademicSession(
  * @returns `true` if the semester is valid, `false` otherwise.
  */
 export function validateSemester(semester: number): semester is TTMSSemester {
-    return /^(1|2|3)$/.test(semester.toString());
+    return /^[123]$/.test(semester.toString());
 }
 
 /**

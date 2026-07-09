@@ -15,7 +15,7 @@
     "retrieve-student-registered-courses": "tsx src/scrapers/studentRegisteredCourseScraper.ts",
     "retrieve-sessions": "tsx src/scrapers/sessionScraper.ts",
     "start": "tsx src/index.ts",
-    "test": "cross-env NODE_ENV=test vitest"
+    "test": "cross-env NODE_ENV=test vitest run"
   },
   "engines": {
     "node": ">=18"

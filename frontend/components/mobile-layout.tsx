@@ -91,7 +91,6 @@ export function MobileLayout({ children, userType, studentInfo: initialStudentIn
   }
 
   const userInfo = userType === 'student' ? studentInfo : lecturerInfo
-  const userInitials = userInfo?.name?.split(' ').map(n => n[0]).join('') || ''
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50">

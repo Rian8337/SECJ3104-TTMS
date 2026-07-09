@@ -16,16 +16,15 @@ import {
   formatTime,
   calculateDuration
 } from "@/lib/timetable-utils"
-import { useRouter } from "next/navigation"
 
 interface TimetableViewProps {
-  classes: ClassItem[]
-  selectedDay?: Weekday
-  onDaySelect?: (day: Weekday) => void
-  showDaySelector?: boolean
-  userType: "student" | "lecturer"
-  onLecturerClick?: (workerNo: string, lecturerName: string) => void
-  lecturerName?: string
+  readonly classes: ClassItem[]
+  readonly selectedDay?: Weekday
+  readonly onDaySelect?: (day: Weekday) => void
+  readonly showDaySelector?: boolean
+  readonly userType: "student" | "lecturer"
+  readonly onLecturerClick?: (workerNo: string, lecturerName: string) => void
+  readonly lecturerName?: string
 }
 
 export function TimetableView({ 
@@ -37,7 +36,6 @@ export function TimetableView({
   onLecturerClick,
   lecturerName
 }: TimetableViewProps) {
-  const router = useRouter()
   const [selectedDay, setSelectedDay] = useState<Weekday>(propSelectedDay as Weekday || getCurrentDay())
 
   const handleDaySelect = (day: Weekday) => {
@@ -155,7 +153,7 @@ export function TimetableView({
           </Card>
         ) : (
           processedClasses[selectedDay]
-            ?.sort((a, b) => a.startTime.localeCompare(b.startTime))
+            ?.toSorted((a, b) => a.startTime.localeCompare(b.startTime))
             .map((classItem, index, array) => {
               const hasClashHighlight = hasClash(classItem, processedClasses[selectedDay])
               

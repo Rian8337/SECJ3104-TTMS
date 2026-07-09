@@ -39,7 +39,7 @@ interface StudentInfo {
 }
 
 interface StudentDashboardProps {
-  studentInfo: StudentInfo
+  readonly studentInfo: StudentInfo
 }
 
 export function StudentDashboard({ studentInfo }: StudentDashboardProps) {

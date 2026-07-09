@@ -19,6 +19,7 @@ export default defineConfig({
         reporters: ["default", "hanging-process", "github-actions", "html"],
         coverage: {
             provider: "istanbul",
+            reporter: ["text", "html", "lcov"],
             include: ["src/**/*.ts"],
             exclude: [
                 // Test files

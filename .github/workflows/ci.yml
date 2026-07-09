@@ -65,7 +65,7 @@ jobs:
         run: NODE_ENV=test pnpm exec drizzle-kit push --force
 
       - name: Run tests
-        run: pnpm test
+        run: pnpm run coverage
 
       - name: Upload test results
         if: always()

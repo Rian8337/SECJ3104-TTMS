@@ -6,7 +6,7 @@ import { SearchStudentForm } from "@/components/search-student-form"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertTriangle, X } from "lucide-react"
 import { DailyClassesView } from "@/components/student/daily-classes-view"
-import { useSearchParams, useRouter } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { API_BASE_URL } from "@/lib/config"
 import { motion } from "framer-motion"
 import { formatTimetableData, getTimetableClashes, getClashSummary } from "@/lib/timetable-utils"
@@ -54,7 +54,6 @@ export function StudentDashboard({ studentInfo }: StudentDashboardProps) {
   const [lecturerError, setLecturerError] = useState<string | null>(null)
   const [lecturerName, setLecturerName] = useState<string>("")
   const [warningDismissed, setWarningDismissed] = useState(false)
-  const router = useRouter()
 
   // Detect clashes in timetable
   const clashes = getTimetableClashes(timetable)

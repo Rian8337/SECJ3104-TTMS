@@ -217,7 +217,7 @@ export class AnalyticsService extends BaseService implements IAnalyticsService {
                 );
             })
             .sort((a, b) =>
-                a.day !== b.day ? a.day - b.day : a.time - b.time,
+                a.day === b.day ? a.time - b.time : a.day - b.day,
             );
     }
 

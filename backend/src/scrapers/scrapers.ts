@@ -337,10 +337,10 @@ export async function retrieveCourseSections(
                 courseCode: c.kod_subjek,
                 section: s.seksyen,
                 lecturerNo:
-                    s.pensyarah !== null
-                        ? sessionLecturers.find((l) => l.name === s.pensyarah)
+                    s.pensyarah === null
+                        ? null
+                        : sessionLecturers.find((l) => l.name === s.pensyarah)
                               ?.workerNo
-                        : null,
             }));
         },
     );

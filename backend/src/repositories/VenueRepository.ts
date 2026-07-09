@@ -139,9 +139,9 @@ export class VenueRepository
                         eq(cs1.session, session),
                         eq(cs1.semester, semester),
                         isNotNull(css1.venueCode),
-                        workerNo !== undefined
-                            ? eq(cs1.lecturerNo, workerNo)
-                            : isNotNull(cs1.lecturerNo),
+                        workerNo === undefined
+                            ? isNotNull(cs1.lecturerNo)
+                            : eq(cs1.lecturerNo, workerNo),
                         isNotNull(cs2.lecturerNo),
                         ne(cs1.lecturerNo, cs2.lecturerNo)
                     )

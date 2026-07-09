@@ -27,7 +27,7 @@ export function convertRawTimetableToTimetable(
                     : null,
         },
         venue:
-            t.venueShortName !== null ? { shortName: t.venueShortName } : null,
+            t.venueShortName === null ? null : { shortName: t.venueShortName },
     }));
 }
 

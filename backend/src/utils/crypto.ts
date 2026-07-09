@@ -1,11 +1,11 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
 import { config } from "dotenv";
 
 config({ path: process.env.NODE_ENV === "test" ? ".env.test" : ".env" });
 
 if (!process.env.SESSION_ENCRYPTION_KEY) {
     throw new Error(
-        "Session encryption key is not set. Please set the SESSION_ENCRYPTION_KEY environment variable."
+        "Session encryption key is not set. Please set the SESSION_ENCRYPTION_KEY environment variable.",
     );
 }
 

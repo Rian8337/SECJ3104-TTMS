@@ -385,7 +385,7 @@ export function AnalyticsDashboard() {
                       </Pie>
                       <Tooltip
                         content={({ active, payload }) => {
-                          if (active && payload && payload.length) {
+                          if (active && payload?.length) {
                             const data = payload[0].payload
                             return (
                               <div className="bg-white p-2 border rounded shadow">
@@ -410,7 +410,7 @@ export function AnalyticsDashboard() {
                       }))}
                       margin={{ top: 30, right: 20, left: 0, bottom: 30 }}
                     onClick={(data) => {
-                      if (data && data.activePayload && data.activePayload[0]) {
+                      if (data?.activePayload?.[0]) {
                         handleDepartmentClick(data.activePayload[0].payload.name as DepartmentCode)
                       }
                     }}

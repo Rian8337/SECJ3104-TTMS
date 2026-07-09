@@ -88,7 +88,7 @@ export function TimetableView({
           <>
             {gapInfo.gapBeforeLunch && (
               <div className="flex flex-col items-center gap-1">
-                <div className={`inline-block ${userType === 'lecturer' ? 'bg-green-100 text-green-600' : 'bg-green-100 text-green-600'} px-3 py-1 rounded text-xs font-medium border border-gray-200`}>
+                <div className={`inline-block bg-green-100 text-green-600 px-3 py-1 rounded text-xs font-medium border border-gray-200`}>
                   {`${gapInfo.gapBeforeLunch} hr ${userType === 'student' ? 'gap' : 'free'}`}
                 </div>
                 <div className="text-xs text-green-600">+</div>
@@ -102,7 +102,7 @@ export function TimetableView({
             {gapInfo.gapAfterLunch && (
               <div className="flex flex-col items-center gap-1">
                 <div className="text-xs text-green-600">+</div>
-                <div className={`inline-block ${userType === 'lecturer' ? 'bg-green-100 text-green-600' : 'bg-green-100 text-green-600'} px-3 py-1 rounded text-xs font-medium border border-gray-200`}>
+                <div className={`inline-block bg-green-100 text-green-600 px-3 py-1 rounded text-xs font-medium border border-gray-200`}>
                   {`${gapInfo.gapAfterLunch} hr ${userType === 'student' ? 'gap' : 'free'}`}
                 </div>
               </div>
@@ -119,7 +119,7 @@ export function TimetableView({
             {gapInfo.gapAfterLunch && (
               <div className="flex flex-col items-center gap-1">
                 <div className="text-xs text-green-600">+</div>
-                <div className={`inline-block ${userType === 'lecturer' ? 'bg-green-100 text-green-600' : 'bg-green-100 text-green-600'} px-3 py-1 rounded text-xs font-medium border border-gray-200`}>
+                <div className={`inline-block bg-green-100 text-green-600 px-3 py-1 rounded text-xs font-medium border border-gray-200`}>
                   {`${gapInfo.gapAfterLunch} hr ${userType === 'student' ? 'gap' : 'free'}`}
                 </div>
               </div>

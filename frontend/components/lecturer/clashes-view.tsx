@@ -122,8 +122,6 @@ export function ClashesView() {
         }))
         
         setVenueClashes(transformedVenueClashes)
-
-        // TODO: Implement lecturer clash fetching when the API is available
         setLecturerClashes([])
       } catch (err) {
         console.error('Error in fetchClashes:', err)
@@ -137,16 +135,6 @@ export function ClashesView() {
 
     fetchClashes()
   }, [])
-
-  const handleLecturerClashClick = (clash: Clash) => {
-    setSelectedClash(clash)
-    setShowLecturerClashDetails(true)
-  }
-
-  const handleVenueClashClick = (clash: Clash) => {
-    setSelectedClash(clash)
-    setShowVenueClashDetails(true)
-  }
 
   const formatTimeSlot = (timeSlot: string) => {
     const [startTime, endTime] = timeSlot.split(' - ')

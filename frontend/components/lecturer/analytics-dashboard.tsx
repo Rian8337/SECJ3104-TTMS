@@ -98,9 +98,9 @@ interface PieChartData {
 const contentsPerPage = 10
 
 function Paging(props: {
-  data: unknown[]
-  page: number
-  setPage: React.Dispatch<React.SetStateAction<number>>
+  readonly data: unknown[]
+  readonly page: number
+  readonly setPage: React.Dispatch<React.SetStateAction<number>>
 }) {
   const { data, page, setPage } = props
 

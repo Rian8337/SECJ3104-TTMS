@@ -12,22 +12,22 @@ import { useRouter } from "next/navigation"
 import { API_BASE_URL } from "@/lib/config"
 
 interface StudentInfo {
-  name: string
-  matricNo: string
-  facultyCode?: string
+  readonly name: string
+  readonly matricNo: string
+  readonly facultyCode?: string
 }
 
 interface LecturerInfo {
-  name: string
-  workerNo: string
-  facultyCode?: string
+  readonly name: string
+  readonly workerNo: string
+  readonly facultyCode?: string
 }
 
 interface MobileLayoutProps {
-  children: React.ReactNode
-  userType: "student" | "lecturer"
-  studentInfo?: StudentInfo | null
-  lecturerInfo?: LecturerInfo | null
+  readonly children: React.ReactNode
+  readonly userType: "student" | "lecturer"
+  readonly studentInfo?: StudentInfo | null
+  readonly lecturerInfo?: LecturerInfo | null
 }
 
 export function MobileLayout({ children, userType, studentInfo: initialStudentInfo, lecturerInfo: initialLecturerInfo }: MobileLayoutProps) {
@@ -229,10 +229,10 @@ function Separator() {
 }
 
 interface NavItemProps {
-  icon: React.ElementType
-  label: string
-  href?: string
-  onClick?: () => void
+  readonly icon: React.ElementType
+  readonly label: string
+  readonly href?: string
+  readonly onClick?: () => void
 }
 
 function NavItem({ icon: Icon, label, href, onClick }: NavItemProps) {

@@ -15,7 +15,7 @@ export abstract class BaseController {
      */
     protected respondWithOperationResult(
         res: Response,
-        result: OperationResult
+        result: OperationResult,
     ) {
         res.status(result.status);
 
@@ -41,7 +41,7 @@ export abstract class BaseController {
             unknown,
             Partial<{ session: string; semester: string }>
         >,
-        res: Response<{ error: string }>
+        res: Response<{ error: string }>,
     ): { session: TTMSSession; semester: TTMSSemester } | null {
         const { session, semester } = req.query;
 
@@ -65,7 +65,7 @@ export abstract class BaseController {
             return null;
         }
 
-        const parsedSemester = parseInt(semester);
+        const parsedSemester = Number.parseInt(semester);
 
         if (!validateSemester(parsedSemester)) {
             res.status(400).json({

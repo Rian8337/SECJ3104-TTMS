@@ -17,7 +17,7 @@ import { UserRole } from "@/types";
 export class VenueController extends BaseController {
     constructor(
         @inject(dependencyTokens.venueService)
-        private readonly venueService: IVenueService
+        private readonly venueService: IVenueService,
     ) {
         super();
     }
@@ -43,11 +43,11 @@ export class VenueController extends BaseController {
                 times: string;
             }>
         >,
-        res: Response<IVenue[] | { error: string }>
+        res: Response<IVenue[] | { error: string }>,
     ) {
         const validatedSessionAndSemester = this.validateSessionSemester(
             req,
-            res
+            res,
         );
 
         if (!validatedSessionAndSemester) {
@@ -68,7 +68,7 @@ export class VenueController extends BaseController {
             return;
         }
 
-        const parsedDay = parseInt(day);
+        const parsedDay = Number.parseInt(day);
 
         if (!isValidTimetableDay(parsedDay)) {
             res.status(400).json({
@@ -84,8 +84,8 @@ export class VenueController extends BaseController {
                     .trim()
                     .split(",")
                     .filter((t) => t.length > 0)
-                    .map((t) => parseInt(t.trim(), 10))
-            )
+                    .map((t) => Number.parseInt(t.trim(), 10)),
+            ),
         );
 
         if (parsedTimes.length === 0) {
@@ -119,7 +119,7 @@ export class VenueController extends BaseController {
                 session,
                 semester,
                 parsedDay,
-                parsedTimes
+                parsedTimes,
             );
 
             res.json(venues);

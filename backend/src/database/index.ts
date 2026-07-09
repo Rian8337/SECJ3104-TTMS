@@ -14,9 +14,9 @@ export const db = drizzle<typeof schema>(
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME,
-        port: parseInt(process.env.DB_PORT ?? "3306"),
+        port: Number.parseInt(process.env.DB_PORT ?? "3306"),
     }).pool,
-    { casing: "snake_case", schema: schema, mode: "default" }
+    { casing: "snake_case", schema: schema, mode: "default" },
 );
 
 /**
@@ -27,9 +27,9 @@ export type DrizzleDb = MySql2Database<typeof schema>;
 // Since Drizzle does not support FULLTEXT indexes yet, we need to create them manually.
 // See: https://github.com/drizzle-team/drizzle-orm/pull/1030
 db.execute(
-    `ALTER TABLE student ADD FULLTEXT INDEX idx_student_name_fulltext (name)`
+    `ALTER TABLE student ADD FULLTEXT INDEX idx_student_name_fulltext (name)`,
 ).catch(() => null);
 
 db.execute(
-    `ALTER TABLE lecturer ADD FULLTEXT INDEX idx_lecturer_name_fulltext (name)`
+    `ALTER TABLE lecturer ADD FULLTEXT INDEX idx_lecturer_name_fulltext (name)`,
 ).catch(() => null);

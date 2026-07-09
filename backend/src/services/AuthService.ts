@@ -27,7 +27,7 @@ export class AuthService extends BaseService implements IAuthService {
         @inject(dependencyTokens.studentRepository)
         private readonly studentRepository: IStudentRepository,
         @inject(dependencyTokens.lecturerRepository)
-        private readonly lecturerRepository: ILecturerRepository
+        private readonly lecturerRepository: ILecturerRepository,
     ) {
         super();
     }
@@ -42,7 +42,7 @@ export class AuthService extends BaseService implements IAuthService {
         }
 
         return Promise.resolve(
-            this.createFailedResponse("Invalid username or password.", 401)
+            this.createFailedResponse("Invalid username or password.", 401),
         );
     }
 
@@ -114,12 +114,12 @@ export class AuthService extends BaseService implements IAuthService {
 
     private async loginStudent(
         login: string,
-        password: string
+        password: string,
     ): Promise<OperationResult<IStudent>> {
         if (!isValidKpNo(password)) {
             return this.createFailedResponse(
                 "Invalid username or password.",
-                401
+                401,
             );
         }
 
@@ -128,7 +128,7 @@ export class AuthService extends BaseService implements IAuthService {
         if (student?.kpNo !== password) {
             return this.createFailedResponse(
                 "Invalid username or password.",
-                401
+                401,
             );
         }
 
@@ -137,15 +137,15 @@ export class AuthService extends BaseService implements IAuthService {
 
     private async loginLecturer(
         login: string,
-        password: string
+        password: string,
     ): Promise<OperationResult<ILecturer>> {
-        const workerNo = parseInt(login);
+        const workerNo = Number.parseInt(login);
         const lecturer = await this.lecturerRepository.getByWorkerNo(workerNo);
 
         if (lecturer?.workerNo.toString() !== password) {
             return this.createFailedResponse(
                 "Invalid username or password.",
-                401
+                401,
             );
         }
 

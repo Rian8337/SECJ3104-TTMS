@@ -17,11 +17,11 @@ const ttmsService = new TTMSService();
 
 (async () => {
     const sessionInput = process.argv.find((arg) =>
-        arg.startsWith("--session=")
+        arg.startsWith("--session="),
     );
 
     const semesterInput = process.argv.find((arg) =>
-        arg.startsWith("--semester=")
+        arg.startsWith("--semester="),
     );
 
     if (!sessionInput || !semesterInput) {
@@ -30,7 +30,7 @@ const ttmsService = new TTMSService();
     }
 
     const session = sessionInput.split("=")[1];
-    const semester = parseInt(semesterInput.split("=")[1]);
+    const semester = Number.parseInt(semesterInput.split("=")[1]);
 
     if (!validateAcademicSession(session)) {
         console.error("Invalid session format. Expected format: YYYY/YYYY");
@@ -51,7 +51,7 @@ const ttmsService = new TTMSService();
     }
 
     const serverSession = serverSessions.find(
-        (s) => s.sesi === session && s.semester === semester
+        (s) => s.sesi === session && s.semester === semester,
     );
 
     if (!serverSession) {
@@ -77,7 +77,7 @@ const ttmsService = new TTMSService();
         "from",
         serverSession.tarikh_mula,
         "to",
-        serverSession.tarikh_tamat
+        serverSession.tarikh_tamat,
     );
 
     console.log("Retrieving students");
@@ -104,8 +104,8 @@ const ttmsService = new TTMSService();
         .where(
             and(
                 eq(courseSections.session, session),
-                eq(courseSections.semester, semester)
-            )
+                eq(courseSections.semester, semester),
+            ),
         );
 
     for (const courseSection of savedCourseSections) {
@@ -122,7 +122,7 @@ const ttmsService = new TTMSService();
         await retrieveStudentRegisteredCourses(savedStudents[i].matricNo);
 
         console.log(
-            `Current progress: (${(i + 1).toString()}/${savedStudents.length.toString()})`
+            `Current progress: (${(i + 1).toString()}/${savedStudents.length.toString()})`,
         );
     }
 

@@ -8,7 +8,7 @@ config({ path: process.env.NODE_ENV === "test" ? ".env.test" : ".env" });
 registerDependencies();
 
 const app = createApp();
-const port = parseInt(process.env.SERVER_PORT ?? "3001");
+const port = Number.parseInt(process.env.SERVER_PORT ?? "3001");
 
 app.listen(port, (err) => {
     if (err) {

@@ -142,7 +142,7 @@ describe("Auth System Flow", () => {
             const sessionMatch = /Max-Age=(\d+)/.exec(sessionCookie);
             expect(sessionMatch).toBeTruthy();
 
-            const maxAge = parseInt(sessionMatch![1]);
+            const maxAge = Number.parseInt(sessionMatch![1]);
 
             // Wait for session to expire
             const expiryTime = maxAge * 1000;

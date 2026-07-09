@@ -15,7 +15,7 @@ import { BaseController } from "./BaseController";
 export class StudentController extends BaseController {
     constructor(
         @inject(dependencyTokens.studentService)
-        private readonly studentService: IStudentService
+        private readonly studentService: IStudentService,
     ) {
         super();
     }
@@ -35,11 +35,11 @@ export class StudentController extends BaseController {
             unknown,
             Partial<{ session: string; semester: string; matric_no: string }>
         >,
-        res: Response<ITimetable[] | { error: string }>
+        res: Response<ITimetable[] | { error: string }>,
     ) {
         const validatedSessionAndSemester = this.validateSessionSemester(
             req,
-            res
+            res,
         );
 
         if (!validatedSessionAndSemester) {
@@ -60,7 +60,7 @@ export class StudentController extends BaseController {
             const result = await this.studentService.getTimetable(
                 matricNo,
                 session,
-                semester
+                semester,
             );
 
             this.respondWithOperationResult(res, result);
@@ -92,11 +92,11 @@ export class StudentController extends BaseController {
                 offset: string;
             }>
         >,
-        res: Response<IStudentSearchEntry[] | { error: string }>
+        res: Response<IStudentSearchEntry[] | { error: string }>,
     ) {
         const validatedSessionAndSemester = this.validateSessionSemester(
             req,
-            res
+            res,
         );
 
         if (!validatedSessionAndSemester) {
@@ -111,8 +111,8 @@ export class StudentController extends BaseController {
             return;
         }
 
-        const parsedLimit = parseInt(limit ?? "10");
-        const parsedOffset = parseInt(offset ?? "0");
+        const parsedLimit = Number.parseInt(limit ?? "10");
+        const parsedOffset = Number.parseInt(offset ?? "0");
 
         if (Number.isNaN(parsedLimit) || parsedLimit < 1) {
             res.status(400).json({ error: "Invalid limit" });
@@ -134,7 +134,7 @@ export class StudentController extends BaseController {
                 semester,
                 query,
                 parsedLimit,
-                parsedOffset
+                parsedOffset,
             );
 
             this.respondWithOperationResult(res, result);

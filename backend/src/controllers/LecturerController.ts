@@ -160,8 +160,8 @@ export class LecturerController extends BaseController {
             return;
         }
 
-        const parsedLimit = parseInt(limit ?? "10");
-        const parsedOffset = parseInt(offset ?? "0");
+        const parsedLimit = Number.parseInt(limit ?? "10");
+        const parsedOffset = Number.parseInt(offset ?? "0");
 
         if (Number.isNaN(parsedLimit) || parsedLimit < 1) {
             res.status(400).json({ error: "Invalid limit" });
@@ -209,7 +209,7 @@ export class LecturerController extends BaseController {
             return null;
         }
 
-        const parsedWorkerNo = parseInt(workerNo);
+        const parsedWorkerNo = Number.parseInt(workerNo);
 
         if (Number.isNaN(parsedWorkerNo)) {
             res.status(400).json({ error: "Invalid worker number format." });

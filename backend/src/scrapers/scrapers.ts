@@ -43,7 +43,7 @@ async function authenticate() {
 
     const auth = await ttmsService.login(
         process.env.SCRAPER_MATRIC_NO!,
-        process.env.SCRAPER_PASSWORD!
+        process.env.SCRAPER_PASSWORD!,
     );
 
     if (!auth) {
@@ -78,7 +78,7 @@ function invalidateSession() {
  */
 export async function retrieveStudents(
     session: TTMSSession,
-    semester: TTMSSemester
+    semester: TTMSSemester,
 ) {
     // Need to authenticate first
     let sessionId = await authenticate();
@@ -117,7 +117,7 @@ export async function retrieveStudents(
                 "Failed to fetch students for session",
                 session,
                 semester,
-                e
+                e,
             );
 
             sessionRefreshAttempts++;
@@ -141,15 +141,13 @@ export async function retrieveStudents(
             await db
                 .insert(students)
                 .values(
-                    serverStudents.map(
-                        (s): IStudentInsert => ({
-                            matricNo: s.no_matrik,
-                            name: s.nama,
-                            courseCode: s.kod_kursus,
-                            facultyCode: s.kod_fakulti,
-                            kpNo: s.no_kp,
-                        })
-                    )
+                    serverStudents.map((s): IStudentInsert => ({
+                        matricNo: s.no_matrik,
+                        name: s.nama,
+                        courseCode: s.kod_kursus,
+                        facultyCode: s.kod_fakulti,
+                        kpNo: s.no_kp,
+                    })),
                 )
                 .onDuplicateKeyUpdate({
                     set: {
@@ -168,7 +166,7 @@ export async function retrieveStudents(
             session,
             semester,
             "offset",
-            offset
+            offset,
         );
 
         if (serverStudents.length < studentsPerFetch) {
@@ -182,7 +180,7 @@ export async function retrieveStudents(
         "Finished fetching students for session",
         session,
         "semester",
-        semester
+        semester,
     );
 }
 
@@ -194,7 +192,7 @@ export async function retrieveStudents(
  */
 export async function retrieveLecturers(
     session: TTMSSession,
-    semester: TTMSSemester
+    semester: TTMSSemester,
 ) {
     const sessionId = await authenticate();
     let serverLecturers: IAPILecturer[] | null = null;
@@ -210,7 +208,7 @@ export async function retrieveLecturers(
             "Failed to fetch lecturers for session",
             session,
             semester,
-            e
+            e,
         );
     }
 
@@ -222,12 +220,10 @@ export async function retrieveLecturers(
         await db
             .insert(lecturers)
             .values(
-                serverLecturers.map(
-                    (s): ILecturerInsert => ({
-                        name: s.nama,
-                        workerNo: s.no_pekerja,
-                    })
-                )
+                serverLecturers.map((s): ILecturerInsert => ({
+                    name: s.nama,
+                    workerNo: s.no_pekerja,
+                })),
             )
             .onDuplicateKeyUpdate({
                 set: { name: sql`VALUES(${lecturers.name})` },
@@ -239,7 +235,7 @@ export async function retrieveLecturers(
         serverLecturers.length,
         "lecturer(s) for session",
         session,
-        semester
+        semester,
     );
 }
 
@@ -251,7 +247,7 @@ export async function retrieveLecturers(
  */
 export async function retrieveCourses(
     session: TTMSSession,
-    semester: TTMSSemester
+    semester: TTMSSemester,
 ) {
     // Sessions before 2006/2007 have no courses
     if (session === "2005/2006" || session === "2004/2005") {
@@ -268,13 +264,11 @@ export async function retrieveCourses(
     await db
         .insert(courses)
         .values(
-            serverCourses.map(
-                (c): ICourseInsert => ({
-                    code: c.kod_subjek,
-                    name: c.nama_subjek,
-                    credits: parseInt(c.kod_subjek.split("").at(-1)!) || 0,
-                })
-            )
+            serverCourses.map((c): ICourseInsert => ({
+                code: c.kod_subjek,
+                name: c.nama_subjek,
+                credits: Number.parseInt(c.kod_subjek.split("").at(-1)!) || 0,
+            })),
         )
         .onDuplicateKeyUpdate({
             set: {
@@ -288,7 +282,7 @@ export async function retrieveCourses(
         serverCourses.length,
         "courses for session",
         session,
-        semester
+        semester,
     );
 }
 
@@ -300,7 +294,7 @@ export async function retrieveCourses(
  */
 export async function retrieveCourseSections(
     session: TTMSSession,
-    semester: TTMSSemester
+    semester: TTMSSemester,
 ) {
     // Sessions before 2006/2007 have no courses
     if (session === "2005/2006" || session === "2004/2005") {
@@ -309,14 +303,14 @@ export async function retrieveCourseSections(
 
     const serverCourseSections = await ttmsService.fetchCourseSections(
         session,
-        semester
+        semester,
     );
 
     if (serverCourseSections === null) {
         console.error(
             "Failed to fetch course sections for session",
             session,
-            semester
+            semester,
         );
 
         return;
@@ -337,21 +331,18 @@ export async function retrieveCourseSections(
                 .from(lecturers)
                 .where(or(...lecturerNames.map((n) => eq(lecturers.name, n))));
 
-            return c.seksyen_list.map(
-                (s): ICourseSectionInsert => ({
-                    session: session,
-                    semester: semester,
-                    courseCode: c.kod_subjek,
-                    section: s.seksyen,
-                    lecturerNo:
-                        s.pensyarah !== null
-                            ? sessionLecturers.find(
-                                  (l) => l.name === s.pensyarah
-                              )?.workerNo
-                            : null,
-                })
-            );
-        }
+            return c.seksyen_list.map((s): ICourseSectionInsert => ({
+                session: session,
+                semester: semester,
+                courseCode: c.kod_subjek,
+                section: s.seksyen,
+                lecturerNo:
+                    s.pensyarah !== null
+                        ? sessionLecturers.find((l) => l.name === s.pensyarah)
+                              ?.workerNo
+                        : null,
+            }));
+        },
     );
 
     if (mappedCourseSections.length > 0) {
@@ -368,7 +359,7 @@ export async function retrieveCourseSections(
         serverCourseSections.length,
         "course section(s) for session",
         session,
-        semester
+        semester,
     );
 }
 
@@ -381,7 +372,7 @@ export async function retrieveCourseSectionSchedules(
     courseSection: Pick<
         ICourseSection,
         "session" | "semester" | "courseCode" | "section"
-    >
+    >,
 ) {
     const serverSessionCourseTimetables =
         await ttmsService.fetchCourseTimetable(courseSection);
@@ -394,7 +385,7 @@ export async function retrieveCourseSectionSchedules(
             "course code",
             courseSection.courseCode,
             "section",
-            courseSection.section
+            courseSection.section,
         );
 
         return;
@@ -408,7 +399,7 @@ export async function retrieveCourseSectionSchedules(
             "course code",
             courseSection.courseCode,
             "section",
-            courseSection.section
+            courseSection.section,
         );
 
         return;
@@ -422,7 +413,7 @@ export async function retrieveCourseSectionSchedules(
             "course code",
             courseSection.courseCode,
             "section",
-            courseSection.section
+            courseSection.section,
         );
 
         return;
@@ -469,8 +460,8 @@ export async function retrieveCourseSectionSchedules(
                     time: c.masa!,
                     venueCode: c.ruang?.kod_ruang,
                 };
-            }
-        )
+            },
+        ),
     );
 
     await db
@@ -486,7 +477,7 @@ export async function retrieveCourseSectionSchedules(
         "course code",
         courseSection.courseCode,
         "section",
-        courseSection.section
+        courseSection.section,
     );
 }
 
@@ -508,15 +499,13 @@ export async function retrieveStudentRegisteredCourses(matricNo: string) {
             .insert(studentRegisteredCourses)
             .ignore()
             .values(
-                studentCourses.map(
-                    (c): IStudentRegisteredCourseInsert => ({
-                        matricNo,
-                        courseCode: c.kod_subjek,
-                        section: c.seksyen,
-                        session: c.sesi,
-                        semester: c.semester,
-                    })
-                )
+                studentCourses.map((c): IStudentRegisteredCourseInsert => ({
+                    matricNo,
+                    courseCode: c.kod_subjek,
+                    section: c.seksyen,
+                    session: c.sesi,
+                    semester: c.semester,
+                })),
             );
     }
 
@@ -524,7 +513,7 @@ export async function retrieveStudentRegisteredCourses(matricNo: string) {
         "Inserted",
         studentCourses.length,
         "course(s) for student",
-        matricNo
+        matricNo,
     );
 }
 
@@ -564,7 +553,7 @@ export async function retrieveStudentKpNo() {
                 student.name,
                 "with no kp",
                 noKp,
-                `(${(i + 1).toString()}/${studentsWithoutNoKp.length.toString()})`
+                `(${(i + 1).toString()}/${studentsWithoutNoKp.length.toString()})`,
             );
 
             continue;
@@ -585,7 +574,7 @@ export async function retrieveStudentKpNo() {
             console.error(
                 "No courses found for student",
                 student.name,
-                `(${(i + 1).toString()}/${studentsWithoutNoKp.length.toString()})`
+                `(${(i + 1).toString()}/${studentsWithoutNoKp.length.toString()})`,
             );
 
             continue;
@@ -609,7 +598,7 @@ export async function retrieveStudentKpNo() {
                 "Failed to fetch students in section for session",
                 studentCourse.session,
                 studentCourse.semester,
-                e
+                e,
             );
 
             sessionRefreshAttempts++;
@@ -629,14 +618,14 @@ export async function retrieveStudentKpNo() {
             console.error(
                 "No students found in section for student",
                 student.name,
-                `(${(i + 1).toString()}/${studentsWithoutNoKp.length.toString()})`
+                `(${(i + 1).toString()}/${studentsWithoutNoKp.length.toString()})`,
             );
 
             continue;
         }
 
         const studentInSection = studentsInSection.find(
-            (s) => s.nama === student.name
+            (s) => s.nama === student.name,
         );
 
         if (studentInSection) {
@@ -650,13 +639,13 @@ export async function retrieveStudentKpNo() {
                 studentInSection.nama,
                 "with no kp",
                 studentInSection.no_kp,
-                `(${(i + 1).toString()}/${studentsWithoutNoKp.length.toString()})`
+                `(${(i + 1).toString()}/${studentsWithoutNoKp.length.toString()})`,
             );
         } else {
             console.error(
                 "No student found in section for student",
                 student.name,
-                `(${(i + 1).toString()}/${studentsWithoutNoKp.length.toString()})`
+                `(${(i + 1).toString()}/${studentsWithoutNoKp.length.toString()})`,
             );
         }
 

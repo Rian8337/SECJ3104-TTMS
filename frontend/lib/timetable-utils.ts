@@ -200,7 +200,7 @@ export const processClasses = (classes: ClassItem[]) => {
     }, {} as Record<string, ClassItem[]>)
 
     // Merge consecutive classes
-    const mergedClasses = Object.entries(groupedClasses).map(([key, group]) => {
+    const mergedClasses = Object.entries(groupedClasses).flatMap(([key, group]) => {
       if (group.length === 1) {
         return {
           ...group[0],
@@ -223,11 +223,11 @@ export const processClasses = (classes: ClassItem[]) => {
       let currentSequence: ClassItem[] = [group[0]]
 
       for (let i = 1; i < group.length; i++) {
-        const prevClass = currentSequence[currentSequence.length - 1]
+        const prevClass = currentSequence.at(-1)
         const currentClass = group[i]
 
         if (
-          prevClass.courseCode === currentClass.courseCode &&
+          prevClass?.courseCode === currentClass.courseCode &&
           prevClass.section === currentClass.section &&
           prevClass.venue === currentClass.venue &&
           prevClass.courseSection?.lecturer?.name === currentClass.courseSection?.lecturer?.name &&
@@ -259,8 +259,8 @@ export const processClasses = (classes: ClassItem[]) => {
 
         return {
           ...sequence[0],
-          endTime: sequence[sequence.length - 1].endTime,
-          id: `${key}-${sequence[0].startTime}-${sequence[sequence.length - 1].endTime}`,
+          endTime: sequence.at(-1)!.endTime,
+          id: `${key}-${sequence[0].startTime}-${sequence.at(-1)!.endTime}`,
           courseSection: {
             ...sequence[0].courseSection,
             lecturer: sequence[0].courseSection?.lecturer ? {
@@ -270,7 +270,7 @@ export const processClasses = (classes: ClassItem[]) => {
           }
         }
       })
-    }).flat()
+    })
 
     classesByDay[day as Weekday] = mergedClasses
   })

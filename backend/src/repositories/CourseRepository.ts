@@ -1,5 +1,11 @@
 import { DrizzleDb } from "@/database";
-import { courses, courseSections, ICourse } from "@/database/schema";
+import {
+    courses,
+    courseSections,
+    courseSectionSchedules,
+    ICourse,
+    venues,
+} from "@/database/schema";
 import { Repository } from "@/decorators/repository";
 import { dependencyTokens } from "@/dependencies/tokens";
 import { IAnalyticsCourse, TTMSSemester, TTMSSession } from "@/types";
@@ -33,24 +39,70 @@ export class CourseRepository
         session: TTMSSession,
         semester: TTMSSemester
     ): Promise<IAnalyticsCourse[]> {
-        return this.db.query.courseSections.findMany({
-            columns: { section: true },
-            with: {
-                course: { columns: { code: true, name: true } },
-                schedules: {
-                    columns: {
-                        day: true,
-                        time: true,
-                    },
-                    with: {
-                        venue: { columns: { shortName: true } },
-                    },
-                },
-            },
-            where: and(
-                eq(courseSections.session, session),
-                eq(courseSections.semester, semester)
-            ),
-        });
+        // Uses explicit joins rather than the relational query API, as the latter
+        // compiles `with` clauses for one-to-many relations (`schedules`) into
+        // `LEFT JOIN LATERAL` subqueries, which MariaDB does not support.
+        const rows = await this.db
+            .select({
+                section: courseSections.section,
+                courseCode: courses.code,
+                courseName: courses.name,
+                day: courseSectionSchedules.day,
+                time: courseSectionSchedules.time,
+                venueShortName: venues.shortName,
+            })
+            .from(courseSections)
+            .innerJoin(courses, eq(courseSections.courseCode, courses.code))
+            .leftJoin(
+                courseSectionSchedules,
+                and(
+                    eq(courseSectionSchedules.session, courseSections.session),
+                    eq(
+                        courseSectionSchedules.semester,
+                        courseSections.semester
+                    ),
+                    eq(
+                        courseSectionSchedules.courseCode,
+                        courseSections.courseCode
+                    ),
+                    eq(courseSectionSchedules.section, courseSections.section)
+                )
+            )
+            .leftJoin(venues, eq(courseSectionSchedules.venueCode, venues.code))
+            .where(
+                and(
+                    eq(courseSections.session, session),
+                    eq(courseSections.semester, semester)
+                )
+            );
+
+        const courseSectionsMap = new Map<string, IAnalyticsCourse>();
+
+        for (const row of rows) {
+            const key = `${row.courseCode}-${row.section}`;
+            let courseSection = courseSectionsMap.get(key);
+
+            if (!courseSection) {
+                courseSection = {
+                    section: row.section,
+                    course: { code: row.courseCode, name: row.courseName },
+                    schedules: [],
+                };
+
+                courseSectionsMap.set(key, courseSection);
+            }
+
+            if (row.day !== null && row.time !== null) {
+                courseSection.schedules.push({
+                    day: row.day,
+                    time: row.time,
+                    venue: row.venueShortName
+                        ? { shortName: row.venueShortName }
+                        : null,
+                });
+            }
+        }
+
+        return [...courseSectionsMap.values()];
     }
 }

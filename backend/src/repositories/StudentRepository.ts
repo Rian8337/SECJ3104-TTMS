@@ -236,24 +236,41 @@ export class StudentRepository
             });
     }
 
-    getRegisteredStudents(
+    async getRegisteredStudents(
         session: TTMSSession,
         semester: TTMSSemester
     ): Promise<IRegisteredStudent[]> {
-        return this.db.query.studentRegisteredCourses.findMany({
-            columns: {
-                courseCode: true,
-                section: true,
+        // Uses an explicit join rather than the relational query API, as the
+        // latter compiles `with` clauses into `LEFT JOIN LATERAL` subqueries,
+        // which MariaDB does not support.
+        const rows = await this.db
+            .select({
+                courseCode: studentRegisteredCourses.courseCode,
+                section: studentRegisteredCourses.section,
+                matricNo: students.matricNo,
+                name: students.name,
+                studentCourseCode: students.courseCode,
+            })
+            .from(studentRegisteredCourses)
+            .innerJoin(
+                students,
+                eq(studentRegisteredCourses.matricNo, students.matricNo)
+            )
+            .where(
+                and(
+                    eq(studentRegisteredCourses.session, session),
+                    eq(studentRegisteredCourses.semester, semester)
+                )
+            );
+
+        return rows.map((row) => ({
+            courseCode: row.courseCode,
+            section: row.section,
+            student: {
+                matricNo: row.matricNo,
+                name: row.name,
+                courseCode: row.studentCourseCode,
             },
-            with: {
-                student: {
-                    columns: { matricNo: true, name: true, courseCode: true },
-                },
-            },
-            where: and(
-                eq(studentRegisteredCourses.session, session),
-                eq(studentRegisteredCourses.semester, semester)
-            ),
-        });
+        }));
     }
 }

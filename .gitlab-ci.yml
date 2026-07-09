@@ -12,7 +12,7 @@ default:
 backend-build-and-test:
   stage: verify
   services:
-    - name: mysql:8.0
+    - name: mariadb:12.2
       alias: mysql
       variables:
         MYSQL_DATABASE: ttms_test

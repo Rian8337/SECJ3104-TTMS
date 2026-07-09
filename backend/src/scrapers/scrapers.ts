@@ -517,6 +517,216 @@ export async function retrieveStudentRegisteredCourses(matricNo: string) {
     );
 }
 
+interface IKpNoScrapeState {
+    sessionId: string;
+    sessionRefreshAttempts: number;
+}
+
+type IFetchStudentsInSectionResult =
+    | { outcome: "success"; students: IAPICourseSectionStudent[] }
+    // The API call succeeded but returned no students.
+    | { outcome: "empty" }
+    // The API call failed, but there are attempts left, so this student can be skipped.
+    | { outcome: "retry" }
+    // The API call failed 3 times in a row; the caller should stop scraping entirely.
+    | { outcome: "abort" };
+
+/**
+ * Updates a student's KP number from the cache if it has already been resolved for
+ * another student sharing the same name.
+ *
+ * @returns Whether the student's KP number was found in the cache.
+ */
+async function applyCachedKpNoIfAvailable(
+    student: { name: string },
+    noKpMap: Map<string, string>,
+    progress: string,
+): Promise<boolean> {
+    const noKp = noKpMap.get(student.name);
+
+    if (noKp === undefined) {
+        return false;
+    }
+
+    await db
+        .update(students)
+        .set({ kpNo: noKp })
+        .where(eq(students.name, student.name));
+
+    console.log("Updated student", student.name, "with no kp", noKp, progress);
+
+    return true;
+}
+
+/**
+ * Obtains the first registered course of a student, used to look up the course section
+ * the student belongs to.
+ */
+async function findFirstRegisteredCourse(matricNo: string) {
+    const studentCourses = await db
+        .select({
+            courseCode: studentRegisteredCourses.courseCode,
+            section: studentRegisteredCourses.section,
+            session: studentRegisteredCourses.session,
+            semester: studentRegisteredCourses.semester,
+        })
+        .from(studentRegisteredCourses)
+        .where(eq(studentRegisteredCourses.matricNo, matricNo))
+        .limit(1);
+
+    return studentCourses.at(0) ?? null;
+}
+
+/**
+ * Fetches the students in a course section, refreshing the session and retrying on
+ * failure, up to 3 consecutive attempts across students.
+ */
+async function fetchStudentsInSectionSafely(
+    state: IKpNoScrapeState,
+    studentCourse: Pick<
+        ICourseSection,
+        "session" | "semester" | "courseCode" | "section"
+    >,
+): Promise<IFetchStudentsInSectionResult> {
+    try {
+        const studentsInSection = await ttmsService.fetchStudentsInSection({
+            sessionId: state.sessionId,
+            session: studentCourse.session,
+            semester: studentCourse.semester,
+            courseCode: studentCourse.courseCode,
+            section: studentCourse.section,
+        });
+
+        state.sessionRefreshAttempts = 0;
+
+        return studentsInSection === null
+            ? { outcome: "empty" }
+            : { outcome: "success", students: studentsInSection };
+    } catch (e) {
+        console.error(
+            "Failed to fetch students in section for session",
+            studentCourse.session,
+            studentCourse.semester,
+            e,
+        );
+
+        ++state.sessionRefreshAttempts;
+
+        if (state.sessionRefreshAttempts >= 3) {
+            console.error("Failed to fetch lecturers after 3 attempts");
+            return { outcome: "abort" };
+        }
+
+        invalidateSession();
+        state.sessionId = await authenticate();
+
+        return { outcome: "retry" };
+    }
+}
+
+/**
+ * Updates the KP number of the student matching `student.name` within the section, if found.
+ */
+async function updateStudentKpNoIfFound(
+    studentsInSection: IAPICourseSectionStudent[],
+    student: { name: string },
+    progress: string,
+) {
+    const studentInSection = studentsInSection.find(
+        (s) => s.nama === student.name,
+    );
+
+    if (!studentInSection) {
+        console.error(
+            "No student found in section for student",
+            student.name,
+            progress,
+        );
+
+        return;
+    }
+
+    await db
+        .update(students)
+        .set({ kpNo: studentInSection.no_kp })
+        .where(eq(students.name, studentInSection.nama));
+
+    console.log(
+        "Updated student",
+        studentInSection.nama,
+        "with no kp",
+        studentInSection.no_kp,
+        progress,
+    );
+}
+
+/**
+ * Caches the KP numbers of students in a section so that other students sharing the
+ * same name do not need another upstream lookup.
+ */
+function cacheStudentsKpNo(
+    studentsInSection: IAPICourseSectionStudent[],
+    noKpMap: Map<string, string>,
+) {
+    for (const studentInSection of studentsInSection) {
+        // Sometimes the API returns an empty name or no_kp
+        if (studentInSection.nama && studentInSection.no_kp) {
+            noKpMap.set(studentInSection.nama, studentInSection.no_kp);
+        }
+    }
+}
+
+/**
+ * Resolves the KP number of a single student, either from cache or from upstream.
+ *
+ * @returns `"abort"` if scraping should stop entirely, `"continue"` otherwise.
+ */
+async function processStudentKpNo(
+    student: { name: string; matricNo: string },
+    noKpMap: Map<string, string>,
+    state: IKpNoScrapeState,
+    progress: string,
+): Promise<"continue" | "abort"> {
+    if (await applyCachedKpNoIfAvailable(student, noKpMap, progress)) {
+        return "continue";
+    }
+
+    const studentCourse = await findFirstRegisteredCourse(student.matricNo);
+
+    if (!studentCourse) {
+        console.error("No courses found for student", student.name, progress);
+        return "continue";
+    }
+
+    const fetchResult = await fetchStudentsInSectionSafely(
+        state,
+        studentCourse,
+    );
+
+    if (fetchResult.outcome === "abort") {
+        return "abort";
+    }
+
+    if (fetchResult.outcome === "retry") {
+        return "continue";
+    }
+
+    if (fetchResult.outcome === "empty") {
+        console.error(
+            "No students found in section for student",
+            student.name,
+            progress,
+        );
+
+        return "continue";
+    }
+
+    await updateStudentKpNoIfFound(fetchResult.students, student, progress);
+    cacheStudentsKpNo(fetchResult.students, noKpMap);
+
+    return "continue";
+}
+
 /**
  * Retrieves the KP number for students who do not have it recorded in the database.
  *
@@ -534,126 +744,24 @@ export async function retrieveStudentKpNo() {
         .from(students)
         .where(eq(students.kpNo, "-"));
 
-    let sessionId = await authenticate();
-    let sessionRefreshAttempts = 0;
+    const state: IKpNoScrapeState = {
+        sessionId: await authenticate(),
+        sessionRefreshAttempts: 0,
+    };
 
     for (let i = 0; i < studentsWithoutNoKp.length; ++i) {
         const student = studentsWithoutNoKp[i];
+        const progress = `(${(i + 1).toString()}/${studentsWithoutNoKp.length.toString()})`;
 
-        if (noKpMap.has(student.name)) {
-            const noKp = noKpMap.get(student.name)!;
-
-            await db
-                .update(students)
-                .set({ kpNo: noKp })
-                .where(eq(students.name, student.name));
-
-            console.log(
-                "Updated student",
-                student.name,
-                "with no kp",
-                noKp,
-                `(${(i + 1).toString()}/${studentsWithoutNoKp.length.toString()})`,
-            );
-
-            continue;
-        }
-
-        const studentCourses = await db
-            .select({
-                courseCode: studentRegisteredCourses.courseCode,
-                section: studentRegisteredCourses.section,
-                session: studentRegisteredCourses.session,
-                semester: studentRegisteredCourses.semester,
-            })
-            .from(studentRegisteredCourses)
-            .where(eq(studentRegisteredCourses.matricNo, student.matricNo))
-            .limit(1);
-
-        if (studentCourses.length === 0) {
-            console.error(
-                "No courses found for student",
-                student.name,
-                `(${(i + 1).toString()}/${studentsWithoutNoKp.length.toString()})`,
-            );
-
-            continue;
-        }
-
-        const studentCourse = studentCourses[0];
-        let studentsInSection: IAPICourseSectionStudent[] | null = null;
-
-        try {
-            studentsInSection = await ttmsService.fetchStudentsInSection({
-                sessionId: sessionId,
-                session: studentCourse.session,
-                semester: studentCourse.semester,
-                courseCode: studentCourse.courseCode,
-                section: studentCourse.section,
-            });
-
-            sessionRefreshAttempts = 0;
-        } catch (e) {
-            console.error(
-                "Failed to fetch students in section for session",
-                studentCourse.session,
-                studentCourse.semester,
-                e,
-            );
-
-            sessionRefreshAttempts++;
-
-            if (sessionRefreshAttempts >= 3) {
-                console.error("Failed to fetch lecturers after 3 attempts");
-                break;
-            }
-
-            invalidateSession();
-            sessionId = await authenticate();
-
-            continue;
-        }
-
-        if (studentsInSection === null) {
-            console.error(
-                "No students found in section for student",
-                student.name,
-                `(${(i + 1).toString()}/${studentsWithoutNoKp.length.toString()})`,
-            );
-
-            continue;
-        }
-
-        const studentInSection = studentsInSection.find(
-            (s) => s.nama === student.name,
+        const result = await processStudentKpNo(
+            student,
+            noKpMap,
+            state,
+            progress,
         );
 
-        if (studentInSection) {
-            await db
-                .update(students)
-                .set({ kpNo: studentInSection.no_kp })
-                .where(eq(students.name, studentInSection.nama));
-
-            console.log(
-                "Updated student",
-                studentInSection.nama,
-                "with no kp",
-                studentInSection.no_kp,
-                `(${(i + 1).toString()}/${studentsWithoutNoKp.length.toString()})`,
-            );
-        } else {
-            console.error(
-                "No student found in section for student",
-                student.name,
-                `(${(i + 1).toString()}/${studentsWithoutNoKp.length.toString()})`,
-            );
-        }
-
-        for (const studentInSection of studentsInSection) {
-            // Sometimes the API returns an empty name or no_kp
-            if (studentInSection.nama && studentInSection.no_kp) {
-                noKpMap.set(studentInSection.nama, studentInSection.no_kp);
-            }
+        if (result === "abort") {
+            break;
         }
     }
 }

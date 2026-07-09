@@ -117,7 +117,7 @@ export function SearchStudentForm() {
     return () => clearInterval(interval)
   }, [activeTab])
 
-  const handleSearch = async (e: React.FormEvent) => {
+  const handleSearch = async (e: React.SubmitEvent) => {
     e.preventDefault()
     setIsSearching(true)
     setSearchResults([])

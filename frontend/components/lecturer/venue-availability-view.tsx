@@ -44,8 +44,8 @@ export function VenueAvailabilityView() {
 
   // Get time slots between start and end time
   const getTimeSlots = () => {
-    const start = parseInt(startTimeSlot)
-    const end = parseInt(endTimeSlot)
+    const start = Number.parseInt(startTimeSlot)
+    const end = Number.parseInt(endTimeSlot)
     const slots = Array.from(
       { length: end - start + 1 },
       (_, i) => (start + i).toString()
@@ -95,8 +95,8 @@ export function VenueAvailabilityView() {
       selectedDay,
       startTimeSlot,
       endTimeSlot,
-      timeMap: timeMap[parseInt(startTimeSlot)],
-      timeMapEnd: timeMap[parseInt(endTimeSlot)]
+      timeMap: timeMap[Number.parseInt(startTimeSlot)],
+      timeMapEnd: timeMap[Number.parseInt(endTimeSlot)]
     })
     fetchVenues()
   }, [selectedDay, startTimeSlot, endTimeSlot])
@@ -176,7 +176,7 @@ export function VenueAvailabilityView() {
             <Select 
               value={startTimeSlot} 
               onValueChange={(value) => {
-                console.log('Start time selected:', value, timeMap[parseInt(value)])
+                console.log('Start time selected:', value, timeMap[Number.parseInt(value)])
                 setStartTimeSlot(value)
               }}
             >
@@ -200,7 +200,7 @@ export function VenueAvailabilityView() {
             <Select 
               value={endTimeSlot} 
               onValueChange={(value) => {
-                console.log('End time selected:', value, timeMap[parseInt(value)])
+                console.log('End time selected:', value, timeMap[Number.parseInt(value)])
                 setEndTimeSlot(value)
               }}
             >
@@ -219,7 +219,7 @@ export function VenueAvailabilityView() {
         </div>
 
         <div className="text-sm text-muted-foreground">
-          Showing venues available from {formatTime(timeMap[parseInt(startTimeSlot)]?.split(' - ')[0] || '')} to {formatTime(timeMap[parseInt(endTimeSlot)]?.split(' - ')[1] || '')}
+          Showing venues available from {formatTime(timeMap[Number.parseInt(startTimeSlot)]?.split(' - ')[0] || '')} to {formatTime(timeMap[Number.parseInt(endTimeSlot)]?.split(' - ')[1] || '')}
         </div>
       </div>
 

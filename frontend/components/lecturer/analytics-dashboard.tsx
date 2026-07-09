@@ -522,7 +522,6 @@ export function AnalyticsDashboard() {
                               <div className="w-[70%] break-words">{s.course.name}</div>
                               <div className="text-muted-foreground w-[30%] text-right shrink-0">
                                 {formatTimeSlot(s.time)}
-                                {/* {s.venue && ` • ${s.venue.shortName}`} */}
                               </div>
                             </div>
                           ))}

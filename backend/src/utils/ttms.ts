@@ -12,9 +12,9 @@ import {
  * @returns `true` if the session is valid, `false` otherwise.
  */
 export function validateAcademicSession(
-    session: string
+    session: string,
 ): session is TTMSSession {
-    return /^[0-9]{4}\/[0-9]{4}$/.test(session);
+    return /^\d{4}\/\d{4}$/.test(session);
 }
 
 /**
@@ -64,7 +64,7 @@ export function isValidWorkerNo(str: unknown): str is string {
  * @returns `true` if the day is valid, `false` otherwise.
  */
 export function isValidTimetableDay(
-    day: unknown
+    day: unknown,
 ): day is CourseSectionScheduleDay {
     return typeof day === "number" && day >= 1 && day <= 7;
 }
@@ -76,7 +76,7 @@ export function isValidTimetableDay(
  * @returns `true` if the time is valid, `false` otherwise.
  */
 export function isValidTimetableTime(
-    time: unknown
+    time: unknown,
 ): time is CourseSectionScheduleTime {
     return typeof time === "number" && time >= 1 && time <= 16;
 }
